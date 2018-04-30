@@ -25,3 +25,4 @@
 
 
 from atomdb.io.numeric import *
+from atomdb.io.spectra import *
