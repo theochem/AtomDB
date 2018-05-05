@@ -50,8 +50,7 @@ class Species(object):
         self._nelectron = nelectron
 
         # add additional attributes
-        for key, value in kwargs.iteritems():
-            setattr(self, key, value)
+        self.update(**kwargs)
 
     @property
     def number(self):
@@ -62,6 +61,13 @@ class Species(object):
     def nelectron(self):
         """Number of electrons."""
         return self._nelectron
+
+    def update(self, **kwargs):
+        """Update the attributes."""
+        for key, value in kwargs.iteritems():
+            if key in dir(self):
+                raise ValueError("The {0} attribute already exists!".format(key))
+            setattr(self, key, value)
 
     def __getitem__(self, attr):
         """Return attribute value."""
