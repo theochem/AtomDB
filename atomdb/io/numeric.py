@@ -83,4 +83,4 @@ def load_numerical_hf_data():
     return SpeciesTable(species)
 
 
-table_NHFG = load_numerical_hf_data()
+table_numeric = load_numerical_hf_data()

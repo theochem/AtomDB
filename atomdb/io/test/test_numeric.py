@@ -24,7 +24,7 @@
 
 
 from numpy.testing import assert_equal, assert_almost_equal
-from atomdb.io.numeric import table_NHFG as table
+from atomdb.io.numeric import table_numeric as table
 
 
 def test_numerical_hf_data():

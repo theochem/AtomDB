@@ -24,7 +24,7 @@
 
 
 from numpy.testing import assert_equal, assert_almost_equal
-from atomdb.io.spectra import table_Spectra as table
+from atomdb.io.spectra import table_spectra as table
 
 
 def test_load_nist_spectra_data():

@@ -166,4 +166,4 @@ def load_basic_periodic_table():
     return SpeciesTable(species)
 
 
-table_Periodic = load_basic_periodic_table()
+table_periodic = load_basic_periodic_table()

@@ -69,4 +69,5 @@ def load_nist_spectra_data():
     assert len(species) == 5050
     return SpeciesTable(species)
 
-table_Spectra = load_nist_spectra_data()
+
+table_spectra = load_nist_spectra_data()

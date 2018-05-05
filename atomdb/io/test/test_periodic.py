@@ -25,7 +25,7 @@
 
 from numpy.testing import assert_equal, assert_almost_equal
 from atomdb.units import angstrom, amu
-from atomdb.io.periodic import table_Periodic as table
+from atomdb.io.periodic import table_periodic as table
 
 
 def test_periodic_basic():
