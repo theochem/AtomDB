@@ -42,6 +42,9 @@ def test_species():
     sp = Species(6, 6)
     assert_equal(sp.number, 6)
     assert_equal(sp.nelectron, 6)
+    sp = Species(6, 6, **{})
+    assert_equal(sp.number, 6)
+    assert_equal(sp.nelectron, 6)
     # H+ cation
     sp = Species(1, 0)
     assert_equal(sp.number, 1)

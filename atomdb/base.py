@@ -100,7 +100,7 @@ class SpeciesTable(object):
 
     def __getitem__(self, (number, nelectron)):
         """Return the `Species` object for the specified atomic number and charge."""
-        return self.__lookup[(number, nelectron)]
+        return self.__lookup.setdefault((number, nelectron), None)
 
     def available_species(self, number):
         """Return the available `Species` in the table for the given atomic number."""
