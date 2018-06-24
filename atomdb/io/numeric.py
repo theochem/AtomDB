@@ -25,6 +25,7 @@
 """Numerical Hartree-Fock Data on a Grid."""
 
 
+import os
 import numpy as np
 
 from atomdb.base import Species, SpeciesTable
@@ -49,7 +50,7 @@ def load_numerical_hf_data():
         return data[:, 0], data[:, 1], data[:, 2], data[:, 3]
 
     species = []
-    with open("atomdb/data/density.out", "r") as f:
+    with open(os.path.join(os.path.dirname(__file__), '../data/density.out'), 'r') as f:
         line = f.readline()
         while line:
             if line.startswith(" 1st line is atomic no"):

@@ -23,6 +23,9 @@
 # --
 
 
+import os
+import csv
+
 from atomdb.units import angstrom, amu
 from atomdb.base import Species, SpeciesTable
 
@@ -124,8 +127,6 @@ def load_basic_periodic_table():
         http://dx.doi.org/10.1063/1.432569
     """
 
-    import csv
-
     convertor_types = {
         'int': (lambda s: int(s)),
         'float': (lambda s : float(s)),
@@ -137,7 +138,7 @@ def load_basic_periodic_table():
         'amu': (lambda s: float(s)*amu),
     }
 
-    with open('atomdb/data/elements.csv', 'r') as f:
+    with open(os.path.join(os.path.dirname(__file__), '../data/elements.csv'), 'r') as f:
         r = csv.reader(f)
         # go to the actual data
         for row in r:

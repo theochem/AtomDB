@@ -24,6 +24,7 @@
 """Spectra Data from NIST."""
 
 
+import os
 import h5py as h5
 import numpy as np
 
@@ -34,7 +35,7 @@ def load_nist_spectra_data():
     """Load data from database_beta_1.3.0.h5 file into a `SpeciesTable`."""
 
     species = []
-    with h5.File("atomdb/data/database_beta_1.3.0.h5", "r") as f:
+    with h5.File(os.path.join(os.path.dirname(__file__), "../data/database_beta_1.3.0.h5"), "r") as f:
         for number in f.keys():
             electrons = f[number].keys()
             assert len(electrons) == int(number)
