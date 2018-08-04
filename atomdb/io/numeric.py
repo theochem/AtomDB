@@ -34,16 +34,16 @@ from atomdb.base import Species, SpeciesTable
 def load_numerical_hf_data():
     """Load data from desnity.out file into a `SpeciesTable`."""
 
-    from StringIO import StringIO
+    from io import StringIO
 
     def helper_skip():
         """Skip the header for each species."""
-        for _ in xrange(4): f.readline()
+        for _ in range(4): f.readline()
 
     def helper_data():
         """Read the grid, density, gradient, laplacian values into arrays."""
-        data = ""
-        for i in xrange(number_points):
+        data = u""
+        for i in range(number_points):
             data += f.readline()
         data = np.loadtxt(StringIO(data))
         assert data.shape == (number_points, 4)

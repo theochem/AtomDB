@@ -146,7 +146,7 @@ def load_basic_periodic_table():
                 break
         # parse the first two header rows
         names = row
-        convertors = [convertor_types[key] for key in r.next()]
+        convertors = [convertor_types[key] for key in next(r)]
         elements = []
 
         species = []
@@ -154,7 +154,7 @@ def load_basic_periodic_table():
             if len(row) == 0:
                 break
             kwargs = {}
-            for i in xrange(len(row)):
+            for i in range(len(row)):
                 cell = row[i]
                 if len(cell) > 0:
                     kwargs[names[i]] = convertors[i](cell)

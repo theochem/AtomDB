@@ -36,8 +36,8 @@ def load_nist_spectra_data():
 
     species = []
     with h5.File(os.path.join(os.path.dirname(__file__), "../data/database_beta_1.3.0.h5"), "r") as f:
-        for number in f.keys():
-            electrons = f[number].keys()
+        for number in list(f.keys()):
+            electrons = list(f[number].keys())
             assert len(electrons) == int(number)
             for electron in electrons:
                 assert int(electron) <= int(number) + 1
@@ -51,12 +51,12 @@ def load_nist_spectra_data():
 
                 # found violations in Derick"s data (they should be mult ordered!)
                 if all(mults != sorted(mults)):
-                    print(mults, sorted(mults))
-                    print(energy, config, j_vals)
-                    print "WARN number={0}, elec={1}, {2}, {3}".format(number, electron, mults, sorted(mults))
+                    print((mults, sorted(mults)))
+                    print((energy, config, j_vals))
+                    print("WARN number={0}, elec={1}, {2}, {3}".format(number, electron, mults, sorted(mults)))
 
                 # sort based on energy
-                index_sorting = sorted(range(len(energy)), key=lambda k: energy[k])
+                index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
 
                 # store spectra values
                 kwargs = {"mult": list(mults[index_sorting]),

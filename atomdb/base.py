@@ -64,7 +64,7 @@ class Species(object):
 
     def update(self, **kwargs):
         """Update the attributes."""
-        for key, value in kwargs.iteritems():
+        for key, value in kwargs.items():
             if key in dir(self):
                 raise ValueError("The {0} attribute already exists!".format(key))
             setattr(self, key, value)
@@ -98,11 +98,12 @@ class SpeciesTable(object):
         """Return the number of species in the table."""
         return len(self.__species)
 
-    def __getitem__(self, (number, nelectron)):
+    def __getitem__(self, xxx_todo_changeme):
         """Return the `Species` object for the specified atomic number and charge."""
+        (number, nelectron) = xxx_todo_changeme
         return self.__lookup.setdefault((number, nelectron), None)
 
     def available_species(self, number):
         """Return the available `Species` in the table for the given atomic number."""
-        sps = [key[1] for key in self.__lookup.keys() if key[0] == number]
+        sps = [key[1] for key in list(self.__lookup.keys()) if key[0] == number]
         return sps
