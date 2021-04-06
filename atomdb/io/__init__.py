@@ -27,3 +27,4 @@
 from atomdb.io.numeric import *
 from atomdb.io.spectra import *
 from atomdb.io.periodic import *
+from atomdb.io.wfn_slater import *
