@@ -54,7 +54,7 @@ class AtomicDensity:
     It is then able to construct the (total, core and valence) electron density based
     on linear combination of orbitals where each orbital is a linear combination of
     Slater-type orbitals.
-    Elements supported by default from "./bfit/data/examples/" range from Hydrogen to Xenon.
+    Elements supported by default from "./atomdb/data/examples/" range from Hydrogen to Xenon.
 
     Attributes
     ----------
