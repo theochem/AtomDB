@@ -1,4 +1,20 @@
-from dataclasses import dataclass
+# This file is part of AtomDB.
+#
+# AtomDB is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# AtomDB is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
+
+r"""HCI compile function."""
+
 
 import numpy as np
 
@@ -7,84 +23,38 @@ from gbasis.evals.density import evaluate_density
 from gbasis.evals.density import evaluate_deriv_density
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density
 
-from .utils import cubic_interpolation, get_datafile, get_raw_datafile
-
+from atomdb.utils import get_element, get_element_number, get_data_file, get_raw_data_file
+from atomdb.api import *
 
 __all__ = [
-    "compile_dbentry",
-    "DBEntry",
+    "compile_species",
 ]
 
 
-@dataclass
-class DBEntry:
-    r"""Database entry class."""
-    #
-    # Species info
-    #
-    species: str
-    basis: str
-    nelec: int
-    nspin: int
-    #
-    # Electronic and molecular orbital energies
-    #
-    energy_ci: float
-    mo_energies: np.array
-    mo_occs: np.array
-    #
-    # Radial grid
-    #
-    rs: np.ndarray
-    #
-    # Density
-    #
-    dens_up: np.ndarray
-    dens_dn: np.ndarray
-    dens_tot: np.ndarray
-    dens_mag: np.ndarray
-    #
-    # Derivative of density
-    #
-    d_dens_up: np.ndarray
-    d_dens_dn: np.ndarray
-    d_dens_tot: np.ndarray
-    d_dens_mag: np.ndarray
-    #
-    # Laplacian
-    #
-    lapl_up: np.ndarray
-    lapl_dn: np.ndarray
-    lapl_tot: np.ndarray
-    lapl_mag: np.ndarray
-    #
-    # Kinetic energy density
-    #
-    ked_up: np.ndarray
-    ked_dn: np.ndarray
-    ked_tot: np.ndarray
-    ked_mag: np.ndarray
-
-
-def compile_dbentry(dataset, species, nelec, nspin, basis_name, bound=(0.01, 0.5), num=100):
-    r"""Initialize a DBEntry instance."""
+# TODO: removed basis_name argument, make arguments consistent.
+def compile_species(dataset, species, nelec, nspin, nexc, bound=(0.01, 0.5), num=100):
+    r"""Initialize a Species instance from an HCI computation."""
     #
     # Load raw data from computation
     #
-    mo_coeff_file = get_raw_datafile("gbs_hf_mo_coeff.npy", dataset, species, basis_name, nelec, nspin)
+    species = get_element(species)
+    natom = get_element_number(species)
+    mo_coeff_file = get_raw_data_file(dataset, "gbs_hf_mo_coeff.npy", species, basis_name, nelec, nspin)
     mo_coeff = np.load(mo_coeff_file).transpose()
-    dm1_file = get_raw_datafile("gbs_hcisd_rdm1.npy", dataset, species, basis_name, nelec, nspin)
+    dm1_file = get_raw_data_file(dataset, "gbs_hcisd_rdm1.npy", species, basis_name, nelec, nspin)
     dm1_up, dm1_dn = np.load(dm1_file)
     dm1_tot = dm1_up + dm1_dn
     dm1_mag = dm1_up - dm1_dn
-    basis = parse_nwchem(get_datafile(f"raw/{dataset}/{basis_name}.nwchem"))
+    basis = parse_nwchem(get_data_file(f"{dataset}/data/{basis_name}.nwchem"))
     basis = make_contractions(basis, [species], np.array([[0, 0, 0]]))
-    eci_file = get_raw_datafile("gbs_hcisd_energies.npy", dataset, species, basis_name, nelec, nspin)
+    eci_file = get_raw_data_file(dataset, "gbs_hcisd_energies.npy", species, basis_name, nelec, nspin)
     energy_ci = np.load(eci_file)
-    # energy_hf = get_raw_datafile("gbs_hf.txt", dataset, species, basis_name, nelec, nspin)
-    mos_file = get_raw_datafile("gbs_hf_mo_energies.npy", dataset, species, basis_name, nelec, nspin)
+    hf_file = get_raw_data_file(dataset, "gbs_hf.txt", species, basis_name, nelec, nspin)
+    with open(hf_file, 'r') as f:
+        energy_hf = float(f.readline()[12:])
+    mos_file = get_raw_data_file(dataset, "gbs_hf_mo_energies.npy", species, basis_name, nelec, nspin)
     mo_energies = np.load(mos_file)
-    mo_occs_file = get_raw_datafile("gbs_hf_mo_occ.npy", dataset, species, basis_name, nelec, nspin)
+    mo_occs_file = get_raw_data_file(dataset, "gbs_hf_mo_occ.npy", species, basis_name, nelec, nspin)
     mo_occs = np.load(mo_occs_file)
     #
     # Make grid
@@ -117,11 +87,11 @@ def compile_dbentry(dataset, species, nelec, nspin, basis_name, bound=(0.01, 0.5
     ked_tot = evaluate_posdef_kinetic_energy_density(dm1_tot, basis, grid, coord_type="spherical", transform=mo_coeff)
     ked_mag = evaluate_posdef_kinetic_energy_density(dm1_tot, basis, grid, coord_type="spherical", transform=mo_coeff)
     #
-    # Return DBEntry instance
+    # Return Species instance
     #
-    return DBEntry(
-        species, basis_name, nelec, nspin,
-        energy_ci, mo_energies, mo_occs,
+    return Species(
+        species, natom, basis_name, nelec, nspin,
+        energy_ci, energy_hf, mo_energies, mo_occs,
         rs, dens_up, dens_dn, dens_tot, dens_mag,
         d_dens_up, d_dens_dn, d_dens_tot, d_dens_mag,
         lapl_up, lapl_dn, lapl_tot, lapl_mag,
@@ -130,7 +100,7 @@ def compile_dbentry(dataset, species, nelec, nspin, basis_name, bound=(0.01, 0.5
 
 
 if __name__ == "__main__":
-    from .utils import get_element
+    from atomdb.utils import get_element
     NATOM = 5
     NELEC = 5
     NSPIN = 1
@@ -140,5 +110,9 @@ if __name__ == "__main__":
     RMIN = 0.0
     RMAX = 0.2
     N_POINTS = 500
-    atprop = compile_dbentry(DSET, SPECIES, NELEC, NSPIN, BASIS, bound=(RMIN, RMAX), num=N_POINTS)
+    atprop = compile_species(DSET, SPECIES, NELEC, NSPIN, BASIS, bound=(RMIN, RMAX), num=N_POINTS)
+    print("atprop.to_dict():")
+    print("----------------")
+    print(atprop.to_dict())
+    print("----------------")
     print("DONE")

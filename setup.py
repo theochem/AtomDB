@@ -13,19 +13,21 @@
 # You should have received a copy of the GNU General Public License
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-r"""AtomDB, a database of atomic and ionic properties."""
+r"""AtomDB setup script. Run `python setup.py --help` for help."""
 
 
-from os import makedirs
-
-from atomdb.api import *
+from setuptools import setup
 
 
-# __all__ = [ # TODO
-# ]
+if __name__ == '__main__':
 
+    README = open('README.rst', 'r').read()
 
-# Ensure the DATAPATH directory exists on the system
-# TODO: move this to the LOAD_SPECIES and BUILD_DB functions.
-# `makedirs(dir, exists_ok=True)` will make all subdirectories recursively, or do nothing.
-os.makedirs(DATAPATH, exists_ok=True)
+    setup(
+        name='atomdb',
+        description='AtomDB',
+        long_description=README,
+        packages=['atomdb'],
+        package_dir={'atomdb': 'atomdb'}
+        include_package_data=True,
+    )
