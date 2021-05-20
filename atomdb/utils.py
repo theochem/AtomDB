@@ -1,19 +1,38 @@
-from os import path
+# This file is part of AtomDB.
+#
+# AtomDB is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# AtomDB is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-import numpy as np
+r"""AtomDB utilities."""
+
+
+from os.path import abspath, join
+
+from numpy import exp, log
 
 from scipy.interpolate import interp1d
 
+from atomdb.config import DATAPATH
+
 
 __all__ = [
-    "cubic_interpolation",
-    "get_element",
-    "get_datafile",
-    "get_raw_datafile",
+    "get_element_number",
+    "get_element_symbol",
+    "get_file",
+    "get_data_file",
+    "get_raw_data_file",
+    "cubic_interp",
 ]
-
-
-DATAPATH = path.abspath(path.join(path.dirname(__file__), "data/"))
 
 
 ELEMENTS = (
@@ -28,6 +47,36 @@ ELEMENTS = (
     "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh",
     "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og",
 )
+r"""Tuple of the symbols for each of the 118 elements. The zeroth element is a placeholder."""
+
+
+def get_element_number(elem):
+    r"""Return the element number from the given element symbol."""
+    return ELEMENTS.index(elem) if isinstance(elem, str) else elem
+
+
+def get_element_symbol(elem):
+    r"""Return the element symbol from the given element number."""
+    return elem if isinstance(elem, str) else ELEMENTS[elem]
+
+
+def get_file(name):
+    r"""Get a file from the `DATAPATH`."""
+    return abspath(join(DATAPATH, name))
+
+
+def get_data_file(dataset, elem, nelec, nspin, nexc, suffix):
+    r"""Get a compiled data file from the `DATAPATH`."""
+    return get_file(
+        f"{dataset}/data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_{nexc}{suffix}"
+    )
+
+
+def get_raw_data_file(dataset, elem, nelec, nexc, nspin, suffix):
+    r"""Get a raw data file from the `DATAPATH`."""
+    return get_file(
+        f"{dataset}/raw_data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_{nexc}{suffix}"
+    )
 
 
 class interp1d_log(interp1d):
@@ -35,30 +84,15 @@ class interp1d_log(interp1d):
 
     def __init__(self, x, y, **kwargs):
         r"""Initialize the interp1d_log instance."""
-        interp1d.__init__(self, x, np.log(y), **kwargs)
+        interp1d.__init__(self, x, log(y), **kwargs)
 
     def __call__(self, x):
         r"""Compute the interpolation at some x-values."""
-        return np.exp(interp1d.__call__(self, x))
+        return exp(interp1d.__call__(self, x))
 
 
-def cubic_interpolation(x, y, log=False):
+def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
     return (interp1d_log if log else interp1d)(
-        x, y, kind="cubic", copy=True, fill_value="extrapolate", assume_sorted=True,
+        x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True,
     )
-
-
-def get_element(elem):
-    r""" """
-    return elem if isinstance(elem, str) else ELEMENTS[elem]
-
-
-def get_datafile(name):
-    r""" """
-    return path.abspath(path.join(DATAPATH, name))
-
-
-def get_raw_datafile(suffix, dataset, elem, basis, nelec, nspin):
-    r""" """
-    return get_datafile(f"raw/{dataset}/{get_element(elem)}_N{nelec}_S{nspin}_{basis}.{suffix}")

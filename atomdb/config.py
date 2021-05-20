@@ -13,19 +13,28 @@
 # You should have received a copy of the GNU General Public License
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-r"""AtomDB, a database of atomic and ionic properties."""
+r"""AtomDB configuration file."""
 
 
-from os import makedirs
+from os.environ import get as get_env
 
-from atomdb.api import *
-
-
-# __all__ = [ # TODO
-# ]
+from os.path import abspath, dirname, join
 
 
-# Ensure the DATAPATH directory exists on the system
-# TODO: move this to the LOAD_SPECIES and BUILD_DB functions.
-# `makedirs(dir, exists_ok=True)` will make all subdirectories recursively, or do nothing.
-os.makedirs(DATAPATH, exists_ok=True)
+__all__ = [
+    "DEFAULT_DATASET",
+    "DATAPATH_ENV",
+    "DATAPATH",
+]
+
+
+DEFAULT_DATASET = "hci_ccpwcvqz"
+r"""Default dataset to query."""
+
+
+DATAPATH_ENV = get_env('ATOMDB_DATAPATH')
+r"""The value of the environment variable `ATOMDB_DATAPATH`."""
+
+
+DATAPATH = abspath(DATAPATH_ENV if DATAPATH_ENV else join(dirname(__file__), "datasets/"))
+r"""The default path for raw and compiled AtomDB data files."""
