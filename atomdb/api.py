@@ -21,8 +21,11 @@ from importlib import import_module
 
 import numpy as np
 
+from os import makedirs
+
 from atomdb.config import DEFAULT_DATASET, DATAPATH
-from atomdb.utils import cubic_interp, get_element_symbol, get_element_number, get_data_file
+from atomdb.utils import cubic_interp, get_element_symbol, get_element_number,
+from atomdb.utils import get_data_file, get_file, pack_msg, unpack_msg, ndarray_to_bytes
 
 
 __all__ = [
@@ -32,10 +35,6 @@ __all__ = [
     "dump_species",
     "build_atomdb",
 ]
-
-
-DEFAULT_DATASET = "hci_ccpwcvqz"
-r"""Default dataset to query."""
 
 
 class Species:
@@ -133,35 +132,31 @@ def compile_species(dataset=DEFAULT_DATASET, **kwargs):
     return import_module(f'atomdb.datasets.{dataset}.compile').compile_species(**kwargs)
 
 
-# TODO: Extension should be determined automatically; the user will only build
-# their database in one extension format.
-#
 # TODO: Instead of fn, arguments should be (dataset, charge, multiplicity, ...).
-def load_species(fn, dataset, ext="msg"):
+def load_species(dataset, elem, nelec, nspin, nexc, **kwargs):
     r"""Load an atomic or ionic species from the AtomDB database."""
-    dpath = get_data_file(dataset)
-    fn = dpath + "/" + fn
-    if ext == "msg":
-        with open(fn, "rb") as f:
-            species = Species(**unpack_msg(f))
-    else:
-        raise ValueError(f"Invalid extension \"{ext}\"")
-    return species
+    fn = get_data_file(dataset, elem, nelec, nspin, nexc, "msg")
+    with open(fn, "rb") as f:
+        species_dict = unpack_msg(f)
+
+    species_dict = {
+    key: np.frombuffer(val) if isinstance(val, bytes) else val
+    for key, val in species_dict.items()
+    }
+    return Species(**species_dict)
 
 
-# TODO: Extension should be determined automatically; the user will only build
-# their database in one extension format.
-#
 # TODO: Instead of fn, arguments should be (dataset, charge, multiplicity, ...).
-def dump_species(fn, dataset, species_dict, ext="msg"):
+def dump_species(dataset, elem, nelec, nspin, nexc, species_dict, **kwargs):
     r""" """
-    dpath = get_data_file(dataset)
-    fn = dpath + "/" + fn
-    if ext == "msg":
-        with open(fn, "wb") as f:
-            pack_msg(species_dict, f)
-    else:
-        raise ValueError(f"Invalid extension \"{ext}\"")
+    makedirs(get_file(dataset), exist_ok=True)
+    fn = get_data_file(dataset, elem, nelec, nspin, nexc, "msg")
+    species_dict = {
+            key: ndarray_to_bytes(val) if isinstance(val, np.ndarray) else val
+            for key, val in species_dict.items()
+        }
+    with open(fn, "wb") as f:
+        f.write(pack_msg(species_dict, **kwargs))
 
 
 # TODO: check argument consistency (and write the code ;( )

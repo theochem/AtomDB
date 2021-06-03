@@ -17,10 +17,13 @@ r"""AtomDB utilities."""
 
 
 from os.path import abspath, join
+from sys import platform
 
 from numpy import exp, log
 
 from scipy.interpolate import interp1d
+
+from msgpack import Packer, Unpacker
 
 from atomdb.config import DATAPATH
 
@@ -68,11 +71,11 @@ def get_file(name):
 def get_data_file(dataset, elem, nelec, nspin, nexc, suffix):
     r"""Get a compiled data file from the `DATAPATH`."""
     return get_file(
-        f"{dataset}/data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_{nexc}{suffix}"
+        f"{dataset}/data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_{nexc}.{suffix}"
     )
 
 
-def get_raw_data_file(dataset, elem, nelec, nexc, nspin, suffix):
+def get_raw_data_file(dataset, elem, nelec, nspin, nexc, suffix):
     r"""Get a raw data file from the `DATAPATH`."""
     return get_file(
         f"{dataset}/raw_data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_{nexc}{suffix}"
@@ -96,3 +99,19 @@ def cubic_interp(x, y, log=False):
     return (interp1d_log if log else interp1d)(
         x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True,
     )
+
+
+if platform == 'darwin':
+    def ndarray_to_bytes(array):
+        r"""Convert a numpy.ndarray instance to bytes."""
+        return array.tobytes()
+else:
+    def ndarray_to_bytes(array):
+        r"""Convert a numpy.ndarray instance to bytes."""
+        return array.data if array.flags['C_CONTIGUOUS'] else array.tobytes()
+
+
+pack_msg = Packer(use_bin_type=True).pack
+
+
+unpack_msg = lambda obj: Unpacker(obj, use_list=False, raw=False, strict_map_key=True).unpack()

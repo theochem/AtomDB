@@ -16,7 +16,8 @@
 r"""AtomDB configuration file."""
 
 
-from os.environ import get as get_env
+# from os.environ import get as get_env
+from os import environ
 
 from os.path import abspath, dirname, join
 
@@ -32,7 +33,7 @@ DEFAULT_DATASET = "hci_ccpwcvqz"
 r"""Default dataset to query."""
 
 
-DATAPATH_ENV = get_env('ATOMDB_DATAPATH')
+DATAPATH_ENV = environ.get('ATOMDB_DATAPATH')
 r"""The value of the environment variable `ATOMDB_DATAPATH`."""
 
 
