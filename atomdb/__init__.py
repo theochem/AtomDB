@@ -16,16 +16,10 @@
 r"""AtomDB, a database of atomic and ionic properties."""
 
 
-from os import makedirs
-
+from atomdb.version import *
+from atomdb.config import *
 from atomdb.api import *
 
 
-# __all__ = [ # TODO
-# ]
-
-
-# Ensure the DATAPATH directory exists on the system
-# TODO: move this to the LOAD_SPECIES and BUILD_DB functions.
-# `makedirs(dir, exists_ok=True)` will make all subdirectories recursively, or do nothing.
-os.makedirs(DATAPATH, exists_ok=True)
+__version__ = version
+r"""AtomDB version string."""

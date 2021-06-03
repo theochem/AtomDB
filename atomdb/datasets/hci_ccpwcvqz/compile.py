@@ -23,41 +23,46 @@ from gbasis.evals.density import evaluate_density
 from gbasis.evals.density import evaluate_deriv_density
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density
 
-from atomdb.utils import get_element_symbol, get_element_number, get_file, get_raw_data_file
+from atomdb.config import *
+from atomdb.utils import *
 from atomdb.api import *
+
 
 __all__ = [
     "compile_species",
 ]
 
 
-# TODO: removed basis_name argument, make arguments consistent.
-def compile_species(dataset, species, nelec, nspin, nexc, bound=(0.01, 0.5), num=100):
+def compile_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET, bound=(0.01, 0.5), num=100):
     r"""Initialize a Species instance from an HCI computation."""
+    #
+    # Set up internal variables
+    #
+    elem = get_element_symbol(element)
+    natom = get_element_number(elem)
+    nelec = natom - charge
+    nspin = mult - 1
     #
     # Load raw data from computation
     #
-    species = get_element_symbol(species)
-    natom = get_element_number(species)
-    mo_coeff_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf_mo_coeff.npy")
+    mo_coeff_file = get_raw_data_file(dataset, elem, nelec, nspin, nexc, "hf_mo_coeff.npy")
     mo_coeff = np.load(mo_coeff_file).transpose()
-    dm1_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hcisd_rdm1.npy")
+    dm1_file = get_raw_data_file(dataset, elem, nelec, nspin, nexc, "hcisd_rdm1.npy")
     dm1_up, dm1_dn = np.load(dm1_file)
     dm1_tot = dm1_up + dm1_dn
     dm1_mag = dm1_up - dm1_dn
-    basis_name = get_file(f"{dataset}/raw_data/basis.txt")
-    with open(basis_name, 'r') as f:
+    with open(get_file(f"{dataset}/basis.txt"), 'r') as f:
         basis_name = f.readline().strip()
     basis = parse_nwchem(get_file(f"{dataset}/raw_data/basis.nwchem"))
-    basis = make_contractions(basis, [species], np.array([[0, 0, 0]]))
-    eci_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hcisd_energies.npy")
+    basis = make_contractions(basis, [elem], np.array([[0, 0, 0]]))
+    eci_file = get_raw_data_file(dataset, elem, nelec, nspin, nexc, "hcisd_energies.npy")
     energy_ci = np.load(eci_file)
-    hf_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf.txt")
+    hf_file = get_raw_data_file(dataset, elem, nelec, nspin, nexc, "hf.txt")
     with open(hf_file, 'r') as f:
         energy_hf = float(f.readline()[12:])
-    mos_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf_mo_energies.npy")
+    mos_file = get_raw_data_file(dataset, elem, nelec, nspin, nexc, "hf_mo_energies.npy")
     mo_energies = np.load(mos_file)
-    mo_occs_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf_mo_occ.npy")
+    mo_occs_file = get_raw_data_file(dataset, elem, nelec, nspin, nexc, "hf_mo_occ.npy")
     mo_occs = np.load(mo_occs_file)
     #
     # Make grid
@@ -92,28 +97,26 @@ def compile_species(dataset, species, nelec, nspin, nexc, bound=(0.01, 0.5), num
     #
     # Return Species instance
     #
+    # FIXME: include nexc as attribute or property of Species
     return Species(
-        species, natom, basis_name, nelec, nspin,
-        energy_ci, energy_hf, mo_energies, mo_occs,
-        rs, dens_up, dens_dn, dens_tot, dens_mag,
-        d_dens_up, d_dens_dn, d_dens_tot, d_dens_mag,
-        lapl_up, lapl_dn, lapl_tot, lapl_mag,
-        ked_up, ked_dn, ked_tot, ked_mag,
+        dataset, elem, natom, basis_name, nelec, nspin, nexc, energy_ci, energy_hf, mo_energies,
+        mo_occs, rs, dens_up, dens_dn, dens_tot, dens_mag, d_dens_up, d_dens_dn, d_dens_tot,
+        d_dens_mag, lapl_up, lapl_dn, lapl_tot, lapl_mag, ked_up, ked_dn, ked_tot, ked_mag,
     )
 
 
 if __name__ == "__main__":
-    from atomdb.utils import get_element
-    NATOM = 5
-    NELEC = 5
-    NSPIN = 1
+    from atomdb.utils import get_element_symbol
     DSET= "hci_ccpwcvqz"
+    NATOM = 5
+    ELEM = get_element_symbol(NATOM)
+    CHARGE = 0
+    MULT = 2
     NEXC = 0
-    SPECIES = get_element(NATOM)
     RMIN = 0.0
     RMAX = 0.2
     N_POINTS = 500
-    atprop = compile_species(DSET, SPECIES, NELEC, NSPIN, NEXC, bound=(RMIN, RMAX), num=N_POINTS)
+    atprop = compile_species(ELEM, CHARGE, MULT, nexc=NEXC, dataset=DSET, bound=(RMIN, RMAX), num=N_POINTS)
     print("atprop.to_dict():")
     print("----------------")
     print(atprop.to_dict())

@@ -1,4 +1,4 @@
-# This file is part of AtomDB.
+#epsilon This file is part of AtomDB.
 #
 # AtomDB is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -16,7 +16,9 @@
 r"""HCI generate function."""
 
 
-import sys
+import sys #Unused import
+
+from os import makedirs
 
 import numpy as np
 
@@ -25,7 +27,8 @@ from pyscf.tools import fcidump
 
 import pyci
 
-from atomdb.utils import get_element, get_element_name
+from atomdb.config import *
+from atomdb.utils import *
 
 
 __all__ = [
@@ -33,21 +36,35 @@ __all__ = [
 ]
 
 
-# TODO: make arguments consistent.
-def generate_species(species, nelec, nspin, nexc, epsilon=1.0e-4, conv_tol=1.0e-12, nthread=1):
+EPSILON = 1.0e-4
+
+
+CONV_TOL = 1.0e-12
+
+
+NTHREAD=1
+
+
+def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     r"""Run an HCI computation."""
-    basis_name = 'cc-pwcvqz' # TODO: get rid of this argument
-    species = get_element(species)
-    natom = get_element_number(species)
+    with open(get_file(f"{dataset}/basis.txt"), 'r') as f:
+        basis_name = f.readline().strip()
+    #
+    # Set up internal variables
+    #
+    elem = get_element_symbol(element)
+    natom = get_element_number(elem)
+    nelec = natom - charge
+    nspin = mult - 1
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
-    title = f"{species}_N{nelec}_S{nspin}"
+    title = f"{elem}_N{nelec}_S{nspin}_NEXC{nexc}"
     #
     # Build PySCF molecule
     #
     mol = gto.Mole()
     mol.atom = f"""
-    {species} 0.0  0.0 0.0
+    {elem} 0.0  0.0 0.0
     """
     mol.charge = natom - nelec
     mol.spin = nspin
@@ -62,24 +79,26 @@ def generate_species(species, nelec, nspin, nexc, epsilon=1.0e-4, conv_tol=1.0e-
     #
     # Save Hartree-Fock data
     #
-    np.save(f"{title}_{basis_name}_hf_mo_energies.npy", hf.mo_energy)
-    np.save(f"{title}_{basis_name}_hf_mo_occ.npy", hf.mo_occ)
-    np.save(f"{title}_{basis_name}_hf_mo_coeff.npy", hf.mo_coeff)
-    fcidump.from_scf(hf, f"{title}_{basis_name}_hf.fcidump", tol=1e-16)
-    with open(f"{title}_{basis_name}_hf.txt", "w") as f:
+    rawpath = get_file(f"{dataset}/raw_data/")
+    makedirs(rawpath, exist_ok=True)
+    np.save(f"{rawpath}/{title}_hf_mo_energies.npy", hf.mo_energy)
+    np.save(f"{rawpath}/{title}_hf_mo_occ.npy", hf.mo_occ)
+    np.save(f"{rawpath}/{title}_hf_mo_coeff.npy", hf.mo_coeff)
+    fcidump.from_scf(hf, f"{rawpath}/{title}_hf.fcidump", tol=1e-16)
+    with open(f"{rawpath}/{title}_hf.txt", "w") as f:
         print(f"H-F energy: {hf.e_tot:24.16e}", file=f)
     #
     # Run HCI
     #
-    pyci.set_num_threads(nthread)
-    ham = pyci.hamiltonian(f"{title}_{basis_name}_hf.fcidump")
+    pyci.set_num_threads(NTHREAD)
+    ham = pyci.hamiltonian(f"{rawpath}/{title}_hf.fcidump")
     fwfn = pyci.fullci_wfn(ham.nbasis, n_up, n_dn)
     pyci.add_excitations(fwfn, 0, 1)
-    evals, evecs = pyci.solve(ham, fwfn, n=1, tol=conv_tol)
+    evals, evecs = pyci.solve(ham, fwfn, n=1, tol=CONV_TOL)
     dets_added = len(fwfn)
     while dets_added:
-        dets_added = pyci.add_hci(ham, fwfn, evecs[0], eps=epsilon)
-        evals, evecs = pyci.solve(ham, fwfn, n=1, tol=conv_tol)
+        dets_added = pyci.add_hci(ham, fwfn, evecs[0], eps=EPSILON)
+        evals, evecs = pyci.solve(ham, fwfn, n=1, tol=CONV_TOL)
     #
     # Compute RDMs
     #
@@ -88,8 +107,8 @@ def generate_species(species, nelec, nspin, nexc, epsilon=1.0e-4, conv_tol=1.0e-
     #
     # Save HCI data
     #
-    fwfn.to_file(f"{title}_{basis_name}_hcisd.ci")
-    np.save(f"{title}_{basis_name}_hcisd_energies.npy", evals)
-    np.save(f"{title}_{basis_name}_hcisd_coeffs.npy", evecs)
-    np.save(f"{title}_{basis_name}_hcisd_rdm1.npy", rdm1)
-    np.save(f"{title}_{basis_name}_hcisd_rdm2.npy", rdm1)
+    fwfn.to_file(f"{rawpath}/{title}_hcisd.ci")
+    np.save(f"{rawpath}/{title}_hcisd_energies.npy", evals)
+    np.save(f"{rawpath}/{title}_hcisd_coeffs.npy", evecs)
+    np.save(f"{rawpath}/{title}_hcisd_rdm1.npy", rdm1)
+    np.save(f"{rawpath}/{title}_hcisd_rdm2.npy", rdm1)
