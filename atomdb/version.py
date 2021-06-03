@@ -13,13 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-r"""AtomDB, a database of atomic and ionic properties."""
+r"""AtomDB version information."""
 
 
-from atomdb.version import *
-from atomdb.config import *
-from atomdb.api import *
+__all__ = [
+    "version",
+]
 
 
-__version__ = version
+version = "0.0.1"
 r"""AtomDB version string."""

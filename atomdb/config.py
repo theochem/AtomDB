@@ -16,7 +16,6 @@
 r"""AtomDB configuration file."""
 
 
-# from os.environ import get as get_env
 from os import environ
 
 from os.path import abspath, dirname, join
@@ -24,7 +23,6 @@ from os.path import abspath, dirname, join
 
 __all__ = [
     "DEFAULT_DATASET",
-    "DATAPATH_ENV",
     "DATAPATH",
 ]
 
