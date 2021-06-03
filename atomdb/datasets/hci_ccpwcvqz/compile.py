@@ -23,7 +23,7 @@ from gbasis.evals.density import evaluate_density
 from gbasis.evals.density import evaluate_deriv_density
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density
 
-from atomdb.utils import get_element, get_element_number, get_data_file, get_raw_data_file
+from atomdb.utils import get_element_symbol, get_element_number, get_file, get_raw_data_file
 from atomdb.api import *
 
 __all__ = [
@@ -37,24 +37,27 @@ def compile_species(dataset, species, nelec, nspin, nexc, bound=(0.01, 0.5), num
     #
     # Load raw data from computation
     #
-    species = get_element(species)
+    species = get_element_symbol(species)
     natom = get_element_number(species)
-    mo_coeff_file = get_raw_data_file(dataset, "gbs_hf_mo_coeff.npy", species, basis_name, nelec, nspin)
+    mo_coeff_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf_mo_coeff.npy")
     mo_coeff = np.load(mo_coeff_file).transpose()
-    dm1_file = get_raw_data_file(dataset, "gbs_hcisd_rdm1.npy", species, basis_name, nelec, nspin)
+    dm1_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hcisd_rdm1.npy")
     dm1_up, dm1_dn = np.load(dm1_file)
     dm1_tot = dm1_up + dm1_dn
     dm1_mag = dm1_up - dm1_dn
-    basis = parse_nwchem(get_data_file(f"{dataset}/data/{basis_name}.nwchem"))
+    basis_name = get_file(f"{dataset}/raw_data/basis.txt")
+    with open(basis_name, 'r') as f:
+        basis_name = f.readline().strip()
+    basis = parse_nwchem(get_file(f"{dataset}/raw_data/basis.nwchem"))
     basis = make_contractions(basis, [species], np.array([[0, 0, 0]]))
-    eci_file = get_raw_data_file(dataset, "gbs_hcisd_energies.npy", species, basis_name, nelec, nspin)
+    eci_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hcisd_energies.npy")
     energy_ci = np.load(eci_file)
-    hf_file = get_raw_data_file(dataset, "gbs_hf.txt", species, basis_name, nelec, nspin)
+    hf_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf.txt")
     with open(hf_file, 'r') as f:
         energy_hf = float(f.readline()[12:])
-    mos_file = get_raw_data_file(dataset, "gbs_hf_mo_energies.npy", species, basis_name, nelec, nspin)
+    mos_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf_mo_energies.npy")
     mo_energies = np.load(mos_file)
-    mo_occs_file = get_raw_data_file(dataset, "gbs_hf_mo_occ.npy", species, basis_name, nelec, nspin)
+    mo_occs_file = get_raw_data_file(dataset, species, nelec, nspin, nexc, "hf_mo_occ.npy")
     mo_occs = np.load(mo_occs_file)
     #
     # Make grid
@@ -104,13 +107,13 @@ if __name__ == "__main__":
     NATOM = 5
     NELEC = 5
     NSPIN = 1
-    DSET= "hci_1.0e-4"
-    BASIS = "cc-pwcvqz"
+    DSET= "hci_ccpwcvqz"
+    NEXC = 0
     SPECIES = get_element(NATOM)
     RMIN = 0.0
     RMAX = 0.2
     N_POINTS = 500
-    atprop = compile_species(DSET, SPECIES, NELEC, NSPIN, BASIS, bound=(RMIN, RMAX), num=N_POINTS)
+    atprop = compile_species(DSET, SPECIES, NELEC, NSPIN, NEXC, bound=(RMIN, RMAX), num=N_POINTS)
     print("atprop.to_dict():")
     print("----------------")
     print(atprop.to_dict())
