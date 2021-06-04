@@ -33,7 +33,7 @@ Installation
 Usage
 -----
 
-``python -m atomdb [-h] {generate,compile} args...``
+``python -m atomdb [-h] {generate,compile,query} args...``
 
 Citations
 ---------

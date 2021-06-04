@@ -18,6 +18,10 @@ r"""AtomDB console script."""
 
 from argparse import ArgumentParser
 
+from sys import stderr
+
+from atomdb import *
+
 
 parser = ArgumentParser(prog='python -m atomdb', description='Run an AtomDB command.')
 
@@ -30,7 +34,7 @@ parser_generate.add_argument('dataset', type=str, help='Dataset for which to gen
 parser_generate.add_argument('element', type=str, help='Element symbol of species.')
 parser_generate.add_argument('charge', type=int, help='Charge of species.')
 parser_generate.add_argument('mult', type=int, help='Multiplicity of species.')
-parser_generate.add_argument('nexc', type=int, help='Excitation level of species.')
+parser_generate.add_argument('--exc', type=int, dest='nexc', default=0, help='Excitation level of species.')
 
 
 parser_compile = subparsers.add_parser('compile', help='Compile DB files.')
@@ -38,15 +42,15 @@ parser_compile.add_argument('dataset', type=str, help='Dataset for which to comp
 parser_compile.add_argument('element', type=str, help='Element symbol of species.')
 parser_compile.add_argument('charge', type=int, help='Charge of species.')
 parser_compile.add_argument('mult', type=int, help='Multiplicity of species.')
-parser_compile.add_argument('nexc', type=int, help='Excitation level of species.')
+parser_compile.add_argument('--exc', type=int, dest='nexc', default=0, help='Excitation level of species.')
 
 
-parser_compile = subparsers.add_parser('query', help='Query and print a DB entry as JSON.')
-parser_compile.add_argument('dataset', type=str, help='Dataset to query.')
-parser_compile.add_argument('element', type=str, help='Element symbol of species.')
-parser_compile.add_argument('charge', type=int, help='Charge of species.')
-parser_compile.add_argument('mult', type=int, help='Multiplicity of species.')
-parser_compile.add_argument('nexc', type=int, help='Excitation level of species.')
+parser_query = subparsers.add_parser('query', help='Query and print a DB entry as JSON.')
+parser_query.add_argument('dataset', type=str, help='Dataset to query.')
+parser_query.add_argument('element', type=str, help='Element symbol of species.')
+parser_query.add_argument('charge', type=int, help='Charge of species.')
+parser_query.add_argument('mult', type=int, help='Multiplicity of species.')
+parser_query.add_argument('--exc', type=int, dest='nexc', default=0, help='Excitation level of species.')
 
 
 if __name__ == '__main__':
@@ -56,17 +60,28 @@ if __name__ == '__main__':
 
     # Run specified command
     if args.cmd == 'generate':
-        # TODO: Run generate function -- exit(0) if successful or exit(1) if unsuccessful
-        # Generate raw data
-        print(args)
+        #try:
+        generate_species(args.element, args.charge, args.mult, args.nexc, dataset=args.dataset)
+        # TODO: handle all keywords and more specific errors
+        #except Exception:
+            #print("An error occured. Exiting...", file=stderr)
+            #exit(1)
     elif args.cmd == 'compile':
-        # TODO: Run compile function -- exit(0) if successful or exit(1) if unsuccessful
-        # Compile raw data to .msg
-        print(args)
+        #try:
+        dump_species(
+            compile_species(args.element, args.charge, args.mult, args.nexc, dataset=args.dataset),
+        )
+        # TODO: handle all keywords and more specific errors
+        #except Exception:
+            #print("An error occured. Exiting...", file=stderr)
+            #exit(1)
     elif args.cmd == 'query':
-        # TODO: Run query function -- exit(0) if successful or exit(1) if unsuccessful
-        # Print JSON file to stdout
-        print(args)
-    else:
-        # Execution should never reach here because parser.parse_args handles this case
-        exit(127)
+        #try:
+        print_species(
+            load_species(args.element, args.charge, args.mult, args.nexc, dataset=args.dataset)
+        )
+        # TODO: handle all keywords and more specific errors
+        #except Exception:
+            #print("An error occured. Exiting...", file=stderr)
+            #exit(1)
+    exit(0)
