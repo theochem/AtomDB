@@ -150,3 +150,6 @@ cython_debug/
 .spyderproject
 .spyproject
 .vscode/
+
+# Raw data files
+atomdb/datasets/*/raw_data/

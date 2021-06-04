@@ -22,6 +22,8 @@ from importlib import import_module
 
 from os import makedirs
 
+from os.path import join
+
 from numpy import ndarray, frombuffer
 
 from atomdb.config import *
@@ -35,6 +37,7 @@ __all__ = [
     "compile_species",
     "load_species",
     "dump_species",
+    "print_species",
 ]
 
 
@@ -54,42 +57,42 @@ class Species:
     #
     # Electronic and molecular orbital energies
     #
-    energy_hf: float = field()
-    energy_ci: float = field()
-    mo_energies: ndarray = field()
-    mo_occs: ndarray = field()
+    energy_hf: float = field(default=None)
+    energy_ci: float = field(default=None)
+    mo_energies: ndarray = field(default=None)
+    mo_occs: ndarray = field(default=None)
     #
     # Radial grid
     #
-    rs: ndarray = field()
+    rs: ndarray = field(default=None)
     #
     # Density
     #
-    dens_up: ndarray = field()
-    dens_dn: ndarray = field()
-    dens_tot: ndarray = field()
-    dens_mag: ndarray = field()
+    dens_up: ndarray = field(default=None)
+    dens_dn: ndarray = field(default=None)
+    dens_tot: ndarray = field(default=None)
+    dens_mag: ndarray = field(default=None)
     #
     # Derivative of density
     #
-    d_dens_up: ndarray = field()
-    d_dens_dn: ndarray = field()
-    d_dens_tot: ndarray = field()
-    d_dens_mag: ndarray = field()
+    d_dens_up: ndarray = field(default=None)
+    d_dens_dn: ndarray = field(default=None)
+    d_dens_tot: ndarray = field(default=None)
+    d_dens_mag: ndarray = field(default=None)
     #
     # Laplacian
     #
-    lapl_up: ndarray = field()
-    lapl_dn: ndarray = field()
-    lapl_tot: ndarray = field()
-    lapl_mag: ndarray = field()
+    lapl_up: ndarray = field(default=None)
+    lapl_dn: ndarray = field(default=None)
+    lapl_tot: ndarray = field(default=None)
+    lapl_mag: ndarray = field(default=None)
     #
     # Kinetic energy density
     #
-    ked_up: ndarray = field()
-    ked_dn: ndarray = field()
-    ked_tot: ndarray = field()
-    ked_mag: ndarray = field()
+    ked_up: ndarray = field(default=None)
+    ked_dn: ndarray = field(default=None)
+    ked_tot: ndarray = field(default=None)
+    ked_mag: ndarray = field(default=None)
     #
     # Density splines
     #
@@ -122,23 +125,45 @@ class Species:
 
     def __post_init__(self):
         r"""Construct splines from the Species Data."""
-        self.dens_up_spline = cubic_interp(self.rs, self.dens_up, log=False)
-        self.dens_dn_spline = cubic_interp(self.rs, self.dens_dn, log=False)
-        self.dens_tot_spline = cubic_interp(self.rs, self.dens_tot, log=False)
-        self.dens_mag_spline = cubic_interp(self.rs, self.dens_mag, log=False)
-        self.d_dens_up_spline = cubic_interp(self.rs, self.d_dens_up, log=False)
-        self.d_dens_dn_spline = cubic_interp(self.rs, self.d_dens_dn, log=False)
-        self.d_dens_tot_spline = cubic_interp(self.rs, self.d_dens_tot, log=False)
-        self.d_dens_mag_spline = cubic_interp(self.rs, self.d_dens_mag, log=False)
-        self.ked_up_spline = cubic_interp(self.rs, self.ked_up, log=True)
-        self.ked_dn_spline = cubic_interp(self.rs, self.ked_dn, log=True)
-        self.ked_tot_spline = cubic_interp(self.rs, self.ked_tot, log=True)
-        self.ked_mag_spline = cubic_interp(self.rs, self.ked_mag, log=True)
-        self.lapl_up_spline = cubic_interp(self.rs, self.lapl_up, log=False)
-        self.lapl_dn_spline = cubic_interp(self.rs, self.lapl_dn, log=False)
-        self.lapl_tot_spline = cubic_interp(self.rs, self.lapl_tot, log=False)
-        self.lapl_mag_spline = cubic_interp(self.rs, self.lapl_mag, log=False)
+        if self.dens_up is not None:
+            self.dens_up_spline = cubic_interp(self.rs, self.dens_up, log=False)
+        if self.dens_dn is not None:
+            self.dens_dn_spline = cubic_interp(self.rs, self.dens_dn, log=False)
+        if self.dens_tot is not None:
+            self.dens_tot_spline = cubic_interp(self.rs, self.dens_tot, log=False)
+        if self.dens_mag is not None:
+            self.dens_mag_spline = cubic_interp(self.rs, self.dens_mag, log=False)
+        if self.d_dens_up is not None:
+            self.d_dens_up_spline = cubic_interp(self.rs, self.d_dens_up, log=False)
+        if self.d_dens_dn is not None:
+            self.d_dens_dn_spline = cubic_interp(self.rs, self.d_dens_dn, log=False)
+        if self.d_dens_tot is not None:
+            self.d_dens_tot_spline = cubic_interp(self.rs, self.d_dens_tot, log=False)
+        if self.d_dens_mag is not None:
+            self.d_dens_mag_spline = cubic_interp(self.rs, self.d_dens_mag, log=False)
+        if self.ked_up is not None:
+            self.ked_up_spline = cubic_interp(self.rs, self.ked_up, log=True)
+        if self.ked_dn is not None:
+            self.ked_dn_spline = cubic_interp(self.rs, self.ked_dn, log=True)
+        if self.ked_tot is not None:
+            self.ked_tot_spline = cubic_interp(self.rs, self.ked_tot, log=True)
+        if self.ked_mag is not None:
+            self.ked_mag_spline = cubic_interp(self.rs, self.ked_mag, log=True)
+        if self.lapl_up is not None:
+            self.lapl_up_spline = cubic_interp(self.rs, self.lapl_up, log=False)
+        if self.lapl_dn is not None:
+            self.lapl_dn_spline = cubic_interp(self.rs, self.lapl_dn, log=False)
+        if self.lapl_tot is not None:
+            self.lapl_tot_spline = cubic_interp(self.rs, self.lapl_tot, log=False)
+        if self.lapl_mag is not None:
+            self.lapl_mag_spline = cubic_interp(self.rs, self.lapl_mag, log=False)
 
+    def todict(self):
+        r"""Convert the species instance to a dictionary."""
+        return {
+            key: val for key, val in asdict(self).items()
+            if isinstance(val, (str, int, float, complex, ndarray))
+        }
 
 def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     r"""Generate the raw data for a species in the given dataset."""
@@ -147,10 +172,10 @@ def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     )
 
 
-def compile_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET, bound=(0.01, 0.5), num=100):
+def compile_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     r"""Compile a species database entry from the given dataset's raw data."""
     return import_module(f'atomdb.datasets.{dataset}.compile').compile_species(
-        element, charge, mult, nexc=nexc, dataset=dataset, bound=bound, num=num,
+        element, charge, mult, nexc=nexc, dataset=dataset,
     )
 
 
@@ -167,15 +192,21 @@ def load_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     return Species(**species_dict)
 
 
-def dump_species(species_obj, dataset):
+def dump_species(species_obj):
     r"""Dump an atomic or ionic species to the AtomDB database."""
-    makedirs(get_file(dataset), exist_ok=True)
+    makedirs(join(get_file(species_obj.dataset), "data"), exist_ok=True)
     fn = get_data_file(
-        dataset, species_obj.species, species_obj.nelec, species_obj.nspin, species_obj.nexc, "msg",
+        species_obj.dataset, species_obj.species, species_obj.nelec, species_obj.nspin,
+        species_obj.nexc, "msg",
     )
     species_dict = {
         key: ndarray_to_bytes(val) if isinstance(val, ndarray) else val
-        for key, val in asdict(species_obj).items() if not key.endswith('_spline')
+        for key, val in species_obj.todict().items()
     }
     with open(fn, "wb") as f:
         f.write(pack_msg(species_dict))
+
+
+def print_species(species_obj):
+    r"""Print the JSON representation of a species entry."""
+    print(dump_json(species_obj))

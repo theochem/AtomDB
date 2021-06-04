@@ -16,11 +16,11 @@
 r"""HCI generate function."""
 
 
-import sys #Unused import
-
 from os import makedirs
 
 import numpy as np
+
+from basis_set_exchange import get_basis
 
 from pyscf import gto, scf
 from pyscf.tools import fcidump
@@ -36,6 +36,9 @@ __all__ = [
 ]
 
 
+BASIS_NAME = 'cc-pwcvqz'
+
+
 EPSILON = 1.0e-4
 
 
@@ -47,8 +50,6 @@ NTHREAD=1
 
 def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     r"""Run an HCI computation."""
-    with open(get_file(f"{dataset}/basis.txt"), 'r') as f:
-        basis_name = f.readline().strip()
     #
     # Set up internal variables
     #
@@ -58,7 +59,8 @@ def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
-    title = f"{elem}_N{nelec}_S{nspin}_NEXC{nexc}"
+    basis = get_basis(BASIS_NAME, elements=natom, fmt='nwchem', header=False)
+    title = f"{elem}_N{nelec}_S{nspin}_E{nexc}"
     #
     # Build PySCF molecule
     #
@@ -68,7 +70,7 @@ def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     """
     mol.charge = natom - nelec
     mol.spin = nspin
-    mol.basis = basis_name
+    mol.basis = gto.basis.parse(basis)
     mol.build()
     #
     # Run restricted Hartree-Fock SCF
@@ -81,12 +83,16 @@ def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
     #
     rawpath = get_file(f"{dataset}/raw_data/")
     makedirs(rawpath, exist_ok=True)
+    with open(f"{rawpath}/{title}_basis_name.txt", "w") as f:
+        print(BASIS_NAME, file=f)
+    with open(f"{rawpath}/{title}_basis.nwchem", "w") as f:
+        print(basis, file=f)
+    with open(f"{rawpath}/{title}_hf_energy.txt", "w") as f:
+        print(f"H-F energy: {hf.e_tot:24.16e}", file=f)
     np.save(f"{rawpath}/{title}_hf_mo_energies.npy", hf.mo_energy)
     np.save(f"{rawpath}/{title}_hf_mo_occ.npy", hf.mo_occ)
     np.save(f"{rawpath}/{title}_hf_mo_coeff.npy", hf.mo_coeff)
     fcidump.from_scf(hf, f"{rawpath}/{title}_hf.fcidump", tol=1e-16)
-    with open(f"{rawpath}/{title}_hf.txt", "w") as f:
-        print(f"H-F energy: {hf.e_tot:24.16e}", file=f)
     #
     # Run HCI
     #

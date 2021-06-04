@@ -17,7 +17,9 @@ r"""AtomDB, a database of atomic and ionic properties."""
 
 
 from atomdb.version import *
+
 from atomdb.config import *
+
 from atomdb.api import *
 
 

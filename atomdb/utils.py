@@ -42,6 +42,7 @@ __all__ = [
     "unpack_msg",
     "dump_json",
     "interp1d",
+    "interp1d_log",
     "cubic_interp",
 ]
 
@@ -79,14 +80,14 @@ def get_file(name):
 def get_data_file(dataset, elem, nelec, nspin, nexc, suffix):
     r"""Get a compiled data file from the `DATAPATH`."""
     return get_file(
-        f"{dataset}/data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_NEXC{nexc}.{suffix}"
+        f"{dataset}/data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_E{nexc}.{suffix}"
     )
 
 
 def get_raw_data_file(dataset, elem, nelec, nspin, nexc, suffix):
     r"""Get a raw data file from the `DATAPATH`."""
     return get_file(
-        f"{dataset}/raw_data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_NEXC{nexc}_{suffix}"
+        f"{dataset}/raw_data/{get_element_symbol(elem)}_N{nelec}_S{nspin}_E{nexc}_{suffix}"
     )
 
 
@@ -119,8 +120,8 @@ class NDEncoder(JSONEncoder):
 
 
 def dump_json(obj):
-    r"""Show the JSON representation of a species entry."""
-    print(dumps(obj.todict(), cls=NDEncoder, sort_keys=True, indent=2))
+    r"""Return the JSON representation of a species entry."""
+    return dumps(obj.todict(), cls=NDEncoder, sort_keys=True, indent=2)
 
 
 class interp1d_log(interp1d):
