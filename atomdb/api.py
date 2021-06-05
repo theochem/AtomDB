@@ -286,11 +286,5 @@ class interp1d_log(interp1d):
 
 def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
-    return (interp1d_log if log else interp1d)(
-        x,
-        y,
-        kind="cubic",
-        copy=False,
-        fill_value="extrapolate",
-        assume_sorted=True,
-    )
+    cls = interp1d_log if log else interp1d
+    return cls(x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True)
