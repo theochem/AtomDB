@@ -16,12 +16,12 @@
 
 AtomDB
 ======
-|Python| |Github|
+|Python3.9| |Github|
 
 About
 -----
 
-AtomDB is a database of atomic and ionic properties. ⚛
+AtomDB is a database of atomic and ionic properties.
 
 Installation
 ------------
@@ -53,17 +53,39 @@ Usage
     -q          Query the specified entry
     --exc EXC   Excitation level
 
+If AtomDB is installed in a directory for which you do not have write permissions, or if you'd
+rather store your AtomDB database in another directory (or you already have one), then you
+can set the ``ATOMDB_DATAPATH`` environment variable to the directory of your choice; either
+a non-existing directory, or an existing AtomDB database.
+
+On release, AtomDB should come with compiled database files pre-installed in the default
+``ATOMDB_DATAPATH``. Raw data files containing the output of electronic structure computations
+will be hosted in another Git repo (AtomDB-Data) via LFS. If you are a developer working on compiling new
+database entries or writing new datasets, then you can set ``ATOMDB_DATAPATH`` to the location
+of the AtomDB-Data repo on your computer.
+
+Send Michael your SSH public key and ask him for the current URL for the AtomDB-Data repo.
+
 Contributing
 ------------
 
-You can help by coding stuff or running computations! 🙂
+You can help by writing features, properties, and datasets, or by running computations! 🙂
+
+TODO
+~~~~
+- Add functions for dealing with multiple database entries at once
+- Add more properties (C-DFT, SP-CDFT, etc.)
+- Add more datasets (Hartree-Fock, some useful DFT calcs...?)
+- Get the NIST dataset, and add those dataset-independent fields to the DB entries
+- Make all field names consistent with IOData
+- See Issues tab
 
 Citations
 ---------
 
-*todo*
+2021 QuantumElephant 🐘 AtomDB ⚛
 
-.. |Python| image:: http://img.shields.io/badge/python-3-blue.svg
+.. |Python3.9| image:: http://img.shields.io/badge/python-3.9-blue.svg
    :target: https://docs.python.org/3/
 .. |Github| image:: https://img.shields.io/badge/quantumelephant-black.svg?logo=GitHub
    :target: https://github.com/quantumelephant/atomdb/
