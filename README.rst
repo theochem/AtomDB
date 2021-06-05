@@ -35,23 +35,23 @@ Usage
 
 .. code-block::
 
-    % python -m atomdb -h
-    usage: python -m atomdb [-h] [-c] [-q] [--exc EXC] dataset elem basis charge mult
+    ~/git/atomdb % python -m atomdb -h
+    usage: python -m atomdb [-h] [-c] [-q] [-e E] dataset elem basis charge mult
 
     Compile and/or query an AtomDB entry
 
     positional arguments:
-    dataset     Dataset
-    elem        Element symbol
-    basis       Basis set
-    charge      Charge
-    mult        Multiplicity
+      dataset     name of dataset
+      elem        element symbol
+      basis       basis set
+      charge      charge
+      mult        multiplicity
 
     optional arguments:
-    -h, --help  show this help message and exit
-    -c          Compile the specified entry
-    -q          Query the specified entry
-    --exc EXC   Excitation level
+      -h, --help  show this help message and exit
+      -c          compile the specified entry
+      -q          query the specified entry
+      -e E        excitation level
 
 If AtomDB is installed in a directory for which you do not have write permissions, or if you'd
 rather store your AtomDB database in another directory (or you already have one), then you
