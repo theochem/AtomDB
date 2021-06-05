@@ -21,19 +21,42 @@ AtomDB
 About
 -----
 
-AtomDB is a database of atomic and ionic properties.
+AtomDB is a database of atomic and ionic properties. ⚛
 
 Installation
 ------------
 
-.. code-block:: shell
+.. code-block::
 
     python -m pip install -e .
 
 Usage
 -----
 
-``python -m atomdb [-h] {generate,compile,query} args...``
+.. code-block::
+
+    % python -m atomdb -h
+    usage: python -m atomdb [-h] [-c] [-q] [--exc EXC] dataset elem basis charge mult
+
+    Compile and/or query an AtomDB entry
+
+    positional arguments:
+    dataset     Dataset
+    elem        Element symbol
+    basis       Basis set
+    charge      Charge
+    mult        Multiplicity
+
+    optional arguments:
+    -h, --help  show this help message and exit
+    -c          Compile the specified entry
+    -q          Query the specified entry
+    --exc EXC   Excitation level
+
+Contributing
+------------
+
+You can help by coding stuff or running computations! 🙂
 
 Citations
 ---------
