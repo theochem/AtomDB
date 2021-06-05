@@ -20,68 +20,39 @@ from argparse import ArgumentParser
 
 from sys import stderr
 
-from atomdb import *
+import atomdb
 
 
-parser = ArgumentParser(prog='python -m atomdb', description='Run an AtomDB command.')
+# Initialize command line argument parser
+parser = ArgumentParser(prog="python -m atomdb", description="Compile and/or query an AtomDB entry")
 
 
-subparsers = parser.add_subparsers(dest='cmd', help='Command to run.')
+# Specify positional arguments and options
+parser.add_argument("-c", action="store_true", default=False, help="Compile the specified entry")
+parser.add_argument("-q", action="store_true", default=False, help="Query the specified entry")
+parser.add_argument("dataset", type=str, help="Dataset")
+parser.add_argument("elem", type=str, help="Element symbol")
+parser.add_argument("basis", type=str, help="Basis set")
+parser.add_argument("charge", type=int, help="Charge")
+parser.add_argument("mult", type=int, help="Multiplicity")
+parser.add_argument("--exc", type=int, default=0, help="Excitation level")
 
 
-parser_generate = subparsers.add_parser('generate', help='Generate raw data files.')
-parser_generate.add_argument('dataset', type=str, help='Dataset for which to generate raw data.')
-parser_generate.add_argument('element', type=str, help='Element symbol of species.')
-parser_generate.add_argument('charge', type=int, help='Charge of species.')
-parser_generate.add_argument('mult', type=int, help='Multiplicity of species.')
-parser_generate.add_argument('--exc', type=int, dest='nexc', default=0, help='Excitation level of species.')
-
-
-parser_compile = subparsers.add_parser('compile', help='Compile DB files.')
-parser_compile.add_argument('dataset', type=str, help='Dataset for which to compile DB files.')
-parser_compile.add_argument('element', type=str, help='Element symbol of species.')
-parser_compile.add_argument('charge', type=int, help='Charge of species.')
-parser_compile.add_argument('mult', type=int, help='Multiplicity of species.')
-parser_compile.add_argument('--exc', type=int, dest='nexc', default=0, help='Excitation level of species.')
-
-
-parser_query = subparsers.add_parser('query', help='Query and print a DB entry as JSON.')
-parser_query.add_argument('dataset', type=str, help='Dataset to query.')
-parser_query.add_argument('element', type=str, help='Element symbol of species.')
-parser_query.add_argument('charge', type=int, help='Charge of species.')
-parser_query.add_argument('mult', type=int, help='Multiplicity of species.')
-parser_query.add_argument('--exc', type=int, dest='nexc', default=0, help='Excitation level of species.')
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     # Parse arguments
     args = parser.parse_args()
 
-    # Run specified command
-    if args.cmd == 'generate':
-        #try:
-        generate_species(args.element, args.charge, args.mult, args.nexc, dataset=args.dataset)
-        # TODO: handle all keywords and more specific errors
-        #except Exception:
-            #print("An error occured. Exiting...", file=stderr)
-            #exit(1)
-    elif args.cmd == 'compile':
-        #try:
-        dump_species(
-            compile_species(args.element, args.charge, args.mult, args.nexc, dataset=args.dataset),
-        )
-        # TODO: handle all keywords and more specific errors
-        #except Exception:
-            #print("An error occured. Exiting...", file=stderr)
-            #exit(1)
-    elif args.cmd == 'query':
-        #try:
-        print_species(
-            load_species(args.element, args.charge, args.mult, args.nexc, dataset=args.dataset)
-        )
-        # TODO: handle all keywords and more specific errors
-        #except Exception:
-            #print("An error occured. Exiting...", file=stderr)
-            #exit(1)
+    # Exit if no commands are specified
+    if not (args.c or args.q):
+        print("No command specified. Exiting...", file=stderr)
+        exit(1)
+
+    # Run specified command(s)
+    if args.c:
+        atomdb.compile(args.elem, args.basis, args.charge, args.mult, args.exc, args.dataset)
+    if args.q:
+        print(atomdb.load(args.elem, args.basis, args.charge, args.mult, args.exc, args.dataset).to_json())
+
+    # Exit successfully
     exit(0)

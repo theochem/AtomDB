@@ -13,42 +13,88 @@
 # You should have received a copy of the GNU General Public License
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-r"""AtomDB API definitions."""
+r"""AtomDB, a database of atomic and ionic properties."""
 
 
 from dataclasses import dataclass, field, asdict
 
 from importlib import import_module
 
-from os import makedirs
+from json import JSONEncoder, dumps
 
-from os.path import join
+from os import environ, makedirs
 
-from numpy import ndarray, frombuffer
+from os.path import dirname, join
 
-from atomdb.config import *
+from sys import platform
 
-from atomdb.utils import *
+from msgpack import Packer, Unpacker
+
+from numpy import ndarray, frombuffer, exp, log
+
+from scipy.interpolate import interp1d
 
 
 __all__ = [
+    "DEFAULT_DATASET",
+    "DEFAULT_DATAPATH",
     "Species",
-    "generate_species",
-    "compile_species",
-    "load_species",
-    "dump_species",
-    "print_species",
+    "load",
+    "compile",
+    "datafile",
+    "element_number",
+    "element_symbol",
 ]
 
 
+DEFAULT_DATASET = "hci"
+r"""Default dataset to query."""
+
+
+DEFAULT_DATAPATH = environ.get("ATOMDB_DATAPATH", join(dirname(__file__), "datasets/"))
+r"""The path for raw and compiled AtomDB data files."""
+
+
+ELEMENTS = (
+    # fmt: off
+    "\0", "H",  "He", "Li", "Be", "B",  "C",  "N",  "O",  "F",  "Ne", "Na",
+    "Mg", "Al", "Si", "P",  "S",  "Cl", "Ar", "K",  "Ca", "Sc", "Ti", "V",
+    "Cr", "Mn", "Fe", "Co", "Ni", "Cu", "Zn", "Ga", "Ge", "As", "Se", "Br",
+    "Kr", "Rb", "Sr", "Y",  "Zr", "Nb", "Mo", "Tc", "Ru", "Rh", "Pd", "Ag",
+    "Cd", "In", "Sn", "Sb", "Te", "I",  "Xe", "Cs", "Ba", "La", "Ce", "Pr",
+    "Nd", "Pm", "Sm", "Eu", "Gd", "Tb", "Dy", "Ho", "Er", "Tm", "Yb", "Lu",
+    "Hf", "Ta", "W",  "Re", "Os", "Ir", "Pt", "Au", "Hg", "Tl", "Pb", "Bi",
+    "Po", "At", "Rn", "Fr", "Ra", "Ac", "Th", "Pa", "U",  "Np", "Pu", "Am",
+    "Cm", "Bk", "Cf", "Es", "Fm", "Md", "No", "Lr", "Rf", "Db", "Sg", "Bh",
+    "Hs", "Mt", "Ds", "Rg", "Cn", "Nh", "Fl", "Mc", "Lv", "Ts", "Og",
+    # fmt: on
+)
+r"""Tuple of the symbols for each of the 118 elements. The zeroth element is a placeholder."""
+
+
+# The correct way to convert numpy arrays to bytes is different on Mac/"Darwin"
+if platform == "darwin":
+    # Mac
+    def _array_to_bytes(array):
+        r"""Convert a numpy.ndarray instance to bytes."""
+        return array.tobytes()
+
+
+else:
+    # Linux and friends
+    def _array_to_bytes(array):
+        r"""Convert a numpy.ndarray instance to bytes."""
+        return array.data if array.flags["C_CONTIGUOUS"] else array.tobytes()
+
+
 @dataclass(eq=False, order=False)
-class Species:
-    r"""Properties of atomic and ionic species."""
+class SpeciesData:
+    r"""Properties of atomic and ionic species corresponding to fields in MessagePack files."""
     #
     # Species info
     #
     dataset: str = field()
-    species: str = field()
+    elem: str = field()
     natom: int = field()
     basis: str = field()
     nelec: int = field()
@@ -57,8 +103,7 @@ class Species:
     #
     # Electronic and molecular orbital energies
     #
-    energy_hf: float = field(default=None)
-    energy_ci: float = field(default=None)
+    energy: float = field(default=None)
     mo_energies: ndarray = field(default=None)
     mo_occs: ndarray = field(default=None)
     #
@@ -93,39 +138,27 @@ class Species:
     ked_dn: ndarray = field(default=None)
     ked_tot: ndarray = field(default=None)
     ked_mag: ndarray = field(default=None)
-    #
-    # Density splines
-    #
-    dens_up_spline: interp1d = field(init=False, repr=False)
-    dens_dn_spline: interp1d = field(init=False, repr=False)
-    dens_tot_spline: interp1d = field(init=False, repr=False)
-    dens_mag_spline: interp1d = field(init=False, repr=False)
-    d_dens_up_spline: interp1d = field(init=False, repr=False)
-    d_dens_dn_spline: interp1d = field(init=False, repr=False)
-    d_dens_tot_spline: interp1d = field(init=False, repr=False)
-    d_dens_mag_spline: interp1d = field(init=False, repr=False)
-    ked_up_spline: interp1d = field(init=False, repr=False)
-    ked_dn_spline: interp1d = field(init=False, repr=False)
-    ked_tot_spline: interp1d = field(init=False, repr=False)
-    ked_mag_spline: interp1d = field(init=False, repr=False)
-    lapl_up_spline: interp1d = field(init=False, repr=False)
-    lapl_dn_spline: interp1d = field(init=False, repr=False)
-    lapl_tot_spline: interp1d = field(init=False, repr=False)
-    lapl_mag_spline: interp1d = field(init=False, repr=False)
 
-    @property
-    def charge(self):
-        r"""Charge of the species."""
-        return self.natom - self.nelec
 
-    @property
-    def mult(self):
-        r"""Multiplicity of the species."""
-        return self.nspin + 1
+class Species(SpeciesData):
+    r"""Properties of atomic and ionic species."""
 
-    def __post_init__(self):
-        r"""Construct splines from the Species Data."""
-        if self.dens_up is not None:
+    def __init__(self, *args, **kwargs):
+        r"""Initialize a Species Instance."""
+        # Initialize superclass
+        SpeciesData.__init__(self, *args, **kwargs)
+        #
+        # Attributes declared here are not considered as part of the dataclasses interface,
+        # and therefore are not included in the output of dataclasses.asdict(species_instance)
+        #
+        # Charge and multiplicity
+        #
+        self.charge = self.natom - self.nelec
+        self.mult = self.nspin + 1
+        #
+        # Density splines
+        #
+        if self.dens_up is None:
             self.dens_up_spline = cubic_interp(self.rs, self.dens_up, log=False)
         if self.dens_dn is not None:
             self.dens_dn_spline = cubic_interp(self.rs, self.dens_dn, log=False)
@@ -158,55 +191,106 @@ class Species:
         if self.lapl_mag is not None:
             self.lapl_mag_spline = cubic_interp(self.rs, self.lapl_mag, log=False)
 
-    def todict(self):
-        r"""Convert the species instance to a dictionary."""
-        return {
-            key: val for key, val in asdict(self).items()
-            if isinstance(val, (str, int, float, complex, ndarray))
-        }
+    def to_dict(self):
+        r"""Return the dictionary representation of the Species instance."""
+        return asdict(self)
 
-def generate_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
-    r"""Generate the raw data for a species in the given dataset."""
-    return import_module(f'atomdb.datasets.{dataset}.generate').generate_species(
-        element, charge, mult, nexc=nexc, dataset=dataset,
-    )
+    def to_json(self):
+        r"""Return the JSON string representation of the Species instance."""
+        return dumps(asdict(self), cls=Species._JSONEncoder)
+
+    class _JSONEncoder(JSONEncoder):
+        r"""JSON encoder handling simple `numpy.ndarray` objects (for `Species.dump`)."""
+
+        def default(self, obj):
+            r"""Default encode function."""
+            return obj.tolist() if isinstance(obj, ndarray) else JSONEncoder.default(self, obj)
+
+    @staticmethod
+    def _msgfile(elem, basis, charge, mult, nexc, dataset, datapath):
+        r"""Return the filename of a database entry MessagePack file."""
+        return join(datapath, f"{dataset.lower()}/db/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}.msg")
+
+    def _dump(self, datapath):
+        r"""Dump the Species instance to a MessagePack file in the database."""
+        # Get database entry filename
+        fn = Species._msgfile(self.elem, self.basis, self.charge, self.mult, self.nexc, self.dataset, datapath)
+        # Convert numpy arrays to raw bytes for dumping as msgpack
+        msg = {k: _array_to_bytes(v) if isinstance(v, ndarray) else v for k, v in asdict(self).items()}
+        # Dump msgpack entry to database
+        with open(fn, "wb") as f:
+            f.write(pack_msg(msg))
 
 
-def compile_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
-    r"""Compile a species database entry from the given dataset's raw data."""
-    return import_module(f'atomdb.datasets.{dataset}.compile').compile_species(
-        element, charge, mult, nexc=nexc, dataset=dataset,
-    )
-
-
-def load_species(element, charge, mult, nexc=0, dataset=DEFAULT_DATASET):
+def load(elem, basis, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Load an atomic or ionic species from the AtomDB database."""
-    elem = get_element_symbol(element)
-    nelec = get_element_number(elem) - charge
-    nspin = mult - 1
-    with open(get_data_file(dataset, elem, nelec, nspin, nexc, "msg"), "rb") as f:
-        species_dict = unpack_msg(f)
-    for key, val in species_dict.items():
-        if isinstance(val, bytes):
-            species_dict[key] = frombuffer(val)
-    return Species(**species_dict)
+    # Load database msgpack entry
+    with open(Species._msgfile(elem, basis, charge, mult, nexc, dataset, datapath), "rb") as f:
+        msg = unpack_msg(f)
+    # Convert raw bytes back to numpy arrays, initialize the Species instance, return it
+    return Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
 
 
-def dump_species(species_obj):
-    r"""Dump an atomic or ionic species to the AtomDB database."""
-    makedirs(join(get_file(species_obj.dataset), "data"), exist_ok=True)
-    fn = get_data_file(
-        species_obj.dataset, species_obj.species, species_obj.nelec, species_obj.nspin,
-        species_obj.nexc, "msg",
+def compile(elem, basis, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+    r"""Compile an atomic or ionic species into the AtomDB database."""
+    # Ensure directories exist
+    makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
+    makedirs(join(datapath, f"{dataset}/raw"), exist_ok=True)
+    # Import the compile script for the appropriate dataset
+    submodule = import_module(f"atomdb.datasets.{dataset}")
+    # Compile the Species instance and dump the database entry
+    species = submodule.run(elem, basis, charge, mult, nexc, dataset, datapath)._dump(datapath)
+
+
+def datafile(suffix, elem, basis, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
+    r"""Return the filename of a raw data file."""
+    # Check that all non-optional arguments are specified
+    if dataset is None:
+        raise ValueError("Argument `dataset` cannot be unspecified")
+    # Format the filename specified and return it
+    suffix = f"{'' if suffix.startswith('.') else '_'}{suffix.lower()}"
+    return join(datapath, f"{dataset.lower()}/raw/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}{suffix}")
+
+
+def element_number(elem):
+    r"""Return the element number from the given element symbol."""
+    return ELEMENTS.index(elem) if isinstance(elem, str) else elem
+
+
+def element_symbol(elem):
+    r"""Return the element symbol from the given element number."""
+    return elem if isinstance(elem, str) else ELEMENTS[elem]
+
+
+def pack_msg(msg):
+    r"""Pack an object to MessagePack binary format."""
+    return Packer(use_bin_type=True).pack(msg)
+
+
+def unpack_msg(msg):
+    r"""Unpack an object from MessagePack binary format."""
+    return Unpacker(msg, use_list=False, strict_map_key=True).unpack()
+
+
+class interp1d_log(interp1d):
+    r"""Interpolate over a 1-D grid."""
+
+    def __init__(self, x, y, **kwargs):
+        r"""Initialize the interp1d_log instance."""
+        interp1d.__init__(self, x, log(y), **kwargs)
+
+    def __call__(self, x):
+        r"""Compute the interpolation at some x-values."""
+        return exp(interp1d.__call__(self, x))
+
+
+def cubic_interp(x, y, log=False):
+    r"""Create an interpolated cubic spline for the given data."""
+    return (interp1d_log if log else interp1d)(
+        x,
+        y,
+        kind="cubic",
+        copy=False,
+        fill_value="extrapolate",
+        assume_sorted=True,
     )
-    species_dict = {
-        key: ndarray_to_bytes(val) if isinstance(val, ndarray) else val
-        for key, val in species_obj.todict().items()
-    }
-    with open(fn, "wb") as f:
-        f.write(pack_msg(species_dict))
-
-
-def print_species(species_obj):
-    r"""Print the JSON representation of a species entry."""
-    print(dump_json(species_obj))
