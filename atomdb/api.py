@@ -34,6 +34,10 @@ from numpy import ndarray, frombuffer, exp, log
 
 from scipy.interpolate import interp1d
 
+from csv import DictReader
+
+from itertools import islice
+
 
 __all__ = [
     "DEFAULT_DATASET",
@@ -44,6 +48,7 @@ __all__ = [
     "datafile",
     "element_number",
     "element_symbol",
+    "load_element_data",
 ]
 
 
@@ -140,13 +145,80 @@ class SpeciesData:
     ked_mag: ndarray = field(default=None)
 
 
-class Species(SpeciesData):
+@dataclass(eq=False, order=False)
+class ElementData:
+    r"""Properties of atoms corresponding to fields in MessagePack files."""
+    #
+    # Element info
+    #
+    # mass: int = field()
+    cov_radius: dict = field()
+    vdw_radius: dict = field()
+
+
+class Species(SpeciesData, ElementData):
     r"""Properties of atomic and ionic species."""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, dataset,
+        elem,
+        natom,
+        basis,
+        nelec,
+        nspin,
+        nexc,
+        energy,
+        mo_energy,
+        mo_occ,
+        rs,
+        dens_up,
+        dens_dn,
+        dens_tot,
+        dens_mag,
+        d_dens_up,
+        d_dens_dn,
+        d_dens_tot,
+        d_dens_mag,
+        lapl_up,
+        lapl_dn,
+        lapl_tot,
+        lapl_mag,
+        ked_up,
+        ked_dn,
+        ked_tot,
+        ked_mag,
+        cov_radius,
+        vdw_radius, **kwargs):
         r"""Initialize a Species Instance."""
         # Initialize superclass
-        SpeciesData.__init__(self, *args, **kwargs)
+        SpeciesData.__init__(self, dataset,
+        elem,
+        natom,
+        basis,
+        nelec,
+        nspin,
+        nexc,
+        energy,
+        mo_energy,
+        mo_occ,
+        rs,
+        dens_up,
+        dens_dn,
+        dens_tot,
+        dens_mag,
+        d_dens_up,
+        d_dens_dn,
+        d_dens_tot,
+        d_dens_mag,
+        lapl_up,
+        lapl_dn,
+        lapl_tot,
+        lapl_mag,
+        ked_up,
+        ked_dn,
+        ked_tot,
+        ked_mag, **kwargs)
+        ElementData.__init__(self, cov_radius,
+        vdw_radius, **kwargs)
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
@@ -239,7 +311,8 @@ def compile(elem, basis, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath
     # Import the compile script for the appropriate dataset
     submodule = import_module(f"atomdb.datasets.{dataset}")
     # Compile the Species instance and dump the database entry
-    species = submodule.run(elem, basis, charge, mult, nexc, dataset, datapath)._dump(datapath)
+    # species = submodule.run(elem, basis, charge, mult, nexc, dataset, datapath)._dump(datapath)
+    submodule.run(elem, basis, charge, mult, nexc, dataset, datapath)._dump(datapath)
 
 
 def datafile(suffix, elem, basis, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
@@ -288,3 +361,19 @@ def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
     cls = interp1d_log if log else interp1d
     return cls(x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True)
+
+
+def load_element_data(elem):
+    z = element_number(elem)
+    with open(join(dirname(__file__), "datasets/common/data/elements.csv"), "r") as f:
+        data = list(DictReader(islice(f, 93, None)))
+        covradius = [cvr["cov_radius_cordero"] for cvr in data]
+        covradius = float(covradius[z]) if covradius[z] is not '' else None
+        cov_radius = {"cordero": covradius}
+        vdwradius = [vdw["vdw_radius_bondi"] for vdw in data]
+        vdwradius = float(vdwradius[z]) if vdwradius is not '' else None
+        vdw_radius = {"bondi": vdwradius}
+        vdwradius = [vdw["vdw_radius_truhlar"] for vdw in data if not vdw["vdw_radius_truhlar"] == "angstrom"]
+        vdwradius = [float(vdw) if vdw is not '' else None for vdw in vdwradius]
+        vdw_radius = {"truhlar": vdwradius}
+        return cov_radius, vdw_radius
