@@ -38,6 +38,8 @@ from csv import DictReader
 
 from itertools import islice
 
+from .units import angstrom, amu
+
 
 __all__ = [
     "DEFAULT_DATASET",
@@ -48,7 +50,7 @@ __all__ = [
     "datafile",
     "element_number",
     "element_symbol",
-    "load_element_data",
+    "get_element_data",
 ]
 
 
@@ -93,7 +95,7 @@ else:
 
 
 @dataclass(eq=False, order=False)
-class SpeciesData:
+class SpeciesData():
     r"""Properties of atomic and ionic species corresponding to fields in MessagePack files."""
     #
     # Species info
@@ -105,6 +107,11 @@ class SpeciesData:
     nelec: int = field()
     nspin: int = field()
     nexc: int = field()
+    #
+    # Element properties
+    #
+    cov_radii: dict = field()
+    vdw_radii: dict = field()
     #
     # Electronic and molecular orbital energies
     #
@@ -145,80 +152,13 @@ class SpeciesData:
     ked_mag: ndarray = field(default=None)
 
 
-@dataclass(eq=False, order=False)
-class ElementData:
-    r"""Properties of atoms corresponding to fields in MessagePack files."""
-    #
-    # Element info
-    #
-    # mass: int = field()
-    cov_radius: dict = field()
-    vdw_radius: dict = field()
-
-
-class Species(SpeciesData, ElementData):
+class Species(SpeciesData):
     r"""Properties of atomic and ionic species."""
 
-    def __init__(self, dataset,
-        elem,
-        natom,
-        basis,
-        nelec,
-        nspin,
-        nexc,
-        energy,
-        mo_energy,
-        mo_occ,
-        rs,
-        dens_up,
-        dens_dn,
-        dens_tot,
-        dens_mag,
-        d_dens_up,
-        d_dens_dn,
-        d_dens_tot,
-        d_dens_mag,
-        lapl_up,
-        lapl_dn,
-        lapl_tot,
-        lapl_mag,
-        ked_up,
-        ked_dn,
-        ked_tot,
-        ked_mag,
-        cov_radius,
-        vdw_radius, **kwargs):
+    def __init__(self, *args, **kwargs):
         r"""Initialize a Species Instance."""
         # Initialize superclass
-        SpeciesData.__init__(self, dataset,
-        elem,
-        natom,
-        basis,
-        nelec,
-        nspin,
-        nexc,
-        energy,
-        mo_energy,
-        mo_occ,
-        rs,
-        dens_up,
-        dens_dn,
-        dens_tot,
-        dens_mag,
-        d_dens_up,
-        d_dens_dn,
-        d_dens_tot,
-        d_dens_mag,
-        lapl_up,
-        lapl_dn,
-        lapl_tot,
-        lapl_mag,
-        ked_up,
-        ked_dn,
-        ked_tot,
-        ked_mag, **kwargs)
-        ElementData.__init__(self, cov_radius,
-        vdw_radius, **kwargs)
+        SpeciesData.__init__(self, *args, **kwargs)
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
@@ -363,17 +303,23 @@ def cubic_interp(x, y, log=False):
     return cls(x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True)
 
 
-def load_element_data(elem):
+def get_element_data(elem):
+    r"""Get properties from elements.csv."""
     z = element_number(elem)
-    with open(join(dirname(__file__), "datasets/common/data/elements.csv"), "r") as f:
+    convertors = {
+        'angstrom': (lambda s: float(s)*angstrom),
+        '2angstrom': (lambda s: float(s)*angstrom/2),
+        'angstrom**3': (lambda s: float(s)*angstrom**3),
+        'amu': (lambda s: float(s)*amu),
+    }
+
+    with open(join(dirname(__file__), "data/elements.csv"), "r") as f:
+        # Skip information about data provenance
         data = list(DictReader(islice(f, 93, None)))
-        covradius = [cvr["cov_radius_cordero"] for cvr in data]
-        covradius = float(covradius[z]) if covradius[z] is not '' else None
-        cov_radius = {"cordero": covradius}
-        vdwradius = [vdw["vdw_radius_bondi"] for vdw in data]
-        vdwradius = float(vdwradius[z]) if vdwradius is not '' else None
-        vdw_radius = {"bondi": vdwradius}
-        vdwradius = [vdw["vdw_radius_truhlar"] for vdw in data if not vdw["vdw_radius_truhlar"] == "angstrom"]
-        vdwradius = [float(vdw) if vdw is not '' else None for vdw in vdwradius]
-        vdw_radius = {"truhlar": vdwradius}
-        return cov_radius, vdw_radius
+        # Parse properties
+        units = data[0]
+        cov_radii = {k.split("_")[-1]: v for k, v in data[z].items() if "cov_radius" in k}
+        cov_radii = {k: float(v)*angstrom if v is not '' else None for k, v in cov_radii.items()}
+        vdw_radii = {k: v for k, v in data[z].items() if "vdw_radius" in k}
+        vdw_radii = {k.split("_")[-1]: convertors[units[k]](v) if v is not '' else None for k, v in vdw_radii.items()}
+        return cov_radii, vdw_radii
