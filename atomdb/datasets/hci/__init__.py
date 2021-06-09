@@ -163,11 +163,10 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
     ked_dn = eval_pd_ked(dm1_tot, obasis, grid, coord_type="spherical", transform=mo_coeff)
     ked_tot = eval_pd_ked(dm1_tot, obasis, grid, coord_type="spherical", transform=mo_coeff)
     ked_mag = eval_pd_ked(dm1_tot, obasis, grid, coord_type="spherical", transform=mo_coeff)
-
-    # Get element properties
-    cov_radius, vdw_radius = atomdb.load_element_data(elem)
-    print("cov_radius", cov_radius)
-    print()
+    #
+    # Element properties
+    #
+    cov_radii, vdw_radii = atomdb.get_element_data(elem)
 
     # Return Species instance
     return atomdb.Species(
@@ -178,6 +177,8 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
         nelec,
         nspin,
         nexc,
+        cov_radii,
+        vdw_radii,
         energy,
         mo_energy,
         mo_occ,
@@ -198,6 +199,4 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
         ked_dn,
         ked_tot,
         ked_mag,
-        cov_radius,
-        vdw_radius,
     )
