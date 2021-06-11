@@ -74,11 +74,12 @@ You can help by writing features, properties, and datasets, or by running comput
 TODO
 ~~~~
 - Add functions for dealing with multiple database entries at once
-- Add more properties (C-DFT, SP-CDFT, etc.)
+- Add more properties (C-DFT, SP-CDFT, etc.) See the [properties list](https://docs.google.com/spreadsheets/d/1_N-wvdiSEjHuCrhf9t14a114BRIzcugmE8sRww5XUTY/edit?usp=sharing)
 - Add more datasets (Hartree-Fock, some useful DFT calcs...?)
 - Get the NIST dataset, and add those dataset-independent fields to the DB entries
 - Make all field names consistent with IOData
 - See Issues tab
+
 
 Citations
 ---------
