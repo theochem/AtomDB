@@ -95,7 +95,7 @@ else:
 
 
 @dataclass(eq=False, order=False)
-class SpeciesData():
+class SpeciesData:
     r"""Properties of atomic and ionic species corresponding to fields in MessagePack files."""
     #
     # Species info
@@ -118,6 +118,12 @@ class SpeciesData():
     energy: float = field(default=None)
     mo_energies: ndarray = field(default=None)
     mo_occs: ndarray = field(default=None)
+    #
+    # Conceptual DFT related properties
+    #
+    ip: float = field(default=None)
+    mu: float = field(default=None)
+    eta: float = field(default=None)
     #
     # Radial grid
     #
@@ -307,10 +313,10 @@ def get_element_data(elem):
     r"""Get properties from elements.csv."""
     z = element_number(elem)
     convertors = {
-        'angstrom': (lambda s: float(s)*angstrom),
-        '2angstrom': (lambda s: float(s)*angstrom/2),
-        'angstrom**3': (lambda s: float(s)*angstrom**3),
-        'amu': (lambda s: float(s)*amu),
+        "angstrom": (lambda s: float(s) * angstrom),
+        "2angstrom": (lambda s: float(s) * angstrom / 2),
+        "angstrom**3": (lambda s: float(s) * angstrom ** 3),
+        "amu": (lambda s: float(s) * amu),
     }
 
     with open(join(dirname(__file__), "data/elements.csv"), "r") as f:
@@ -319,7 +325,7 @@ def get_element_data(elem):
         # Parse properties
         units = data[0]
         cov_radii = {k.split("_")[-1]: v for k, v in data[z].items() if "cov_radius" in k}
-        cov_radii = {k: float(v)*angstrom if v is not '' else None for k, v in cov_radii.items()}
+        cov_radii = {k: float(v) * angstrom if v is not "" else None for k, v in cov_radii.items()}
         vdw_radii = {k: v for k, v in data[z].items() if "vdw_radius" in k}
-        vdw_radii = {k.split("_")[-1]: convertors[units[k]](v) if v is not '' else None for k, v in vdw_radii.items()}
+        vdw_radii = {k.split("_")[-1]: convertors[units[k]](v) if v is not "" else None for k, v in vdw_radii.items()}
         return cov_radii, vdw_radii
