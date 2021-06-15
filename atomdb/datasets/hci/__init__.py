@@ -56,7 +56,7 @@ BOUND = (0.01, 1.0)
 NPOINTS = 100
 
 
-def run(elem, basis, charge, mult, nexc, dataset, datapath):
+def run(elem, charge, mult, nexc, basis, dataset, datapath):
     r"""Run an HCI computation and compile the AtomDB database entry."""
     # Check arguments
     if nexc != 0:

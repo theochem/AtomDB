@@ -32,7 +32,7 @@ parser.add_argument("-c", action="store_true", default=False, help="compile the 
 parser.add_argument("-q", action="store_true", default=False, help="query the specified entry")
 parser.add_argument("dataset", type=str, help="name of dataset")
 parser.add_argument("elem", type=str, help="element symbol")
-parser.add_argument("basis", type=str, help="basis set")
+parser.add_argument("basis", type=str, default=None, help="basis set")
 parser.add_argument("charge", type=int, help="charge")
 parser.add_argument("mult", type=int, help="multiplicity")
 parser.add_argument("-e", type=int, default=0, help="excitation level")
@@ -50,9 +50,9 @@ if __name__ == "__main__":
 
     # Run specified command(s)
     if args.c:
-        atomdb.compile(args.elem, args.basis, args.charge, args.mult, args.e, args.dataset)
+        atomdb.compile(args.elem, args.charge, args.mult, args.e, args.basis, args.dataset)
     if args.q:
-        print(atomdb.load(args.elem, args.basis, args.charge, args.mult, args.e, args.dataset).to_json())
+        print(atomdb.load(args.elem, args.charge, args.mult, args.e, args.basis, args.dataset).to_json())
 
     # Exit successfully
     exit(0)
