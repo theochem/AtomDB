@@ -33,7 +33,7 @@ __all__ = [
 ]
 
 
-def run(elem, basis, charge, mult, nexc, dataset, datapath):
+def run(elem, charge, mult, nexc, basis, dataset, datapath):
     r"""Parse NIST related data and compile the AtomDB database entry."""
     # Check arguments
     if nexc != 0:

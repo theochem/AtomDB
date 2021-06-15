@@ -176,7 +176,7 @@ class Species(SpeciesData):
         #
         # Density splines
         #
-        if self.dens_up is None:
+        if self.dens_up is not None:
             self.dens_up_spline = cubic_interp(self.rs, self.dens_up, log=False)
         if self.dens_dn is not None:
             self.dens_dn_spline = cubic_interp(self.rs, self.dens_dn, log=False)
@@ -225,14 +225,17 @@ class Species(SpeciesData):
             return obj.tolist() if isinstance(obj, ndarray) else JSONEncoder.default(self, obj)
 
     @staticmethod
-    def _msgfile(elem, basis, charge, mult, nexc, dataset, datapath):
+    def _msgfile(elem, charge, mult, nexc, basis, dataset, datapath):
         r"""Return the filename of a database entry MessagePack file."""
-        return join(datapath, f"{dataset.lower()}/db/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}.msg")
+        if basis is None:
+            return join(datapath, f"{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg")
+        else:
+            return join(datapath, f"{dataset.lower()}/db/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}.msg")
 
     def _dump(self, datapath):
         r"""Dump the Species instance to a MessagePack file in the database."""
         # Get database entry filename
-        fn = Species._msgfile(self.elem, self.basis, self.charge, self.mult, self.nexc, self.dataset, datapath)
+        fn = Species._msgfile(self.elem, self.charge, self.mult, self.nexc, self.basis, self.dataset, datapath)
         # Convert numpy arrays to raw bytes for dumping as msgpack
         msg = {k: _array_to_bytes(v) if isinstance(v, ndarray) else v for k, v in asdict(self).items()}
         # Dump msgpack entry to database
@@ -240,16 +243,16 @@ class Species(SpeciesData):
             f.write(pack_msg(msg))
 
 
-def load(elem, basis, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+def load(elem, charge, mult, nexc=0, basis=None, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Load an atomic or ionic species from the AtomDB database."""
     # Load database msgpack entry
-    with open(Species._msgfile(elem, basis, charge, mult, nexc, dataset, datapath), "rb") as f:
+    with open(Species._msgfile(elem, charge, mult, nexc, basis, dataset, datapath), "rb") as f:
         msg = unpack_msg(f)
     # Convert raw bytes back to numpy arrays, initialize the Species instance, return it
     return Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
 
 
-def compile(elem, basis, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+def compile(elem, charge, mult, nexc=0, basis=None, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Compile an atomic or ionic species into the AtomDB database."""
     # Ensure directories exist
     makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
@@ -257,8 +260,7 @@ def compile(elem, basis, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath
     # Import the compile script for the appropriate dataset
     submodule = import_module(f"atomdb.datasets.{dataset}")
     # Compile the Species instance and dump the database entry
-    # species = submodule.run(elem, basis, charge, mult, nexc, dataset, datapath)._dump(datapath)
-    submodule.run(elem, basis, charge, mult, nexc, dataset, datapath)._dump(datapath)
+    submodule.run(elem, charge, mult, nexc, basis, dataset, datapath)._dump(datapath)
 
 
 def datafile(suffix, elem, basis, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
