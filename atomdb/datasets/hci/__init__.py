@@ -167,6 +167,12 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
     # Element properties
     #
     cov_radii, vdw_radii = atomdb.get_element_data(elem)
+    #
+    # Conceptual-DFT properties (TODO)
+    #
+    ip=None
+    mu=None
+    eta=None
 
     # Return Species instance
     return atomdb.Species(
@@ -182,6 +188,9 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
         energy,
         mo_energy,
         mo_occ,
+        ip,
+        mu,
+        eta,
         rs,
         dens_up,
         dens_dn,
