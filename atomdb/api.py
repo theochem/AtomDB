@@ -230,7 +230,8 @@ class Species(SpeciesData):
         if basis is None:
             return join(datapath, f"{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg")
         else:
-            return join(datapath, f"{dataset.lower()}/db/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}.msg")
+            # return join(datapath, f"{dataset.lower()}/db/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}.msg")
+            return join(datapath, f"{dataset.lower()}/db/{basis.lower()}/{elem}_{charge}_{mult}_{nexc}.msg")
 
     def _dump(self, datapath):
         r"""Dump the Species instance to a MessagePack file in the database."""
@@ -255,7 +256,10 @@ def load(elem, charge, mult, nexc=0, basis=None, dataset=DEFAULT_DATASET, datapa
 def compile(elem, charge, mult, nexc=0, basis=None, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Compile an atomic or ionic species into the AtomDB database."""
     # Ensure directories exist
-    makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
+    if basis is None:
+        makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
+    else:
+        makedirs(join(datapath, f"{dataset}/db/{basis.lower()}"), exist_ok=True)
     makedirs(join(datapath, f"{dataset}/raw"), exist_ok=True)
     # Import the compile script for the appropriate dataset
     submodule = import_module(f"atomdb.datasets.{dataset}")
