@@ -199,5 +199,5 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
         ked_dn,
         ked_tot,
         ked_mag,
-        at_mass,
+        mass,
     )
