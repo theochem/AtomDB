@@ -179,6 +179,7 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
         nexc,
         cov_radii,
         vdw_radii,
+        mass,
         energy,
         mo_energy,
         mo_occ,
@@ -199,5 +200,4 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
         ked_dn,
         ked_tot,
         ked_mag,
-        mass,
     )
