@@ -323,7 +323,6 @@ def get_element_data(elem):
         cov_radii = {k: float(v)*angstrom if v is not '' else None for k, v in cov_radii.items()}
         vdw_radii = {k: v for k, v in data[z].items() if "vdw_radius" in k}
         vdw_radii = {k.split("_")[-1]: convertors[units[k]](v) if v is not '' else None for k, v in vdw_radii.items()}
-        mass = {v in data[z].items() if "mass" in k else None}
-        mass = {k: float(v)*angstrom if v is not '' else None for k, v in mass.items()}
+        mass = data[z]['mass']
         return cov_radii, vdw_radii, mass
        
