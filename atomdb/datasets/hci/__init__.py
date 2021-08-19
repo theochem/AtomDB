@@ -56,7 +56,7 @@ BOUND = (0.01, 1.0)
 NPOINTS = 100
 
 
-def run(elem, basis, charge, mult, nexc, dataset, datapath):
+def run(elem, charge, mult, nexc, basis, dataset, datapath):
     r"""Run an HCI computation and compile the AtomDB database entry."""
     # Check arguments
     if nexc != 0:
@@ -167,6 +167,12 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
     # Element properties
     #
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    #
+    # Conceptual-DFT properties (TODO)
+    #
+    ip=None
+    mu=None
+    eta=None
 
     # Return Species instance
     return atomdb.Species(
@@ -183,6 +189,9 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
         energy,
         mo_energy,
         mo_occ,
+        ip,
+        mu,
+        eta,
         rs,
         dens_up,
         dens_dn,
