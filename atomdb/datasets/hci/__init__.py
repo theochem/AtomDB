@@ -166,7 +166,7 @@ def run(elem, basis, charge, mult, nexc, dataset, datapath):
     #
     # Element properties
     #
-    cov_radii, vdw_radii = atomdb.get_element_data(elem)
+    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
 
     # Return Species instance
     return atomdb.Species(
