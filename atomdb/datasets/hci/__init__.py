@@ -166,7 +166,7 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
     #
     # Element properties
     #
-    cov_radii, vdw_radii = atomdb.get_element_data(elem)
+    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
     #
     # Conceptual-DFT properties (TODO)
     #
@@ -185,6 +185,7 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
         nexc,
         cov_radii,
         vdw_radii,
+        mass,
         energy,
         mo_energy,
         mo_occ,
