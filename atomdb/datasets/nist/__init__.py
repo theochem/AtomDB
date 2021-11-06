@@ -48,19 +48,19 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
     #
     # Element properties
     #
-    cov_radii, vdw_radii = atomdb.get_element_data(elem)
+    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
 
-    # Verify there is data available for the species
+    #
+    # Get the energy for the most stable electronic configuration from database_beta_1.3.0.h5.
+    # Check that the input multiplicity corresponds to this configuration.
+    #
     if charge >= 0:
-        # Check that the inputted multiplicity corresponds to the lowest-energy
-        # electronic configuration of the species and get its energy from database_beta_1.3.0.h5
+        # Neutral and cations
         z = str(natom).zfill(3)
         ne = str(nelec).zfill(3)
         with h5.File(os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r") as f:
             mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
             energy = f[z][ne]["Energy"][...]
-            # config = f[z][ne]["Config"][...]
-            # j_vals = f[z][ne]["J"][...]
         # sort based on energy
         index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
         mults = list(mults[index_sorting])
@@ -70,9 +70,9 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
             raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
         energy = energy[0]
     elif -2 <= charge < 0:
-        # Check that the inputted multiplicity is correct:
-        # Get the lowest energy multiplicity of the corresponding
-        # neutral isoelectronic species from database_beta_1.3.0.h5
+        # Anions
+        # Get the multiplicity (the one with lowest energy) from the corresponding neutral
+        # isoelectronic species
         z = str(natom - charge).zfill(3)
         ne = str(nelec).zfill(3)
         with h5.File(os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r") as f:
