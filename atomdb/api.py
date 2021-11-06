@@ -34,9 +34,7 @@ from numpy import ndarray, frombuffer, exp, log
 
 from scipy.interpolate import interp1d
 
-from csv import DictReader
-
-from itertools import islice
+from csv import reader
 
 from .units import angstrom, amu
 
@@ -317,9 +315,60 @@ def cubic_interp(x, y, log=False):
 
 
 def get_element_data(elem):
-    r"""Get properties from elements.csv."""
+    r"""Get element properties from elements.csv.
+
+    The following attributes are present for some elements. When a parameter
+    is not known for a given element, the attribute is set to `None`.
+    mass
+        The IUPAC atomic masses (wieghts) of 2013.
+        T.B. Coplen, W.A. Brand, J. Meija, M. Gröning, N.E. Holden, M.
+        Berglund, P. De Bièvre, R.D. Loss, T. Prohaska, and T. Walczyk.
+        http://ciaaw.org, http://www.ciaaw.org/pubs/TSAW2013_xls.xls,
+        When ranges are provided, the middle of the range is used.
+    cov_radius_cordero
+        Covalent radius. B. Cordero, V. Gomez, A. E. Platero-Prats, M.
+        Reves, J. Echeverria, E. Cremades, F. Barragan, and S. Alvarez,
+        Dalton Trans. pp. 2832--2838 (2008), URL
+        http://dx.doi.org/10.1039/b801115j
+    cov_radius_bragg
+        Covalent radius. W. L. Bragg, Phil. Mag. 40, 169 (1920), URL
+        http://dx.doi.org/10.1080/14786440808636111
+    cov_radius_slater
+        Covalent radius. J. C. Slater, J. Chem. Phys. 41, 3199 (1964), URL
+        http://dx.doi.org/10.1063/1.1725697
+    vdw_radius_bondi
+        van der Waals radius. A. Bondi, J. Phys. Chem. 68, 441 (1964), URL
+        http://dx.doi.org/10.1021/j100785a001
+    vdw_radius_truhlar
+        van der Waals radius. M. Mantina A. C. Chamberlin R. Valero C. J.
+        Cramer D. G. Truhlar J. Phys. Chem. A 113 5806 (2009), URL
+        http://dx.doi.org/10.1021/jp8111556
+    vdw_radius_rt
+        van der Waals radius. R. S. Rowland and R. Taylor, J. Phys. Chem.
+        100, 7384 (1996), URL http://dx.doi.org/10.1021/jp953141+
+    vdw_radius_batsanov
+        van der Waals radius. S. S. Batsanov Inorganic Materials 37 871
+        (2001), URL http://dx.doi.org/10.1023/a%3a1011625728803
+    vdw_radius_dreiding
+        van der Waals radius. Stephen L. Mayo, Barry D. Olafson, and William
+        A. Goddard III J. Phys. Chem. 94 8897 (1990), URL
+        http://dx.doi.org/10.1021/j100389a010
+    vdw_radius_uff
+        van der Waals radius. A. K. Rappi, C. J. Casewit, K. S. Colwell, W.
+        A. Goddard III, and W. M. Skid J. Am. Chem. Soc. 114 10024 (1992),
+        URL http://dx.doi.org/10.1021/ja00051a040
+    vdw_radius_mm3
+        van der Waals radius. N. L. Allinger, X. Zhou, and J. Bergsma,
+        Journal of Molecular Structure: THEOCHEM 312, 69 (1994),
+        http://dx.doi.org/10.1016/s0166-1280(09)80008-0
+    """
+
     z = element_number(elem)
-    convertors = {
+    convertor_types = {
+        'int': (lambda s: int(s)),
+        'float': (lambda s : float(s)),
+        'au': (lambda s : float(s)),    # just for clarity, atomic units
+        'str': (lambda s: s.strip()),
         "angstrom": (lambda s: float(s) * angstrom),
         "2angstrom": (lambda s: float(s) * angstrom / 2),
         "angstrom**3": (lambda s: float(s) * angstrom ** 3),
@@ -327,13 +376,25 @@ def get_element_data(elem):
     }
 
     with open(join(dirname(__file__), "data/elements.csv"), "r") as f:
+        rows = reader(f)
         # Skip information about data provenance
-        data = list(DictReader(islice(f, 93, None)))
-        # Parse properties
-        units = data[0]
-        cov_radii = {k.split("_")[-1]: v for k, v in data[z].items() if "cov_radius" in k}
-        cov_radii = {k: float(v) * angstrom if v is not "" else None for k, v in cov_radii.items()}
-        vdw_radii = {k: v for k, v in data[z].items() if "vdw_radius" in k}
-        vdw_radii = {k.split("_")[-1]: convertors[units[k]](v) if v is not '' else None for k, v in vdw_radii.items()}
-        mass = float(data[z]['mass']) * amu
-        return cov_radii, vdw_radii, mass
+        for row in rows:
+            if len(row[1]) > 0:
+                break
+        # parse the first two header rows
+        names = row
+        convertors = [convertor_types[unit] for unit in next(rows)]
+        data = list(rows)
+
+        cov_radii = {}
+        vdw_radii = {}
+        for idx, (name, val) in enumerate(zip(names, data[z])):
+            if 'cov_radius' in name:
+                kval = name.split("_")[-1]
+                cov_radii[kval] = convertors[idx](val) if val is not "" else None
+            elif 'vdw_radius' in name:
+                kval = name.split("_")[-1]
+                vdw_radii[kval] = convertors[idx](val) if val is not "" else None
+            elif name == 'mass':
+                mass = convertors[idx](val)
+    return cov_radii, vdw_radii, mass
