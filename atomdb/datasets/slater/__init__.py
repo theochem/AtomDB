@@ -659,7 +659,13 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
     n_dn = (nelec - nspin) // 2
 
     # Get information about the element
-    specie =  AtomicDensity(elem, anion=False, cation=False)
+    if charge == 0:
+        an, cat = False, False
+    elif charge > 0:
+        an, cat = False, True
+    else:
+        an, cat = True, False
+    specie =  AtomicDensity(elem, anion=an, cation=cat)
 
     # Get electronic structure data
     energy = specie.energy[0]
@@ -682,12 +688,6 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
     # Element properties
     #
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
-    #
-    # Conceptual-DFT properties (TODO)
-    #
-    ip=None
-    mu=None
-    eta=None
 
     # Return Species instance
     return atomdb.Species(
@@ -704,9 +704,6 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
         energy,
         mo_energy,
         mo_occ,
-        # ip,
-        # mu,
-        # eta,
         rs=points,
         dens_tot=dens_tot,
         d_dens_tot=d_dens_tot,
