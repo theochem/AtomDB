@@ -1,27 +1,18 @@
-# -*- coding: utf-8 -*-
-# AtomDB is an extended periodic table database containing experimental
-# and/or computational information on stable ground state
-# and/or excited states of neutral and charged atomic species.
-#
-# Copyright (C) 2014-2015 The AtomDB Development Team
-#
 # This file is part of AtomDB.
 #
-# AtomDB is free software; you can redistribute it and/or
-# modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation; either version 3
-# of the License, or (at your option) any later version.
+# AtomDB is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
 #
-# AtomDB is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
+# AtomDB is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
 #
 # You should have received a copy of the GNU General Public License
-# along with this program; if not, see <http://www.gnu.org/licenses/>
-#
-# --
-#
+# along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
+
 r"""
 Module responsible for reading and storing atomic wave-function information from '.slater' files and
     computing electron density, and kinetic energy from them.
@@ -30,7 +21,7 @@ AtomicDensity:
     Information about atoms obtained from .slater file and able to construct atomic density
         (total, core and valence) from the linear combination of Slater-type orbitals.
     Elements supported by default from "./atomdb/data/slater_atom/" range from Hydrogen to Xenon.
-    
+
 load_slater_wfn : Function for reading and returning information from '.slater' files that consist
     of anion, cation and neutral atomic wave-function information.
 
@@ -41,9 +32,15 @@ import numpy as np
 import os
 import re
 from scipy.special import factorial
+import atomdb
 
 
-__all__ = ["AtomicDensity", "load_slater_wfn"]
+__all__ = ["AtomicDensity", "load_slater_wfn", "run"]
+
+
+BOUND = (0.01, 1.0)
+
+NPOINTS = 100
 
 
 class AtomicDensity:
@@ -446,18 +443,21 @@ def load_slater_wfn(element, anion=False, cation=False):
         raise ValueError("Both Anion & Cation Slater File for element %s does not exist." % element)
     if anion:
         if element.lower() in anion_atoms:
-            file_path = "./atomdb/data/anion/%s.an" % element.lower()
+            # file_path = "./atomdb/data/anion/%s.an" % element.lower()
+            file_path = "raw/anion/%s.an" % element.lower()
         else:
             raise ValueError("Anion Slater File for element %s does not exist." % element)
     elif cation:
         if element.lower() in cation_atoms:
-            file_path = "./atomdb/data/cation/%s.cat" % element.lower()
+            # file_path = "./atomdb/data/cation/%s.cat" % element.lower()
+            file_path = "raw/cation/%s.cat" % element.lower()
         else:
             raise ValueError("Cation Slater File for element %s does not exist." % element)
     else:
-        file_path = "./atomdb/data/neutral/%s.slater" % element.lower()
+        # file_path = "./atomdb/data/neutral/%s.slater" % element.lower()
+        file_path = "raw/neutral/%s.slater" % element.lower()
 
-    file_name = file_path
+    file_name = os.path.join(os.path.dirname(__file__), file_path)
 
     def get_number_of_electrons_per_orbital(configuration):
         """
@@ -642,3 +642,73 @@ def load_slater_wfn(element, anion=False, cation=False):
             }
 
     return data
+
+
+def run(elem, charge, mult, nexc, basis, dataset, datapath):
+    r"""Compile the densities from Slater orbitals database entry."""
+    # Check arguments
+    if nexc != 0:
+        raise ValueError("Nonzero value of `nexc` is not currently supported")
+
+    # Set up internal variables
+    elem = atomdb.element_symbol(elem)
+    natom = atomdb.element_number(elem)
+    nelec = natom - charge
+    nspin = mult - 1
+    n_up = (nelec + nspin) // 2
+    n_dn = (nelec - nspin) // 2
+
+    # Get information about the element
+    specie =  AtomicDensity(elem, anion=False, cation=False)
+
+    # Get electronic structure data
+    energy = specie.energy[0]
+    mo_energy = specie.orbitals_energy.ravel()
+    mo_occ = specie.orbitals_occupation.ravel()
+
+    # Make grid
+    points = np.linspace(*BOUND, NPOINTS)
+
+    # Compute densities and derivatives
+    dens_tot = specie.atomic_density(points, "total")
+    dens_core = specie.atomic_density(points, "core")
+    dens_valence = specie.atomic_density(points, "valence")
+    d_dens_tot = specie.derivative_density(points)
+
+    # Compute laplacian and kinetic energy density
+    lapl_tot = None
+    ked_tot = specie.lagrangian_kinetic_energy(points)
+    #
+    # Element properties
+    #
+    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    #
+    # Conceptual-DFT properties (TODO)
+    #
+    ip=None
+    mu=None
+    eta=None
+
+    # Return Species instance
+    return atomdb.Species(
+        dataset,
+        elem,
+        natom,
+        basis,
+        nelec,
+        nspin,
+        nexc,
+        cov_radii,
+        vdw_radii,
+        mass,
+        energy,
+        mo_energy,
+        mo_occ,
+        # ip,
+        # mu,
+        # eta,
+        rs=points,
+        dens_tot=dens_tot,
+        d_dens_tot=d_dens_tot,
+        ked_tot=ked_tot,
+    )
