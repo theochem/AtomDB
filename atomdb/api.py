@@ -172,41 +172,87 @@ class Species(SpeciesData):
         #
         self.charge = self.natom - self.nelec
         self.mult = self.nspin + 1
-        #
-        # Density splines
-        #
-        if self.dens_up is not None:
-            self.dens_up_spline = cubic_interp(self.rs, self.dens_up, log=False)
-        if self.dens_dn is not None:
-            self.dens_dn_spline = cubic_interp(self.rs, self.dens_dn, log=False)
-        if self.dens_tot is not None:
-            self.dens_tot_spline = cubic_interp(self.rs, self.dens_tot, log=False)
-        if self.dens_mag is not None:
-            self.dens_mag_spline = cubic_interp(self.rs, self.dens_mag, log=False)
-        if self.d_dens_up is not None:
-            self.d_dens_up_spline = cubic_interp(self.rs, self.d_dens_up, log=False)
-        if self.d_dens_dn is not None:
-            self.d_dens_dn_spline = cubic_interp(self.rs, self.d_dens_dn, log=False)
-        if self.d_dens_tot is not None:
-            self.d_dens_tot_spline = cubic_interp(self.rs, self.d_dens_tot, log=False)
-        if self.d_dens_mag is not None:
-            self.d_dens_mag_spline = cubic_interp(self.rs, self.d_dens_mag, log=False)
-        if self.ked_up is not None:
-            self.ked_up_spline = cubic_interp(self.rs, self.ked_up, log=True)
-        if self.ked_dn is not None:
-            self.ked_dn_spline = cubic_interp(self.rs, self.ked_dn, log=True)
-        if self.ked_tot is not None:
-            self.ked_tot_spline = cubic_interp(self.rs, self.ked_tot, log=True)
-        if self.ked_mag is not None:
-            self.ked_mag_spline = cubic_interp(self.rs, self.ked_mag, log=True)
-        if self.lapl_up is not None:
-            self.lapl_up_spline = cubic_interp(self.rs, self.lapl_up, log=False)
-        if self.lapl_dn is not None:
-            self.lapl_dn_spline = cubic_interp(self.rs, self.lapl_dn, log=False)
-        if self.lapl_tot is not None:
-            self.lapl_tot_spline = cubic_interp(self.rs, self.lapl_tot, log=False)
-        if self.lapl_mag is not None:
-            self.lapl_mag_spline = cubic_interp(self.rs, self.lapl_mag, log=False)
+
+    #
+    # Density splines
+    #
+    def dens_spline(self, points, spin='ab', index=None, log=False):
+        """Compute electron density
+
+        Parameters
+        ----------
+        points : ndarray, (N,)
+            Radial grid points given as a 1D-array.
+        spin : str, optional
+            Type of occupied spin orbitals which can be either "a" (for alpha), "b" (for
+            beta), and "ab" (for alpha + beta), by default 'ab'
+        index : sequence of int, optional
+            Sequence of integers representing the occupied spin orbitals which are indexed
+            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included, by default None
+        log : bool, optional
+            Whether the logarithm of the density is used for interpolation, by default False
+
+        """
+        spins = {'a': self.dens_up, 'b': self.dens_dn, 'ab': self.dens_tot, 'm': self.dens_mag}
+        if index is None:
+            if spins[spin] is not None:
+                spline = cubic_interp(self.rs, spins[spin], log=log)
+            else:
+                raise ValueError(f'Density spline for occupied `{spin}` spin-orbitals unavailable')
+        else:
+            raise NotImplementedError('Desnity for a subset of orbitals is not supported yet.')
+        return spline(points)
+
+    def d_dens_spline(self, points, spin='ab', index=None, log=False):
+        r"""Compute derivative of electron density.
+
+        Parameters
+        ----------
+        points : ndarray, (N,)
+            Radial grid points given as a 1D-array.
+        spin : str, optional
+            Type of occupied spin orbitals which can be either "a" (for alpha), "b" (for
+            beta), and "ab" (for alpha + beta), by default 'ab'
+        index : sequence of int, optional
+            Sequence of integers representing the occupied spin orbitals which are indexed
+            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included, by default None
+        log : bool, optional
+            Whether the logarithm of the density is used for interpolation, by default False
+
+        """
+        spins = {'a': self.d_dens_up, 'b': self.d_dens_dn, 'ab': self.d_dens_tot, 'm': self.d_dens_mag}
+        if index is None:
+            if spins[spin] is not None:
+                spline = cubic_interp(self.rs, spins[spin], log=log)
+            else:
+                raise ValueError(f'Density derivative spline for occupied `{spin}` spin-orbitals unavailable.')
+        else:
+            raise NotImplementedError('Desnity derivative for a subset of orbitals is not supported yet.')
+        return spline(points)
+
+    def ked_spline(self, points, spin='ab', index=None, log=True):
+        r"""Compute positive definite kinetic energy density."""
+        spins = {'a': self.ked_up, 'b': self.ked_dn, 'ab': self.ked_tot, 'm': self.ked_mag}
+        if index is None:
+            if spins[spin] is not None:
+                spline = cubic_interp(self.rs, spins[spin], log=log)
+            else:
+                raise ValueError(f'Kinetic energy density for occupied `{spin}` spin-orbitals unavailable.')
+        else:
+            raise NotImplementedError('Kinetic energy density for a subset of orbitals is not supported yet.')
+        return spline(points)
+
+    def lapl_spline(self, points, spin='ab', index=None, log=False):
+        r"""Compute Laplacian of electron density."""
+        spins = {'a': self.lapl_up, 'b': self.lapl_dn, 'ab': self.lapl_tot, 'm': self.lapl_mag}
+        if index is None:
+            if spins[spin] is not None:
+                spline = cubic_interp(self.rs, spins[spin], log=log)
+            else:
+                raise ValueError(f'Density laplacian for occupied `{spin}` spin-orbitals unavailable')
+        else:
+            raise NotImplementedError('Desnity laplacian for a subset of orbitals is not supported yet.')
+        return spline(points)
 
     def to_dict(self):
         r"""Return the dictionary representation of the Species instance."""
