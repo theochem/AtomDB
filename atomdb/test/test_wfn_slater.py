@@ -27,7 +27,7 @@
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal, assert_raises
 
-from atomdb.io.wfn_slater import AtomicDensity, load_slater_wfn
+from atomdb.datasets.slater.__init__ import AtomicDensity, load_slater_wfn
 
 
 def slater(e, n, r, derivative=False):
@@ -398,9 +398,6 @@ def test_raises():
                   np.array([[1.]]))
     c = AtomicDensity("c")
     assert_raises(ValueError, c.atomic_density, np.array([[1.]]), "not total")
-
-
-from atomdb.io.wfn_slater import load_slater_wfn
 
 
 def test_parsing_slater_density_be():
