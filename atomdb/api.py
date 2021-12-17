@@ -270,18 +270,14 @@ class Species(SpeciesData):
             return obj.tolist() if isinstance(obj, ndarray) else JSONEncoder.default(self, obj)
 
     @staticmethod
-    def _msgfile(elem, charge, mult, nexc, basis, dataset, datapath):
+    def _msgfile(elem, charge, mult, nexc, dataset, datapath):
         r"""Return the filename of a database entry MessagePack file."""
-        if basis is None:
-            return join(datapath, f"{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg")
-        else:
-            # return join(datapath, f"{dataset.lower()}/db/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}.msg")
-            return join(datapath, f"{dataset.lower()}/db/{basis.lower()}/{elem}_{charge}_{mult}_{nexc}.msg")
+        return join(datapath, f"{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg")
 
     def _dump(self, datapath):
         r"""Dump the Species instance to a MessagePack file in the database."""
         # Get database entry filename
-        fn = Species._msgfile(self.elem, self.charge, self.mult, self.nexc, self.basis, self.dataset, datapath)
+        fn = Species._msgfile(self.elem, self.charge, self.mult, self.nexc, self.dataset, datapath)
         # Convert numpy arrays to raw bytes for dumping as msgpack
         msg = {k: _array_to_bytes(v) if isinstance(v, ndarray) else v for k, v in asdict(self).items()}
         # Dump msgpack entry to database
@@ -289,37 +285,37 @@ class Species(SpeciesData):
             f.write(pack_msg(msg))
 
 
-def load(elem, charge, mult, nexc=0, basis=None, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+def load(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Load an atomic or ionic species from the AtomDB database."""
     # Load database msgpack entry
-    with open(Species._msgfile(elem, charge, mult, nexc, basis, dataset, datapath), "rb") as f:
+    with open(Species._msgfile(elem, charge, mult, nexc, dataset, datapath), "rb") as f:
         msg = unpack_msg(f)
     # Convert raw bytes back to numpy arrays, initialize the Species instance, return it
     return Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
 
 
-def compile(elem, charge, mult, nexc=0, basis=None, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+def compile(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Compile an atomic or ionic species into the AtomDB database."""
     # Ensure directories exist
-    if basis is None:
-        makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
-    else:
-        makedirs(join(datapath, f"{dataset}/db/{basis.lower()}"), exist_ok=True)
+    makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
     makedirs(join(datapath, f"{dataset}/raw"), exist_ok=True)
     # Import the compile script for the appropriate dataset
     submodule = import_module(f"atomdb.datasets.{dataset}")
     # Compile the Species instance and dump the database entry
-    submodule.run(elem, charge, mult, nexc, basis, dataset, datapath)._dump(datapath)
+    submodule.run(elem, charge, mult, nexc, dataset, datapath)._dump(datapath)
 
 
-def datafile(suffix, elem, basis, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
+def datafile(suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
     r"""Return the filename of a raw data file."""
     # Check that all non-optional arguments are specified
     if dataset is None:
         raise ValueError("Argument `dataset` cannot be unspecified")
     # Format the filename specified and return it
     suffix = f"{'' if suffix.startswith('.') else '_'}{suffix.lower()}"
-    return join(datapath, f"{dataset.lower()}/raw/{elem}_{basis.lower()}_{charge}_{mult}_{nexc}{suffix}")
+    if dataset.split('_')[0] == 'hci':
+        prefix = f"{str(element_number(elem)).zfill(3)}"
+        tag = f"q{str(charge).zfill(3)}_m{mult:02d}_k{nexc:02}_sp_{dataset}"
+    return join(datapath, f"{dataset.lower()}/raw/{prefix}_{tag}{suffix}")
 
 
 def element_number(elem):
