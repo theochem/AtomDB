@@ -33,7 +33,7 @@ __all__ = [
 ]
 
 
-def run(elem, charge, mult, nexc, basis, dataset, datapath):
+def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Parse NIST related data and compile the AtomDB database entry."""
     # Check arguments
     if nexc != 0:
@@ -44,6 +44,7 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
     natom = atomdb.element_number(elem)
     nelec = natom - charge
     nspin = mult - 1
+    basis = None
 
     #
     # Element properties

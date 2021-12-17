@@ -644,7 +644,7 @@ def load_slater_wfn(element, anion=False, cation=False):
     return data
 
 
-def run(elem, charge, mult, nexc, basis, dataset, datapath):
+def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Compile the densities from Slater orbitals database entry."""
     # Check arguments
     if nexc != 0:
@@ -657,6 +657,7 @@ def run(elem, charge, mult, nexc, basis, dataset, datapath):
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
+    basis = None
 
     # Get information about the element
     if charge == 0:
