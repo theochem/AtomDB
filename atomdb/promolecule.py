@@ -48,9 +48,9 @@ class Promolecule:
         TODO: what do we do with the "index" parameter of the atom density spline functions?
 
         """
-        # Define the property as a function, and call `_extensive_property` on it
+        # Define the property as a function, and call `_extensive_global_property` on it
         f = lambda atom, radii: atom.dens_spline(radii, spin=spin, log=log)
-        return _extensive_property(self.atoms, self.coords, self.coeffs, points, f)
+        return _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
 
     def ip(self, p=1):
         r"""
@@ -62,8 +62,14 @@ class Promolecule:
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
 
-def _extensive_property(atoms, atom_coords, coeffs, points, f):
-    r"""Helper function for computing extensive properties."""
+def _extensive_global_property(atoms, coeffs, f):
+    r"""Helper function for computing extensive global properties."""
+    # Weighted sum of each atom's property value
+    return sum(coeff * f(atom) for atom, coeff in zip(atoms, coeffs))
+
+
+def _extensive_local_property(atoms, atom_coords, coeffs, points, f):
+    r"""Helper function for computing extensive local properties."""
     # Initialize property to zeros
     prop = np.zeros(len(points))
     # Add contribution from each atom
