@@ -18,6 +18,8 @@ r"""AtomDB promolecule class."""
 from .api import DEFAULT_DATAPATH, DEFAULT_DATASET
 from .api import load
 
+import numpy as np
+
 
 __all__ = [
     "Promolecule",
@@ -34,10 +36,32 @@ class Promolecule:
         r"""
         TODO: have a table of default charges/mults and make them optional inputs.
 
-
         """
         self.atoms = [
             load(atom, charge, mult, dataset=dataset, datapath=datapath)
             for atom, charge, mult in zip(atoms, charges, mults)
         ]
         self.coords = [coord for coord in coords]
+
+
+def extensive_property(atoms, atom_coords, point):
+    r"""
+    TODO: add to Promolecule class
+
+    """
+    prop = 0
+    for (atom, coords) in zip(atoms, atom_coords):
+        # Get radius between point of interest and atom
+        r = np.sqrt(np.dot(coords - point))
+        # Compute property at the proper radius
+        prop += atom.extensive_property(r)
+    return prop
+
+
+def intensive_property(atoms, p=1):
+    r"""
+    TODO: add to Promolecule class
+
+    """
+    # P-mean of each atom's property value
+    return (sum(atom.intensive_property ** p for atom in atoms) / len(atoms)) ** (1 / p)
