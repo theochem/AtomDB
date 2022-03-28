@@ -27,41 +27,55 @@ __all__ = [
 
 
 class Promolecule:
-    r"""
-    TODO: have coefficients besides the default "1".
-
-    """
+    r"""Promolecule class."""
 
     def __init__(self, atoms, coords, charges, mults, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
         r"""
         TODO: have a table of default charges/mults and make them optional inputs.
+
+        TODO: have coefficients besides the default "1".
 
         """
         self.atoms = [
             load(atom, charge, mult, dataset=dataset, datapath=datapath)
             for atom, charge, mult in zip(atoms, charges, mults)
         ]
-        self.coords = [coord for coord in coords]
+        self.coords = np.array(coords)
+        self.coeffs = np.ones(len(atoms))
+
+    def density(self, points, spin='ab', log=False):
+        r"""
+        TODO: what do we do with the "index" parameter of the atom density spline functions?
+
+        """
+        # Define the property as a function, and call `_extensive_property` on it
+        f = lambda atom, radii: atom.dens_spline(radii, spin=spin, log=log)
+        return _extensive_property(self.atoms, self.coords, self.coeffs, points, f)
+
+    def ip(self, p=1):
+        r"""
+        TODO: is there even a point to using the coefficients here? I included them...
+
+        """
+        # Define the property as a function, and call `_intensive_property` on it
+        f = lambda atom: atom.ip
+        return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
 
-def extensive_property(atoms, atom_coords, point):
-    r"""
-    TODO: add to Promolecule class
-
-    """
-    prop = 0
-    for (atom, coords) in zip(atoms, atom_coords):
-        # Get radius between point of interest and atom
-        r = np.sqrt(np.dot(coords - point))
-        # Compute property at the proper radius
-        prop += atom.extensive_property(r)
+def _extensive_property(atoms, atom_coords, coeffs, points, f):
+    r"""Helper function for computing extensive properties."""
+    # Initialize property to zeros
+    prop = np.zeros(len(points))
+    # Add contribution from each atom
+    for (atom, coord, coeff) in zip(atoms, atom_coords, coeffs):
+        # Get radius between points of interest and atom
+        radii = np.linalg.norm(points - coord, axis=1)
+        # Compute property at the proper radiii
+        prop += coeff * f(atom, radii)
     return prop
 
 
-def intensive_property(atoms, p=1):
-    r"""
-    TODO: add to Promolecule class
-
-    """
+def _intensive_property(atoms, coeffs, f, p=1):
+    r"""Helper function for computing intensive properties."""
     # P-mean of each atom's property value
-    return (sum(atom.intensive_property ** p for atom in atoms) / len(atoms)) ** (1 / p)
+    return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / len(atoms)) ** (1 / p)
