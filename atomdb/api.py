@@ -430,7 +430,7 @@ def get_element_data(elem):
 
         cov_radii = {}
         vdw_radii = {}
-        for idx, (name, val) in enumerate(zip(names, data[z])):
+        for idx, (name, val) in enumerate(zip(names, data[z-1])):
             if 'cov_radius' in name:
                 kval = name.split("_")[-1]
                 cov_radii[kval] = convertors[idx](val) if val is not "" else None
@@ -438,5 +438,5 @@ def get_element_data(elem):
                 kval = name.split("_")[-1]
                 vdw_radii[kval] = convertors[idx](val) if val is not "" else None
             elif name == 'mass':
-                mass = convertors[idx](val)
+                mass = float(val)     # mass = convertors[idx](val)
     return cov_radii, vdw_radii, mass
