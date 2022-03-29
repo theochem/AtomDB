@@ -51,7 +51,23 @@ class Promolecule:
         # Define the property as a function, and call `_extensive_global_property` on it
         f = lambda atom, radii: atom.dens_spline(radii, spin=spin, log=log)
         return _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
+    
+    def ked(self, points, spin='ab', log=False):
+        r"""
+        TODO: what do we do with the "index" parameter of the atom kinetic energy spline functions?
 
+        """
+        f = lambda atom, radii: atom.ked_spline(radii, spin=spin, log=log)
+        return _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
+    
+    def energy(self):
+        f = lambda atom: atom.energy
+        return _extensive_global_property(self.atoms, self.coeffs, f)
+    
+    def mass(self):
+        f = lambda atom: atom.mass
+        return _extensive_global_property(self.atoms, self.coeffs, f)
+    
     def ip(self, p=1):
         r"""
         TODO: is there even a point to using the coefficients here? I included them...
@@ -59,6 +75,24 @@ class Promolecule:
         """
         # Define the property as a function, and call `_intensive_property` on it
         f = lambda atom: atom.ip
+        return _intensive_property(self.atoms, self.coeffs, f, p=p)
+    
+    def mu(self, p=1):
+        r"""
+        TODO: is there even a point to using the coefficients here? I included them...
+
+        """
+        # Define the property as a function, and call `_intensive_property` on it
+        f = lambda atom: atom.mu
+        return _intensive_property(self.atoms, self.coeffs, f, p=p)
+    
+    def eta(self, p=1):
+        r"""
+        TODO: is there even a point to using the coefficients here? I included them...
+
+        """
+        # Define the property as a function, and call `_intensive_property` on it
+        f = lambda atom: atom.eta
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
 
