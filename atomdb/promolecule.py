@@ -119,3 +119,50 @@ def _intensive_property(atoms, coeffs, f, p=1):
     r"""Helper function for computing intensive properties."""
     # P-mean of each atom's property value
     return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / len(atoms)) ** (1 / p)
+
+
+def _write_cube(fname, atnums, coords, charges, cb_origin, cb_shape, cb_axis, vdata):
+    """_summary_
+
+    Parameters
+    ----------
+    fname : srt
+        File name
+    atnums : list
+        Atomic numbers
+    coords : np.array
+        Atomic coordinates
+    charges : list
+        Atomic charges
+    cb_origin : np.array
+        Box origin.
+    cb_shape : list
+        Box resolution on each axis
+    cb_axis : np.array
+        Box (X, Y, Z) axis vectors. 3D Matrix
+    vdata : np.array
+        Volumetri data
+    """
+    comments = " PROMOLECULE CUBE FILE\n  'OUTER LOOP: X, MIDDLE LOOP: Y, INNER LOOP: Z'\n"
+    natom = len(atnums)
+    nx, ny, nz = cb_shape
+    _format = lambda scalar, vector: f"{scalar:5d}" + "".join(f"{v:11.6f}" for v in vector) + "\n"
+    with open(fname, 'w') as cube:
+        # Header section
+        cube.write(comments)
+        cube.write(_format(natom, cb_origin)) # 3rd line #atoms and origin
+        for i in range(3):
+            cube.write(_format(cb_shape[i], cb_axis[i])) # axis #voxels and vector
+        for z, q, xyz in zip(atnums, charges, coords):
+            qxyz = [q]+xyz.tolist()
+            cube.write(_format(z, qxyz)) # atom#, charge and coordinates
+        # Volumetric data
+        vdata = vdata.reshape((nx,ny,nz))
+        for ix in range(nx):
+            for iy in range(ny):
+                for iz in range(nz):
+                    cube.write(f' {vdata[ix, iy, iz]:12.5E}')
+                    if (iz % 6 == 5):
+                        cube.write("\n")
+                cube.write("\n")
+                        
