@@ -28,6 +28,6 @@ if __name__ == '__main__':
         description='AtomDB',
         long_description=README,
         packages=['atomdb'],
-        package_dir={'atomdb': 'atomdb'}
+        package_dir={'atomdb': 'atomdb'},
         include_package_data=True,
     )
