@@ -115,8 +115,8 @@ class SpeciesData:
     # Electronic and molecular orbital energies
     #
     energy: float = field(default=None)
-    mo_energies: ndarray = field(default=None)
-    mo_occs: ndarray = field(default=None)
+    _mo_energies: ndarray = field(default=None)
+    _mo_occs: ndarray = field(default=None)
     #
     # Conceptual DFT related properties
     #
@@ -164,6 +164,7 @@ class Species(SpeciesData):
         r"""Initialize a Species Instance."""
         # Initialize superclass
         SpeciesData.__init__(self, *args, **kwargs)
+        self.ao = _AtomicOrbitals(self._mo_occs, self._mo_energies)
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
@@ -355,6 +356,14 @@ def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
     cls = interp1d_log if log else interp1d
     return cls(x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True)
+
+
+class _AtomicOrbitals(object):
+    """Atomic orbitals class."""
+
+    def __init__(self, ao_occs, ao_energies) -> None:
+        self.occs = ao_occs
+        self.energies = ao_energies
 
 
 def get_element_data(elem):

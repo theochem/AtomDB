@@ -670,8 +670,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Get electronic structure data
     energy = specie.energy[0]
-    mo_energy = specie.orbitals_energy.ravel()
-    mo_occ = specie.orbitals_occupation.ravel()
+    _mo_energy = specie.orbitals_energy.ravel()
+    _mo_occ = specie.orbitals_occupation.ravel()
 
     # Make grid
     points = np.linspace(*BOUND, NPOINTS)
@@ -703,8 +703,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         vdw_radii,
         mass,
         energy,
-        mo_energy,
-        mo_occ,
+        _mo_energy,
+        _mo_occ,
         rs=points,
         dens_tot=dens_tot,
         d_dens_tot=d_dens_tot,
