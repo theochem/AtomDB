@@ -59,8 +59,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Load restricted Hartree-Fock SCF
     scfdata = load_one(atomdb.datafile(".molden", elem, charge, mult, nexc, dataset, datapath))
-    mo_energy = scfdata.mo.energies
-    mo_occ = scfdata.mo.occs
+    _mo_energy = scfdata.mo.energies
+    _mo_occ = scfdata.mo.occs
     mo_coeff = scfdata.mo.coeffs
 
     # Load HCI data
@@ -123,8 +123,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         vdw_radii,
         mass,
         energy,
-        mo_energy,
-        mo_occ,
+        _mo_energy,
+        _mo_occ,
         ip,
         mu,
         eta,
