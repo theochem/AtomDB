@@ -660,12 +660,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     basis = None
 
     # Get information about the element
+    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
     if charge == 0:
-        an, cat = False, False
-    elif charge > 0:
-        an, cat = False, True
+        an, cat = [False, False]  
     else:
-        an, cat = True, False
+        # Flip Boolean list to assging cation/anion: https://stackoverflow.com/a/16726462
+        sign = lambda x: (1, -1)[x<0]       
+        an, cat = [False, True][::sign(charge)] 
+        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
+    
     specie =  AtomicDensity(elem, anion=an, cation=cat)
 
     # Get electronic structure data
@@ -685,10 +688,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Compute laplacian and kinetic energy density
     lapl_tot = None
     ked_tot = specie.lagrangian_kinetic_energy(points)
-    #
-    # Element properties
-    #
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    
 
     # Return Species instance
     return atomdb.Species(

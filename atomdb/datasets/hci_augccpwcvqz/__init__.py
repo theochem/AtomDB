@@ -103,6 +103,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Element properties
     #
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    if charge != 0:
+        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
     #
     # Conceptual-DFT properties (TODO)
     #

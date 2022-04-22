@@ -50,6 +50,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Element properties
     #
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    if charge != 0:
+        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
 
     #
     # Get the energy for the most stable electronic configuration from database_beta_1.3.0.h5.
@@ -122,6 +124,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         nexc,
         cov_radii,
         vdw_radii,
+        mass,
         energy,
         ip=ip,
         mu=mu,
