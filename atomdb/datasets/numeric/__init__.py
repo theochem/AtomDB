@@ -25,31 +25,33 @@
 """Numerical Hartree-Fock Data on a Grid."""
 
 
+import os
+
 import numpy as np
 
-from atomdb.base import Species, SpeciesTable
+import atomdb
 
 
 def load_numerical_hf_data():
     """Load data from desnity.out file into a `SpeciesTable`."""
 
-    from StringIO import StringIO
+    from io import StringIO
 
     def helper_skip():
         """Skip the header for each species."""
-        for _ in xrange(4): f.readline()
+        for _ in range(4): f.readline()
 
     def helper_data():
         """Read the grid, density, gradient, laplacian values into arrays."""
-        data = ""
-        for i in xrange(number_points):
+        data = u""
+        for i in range(number_points):
             data += f.readline()
         data = np.loadtxt(StringIO(data))
         assert data.shape == (number_points, 4)
         return data[:, 0], data[:, 1], data[:, 2], data[:, 3]
 
-    species = []
-    with open("atomdb/data/density.out", "r") as f:
+    species = {}
+    with open(os.path.join(os.path.dirname(__file__), "raw/density.out"), "r") as f:
         line = f.readline()
         while line:
             if line.startswith(" 1st line is atomic no"):
@@ -77,10 +79,66 @@ def load_numerical_hf_data():
                                "laplacian":laplacian})
 
                 # add the new atomic species
-                species.append(Species(atomic_number, number_electrons, **kwargs))
+                species[(atomic_number, number_electrons)] = kwargs
                 line = f.readline()
+                
+    return species
 
-    return SpeciesTable(species)
 
+def run(elem, charge, mult, nexc, dataset, datapath):
+    r"""Compile the densities from Slater orbitals database entry."""
+    # Check arguments
+    if nexc != 0:
+        raise ValueError("Nonzero value of `nexc` is not currently supported")
 
-table_NHFG = load_numerical_hf_data()
+    # Set up internal variables
+    elem = atomdb.element_symbol(elem)
+    natom = atomdb.element_number(elem)
+    nelec = natom - charge
+    nspin = mult - 1
+    n_up = (nelec + nspin) // 2
+    n_dn = (nelec - nspin) // 2
+    basis = None
+
+    species_table = load_numerical_hf_data()
+    data = species_table[(natom, nelec)]
+
+    # Get information about the element
+    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    if charge != 0:
+        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
+
+    # Get electronic structure data
+    energy = data["energy_components"]["E"]
+
+    # Make grid
+    points = data['grid']
+
+    # Compute densities and derivatives
+    dens_tot = data['density']
+    d_dens_tot = data['gradient']
+
+    # Compute laplacian and kinetic energy density
+    lapl_tot = data['laplacian']
+    ked_tot = None
+    
+
+    # Return Species instance
+    return atomdb.Species(
+        dataset,
+        elem,
+        natom,
+        basis,
+        nelec,
+        nspin,
+        nexc,
+        cov_radii,
+        vdw_radii,
+        mass,
+        energy,
+        rs=points,
+        dens_tot=dens_tot,
+        d_dens_tot=d_dens_tot,
+        lapl_tot=lapl_tot,
+        ked_tot=ked_tot,
+    )
