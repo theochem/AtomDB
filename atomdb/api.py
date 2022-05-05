@@ -430,13 +430,14 @@ def get_element_data(elem):
 
         cov_radii = {}
         vdw_radii = {}
+        mass = 0. # Initialize mass so it's never unbound
         for idx, (name, val) in enumerate(zip(names, data[z-1])):
             if 'cov_radius' in name:
                 kval = name.split("_")[-1]
-                cov_radii[kval] = convertors[idx](val) if val is not "" else None
+                cov_radii[kval] = convertors[idx](val) if val != "" else None
             elif 'vdw_radius' in name:
                 kval = name.split("_")[-1]
-                vdw_radii[kval] = convertors[idx](val) if val is not "" else None
+                vdw_radii[kval] = convertors[idx](val) if val != "" else None
             elif name == 'mass':
                 mass = float(val)     # mass = convertors[idx](val)
     return cov_radii, vdw_radii, mass
