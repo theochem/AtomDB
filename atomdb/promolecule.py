@@ -29,19 +29,26 @@ __all__ = [
 class Promolecule:
     r"""Promolecule class."""
 
-    def __init__(self, atoms, coords, charges, mults, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+    def __init__(self, atoms, coords, charges=None, mults=None, coeffs=None, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
         r"""
-        TODO: have a table of default charges/mults and make them optional inputs.
-
-        TODO: have coefficients besides the default "1".
-
         """
+        # Handle default charges and multiplicities
+        if charges is None:
+            charges = [0] * len(atoms)
+        if mults is None:
+            mults = [0] * len(atoms)
+        # Set atoms from species files
         self.atoms = [
             load(atom, charge, mult, dataset=dataset, datapath=datapath)
             for atom, charge, mult in zip(atoms, charges, mults)
         ]
+        # Set coordinates
         self.coords = np.array(coords)
-        self.coeffs = np.ones(len(atoms))
+        # Set coefficients
+        if coeffs is None:
+            self.coeffs = np.ones(len(atoms), dtype=float)
+        else:
+            self.coeffs = np.array(coeffs, dtype=float)
 
     def density(self, points, spin='ab', log=False):
         r"""
@@ -51,7 +58,7 @@ class Promolecule:
         # Define the property as a function, and call `_extensive_global_property` on it
         f = lambda atom, radii: atom.dens_spline(radii, spin=spin, log=log)
         return _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
-    
+
     def ked(self, points, spin='ab', log=False):
         r"""
         TODO: what do we do with the "index" parameter of the atom kinetic energy spline functions?
@@ -59,15 +66,15 @@ class Promolecule:
         """
         f = lambda atom, radii: atom.ked_spline(radii, spin=spin, log=log)
         return _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
-    
+
     def energy(self):
         f = lambda atom: atom.energy
         return _extensive_global_property(self.atoms, self.coeffs, f)
-    
+
     def mass(self):
         f = lambda atom: atom.mass
         return _extensive_global_property(self.atoms, self.coeffs, f)
-    
+
     def ip(self, p=1):
         r"""
         TODO: is there even a point to using the coefficients here? I included them...
@@ -76,7 +83,7 @@ class Promolecule:
         # Define the property as a function, and call `_intensive_property` on it
         f = lambda atom: atom.ip
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
-    
+
     def mu(self, p=1):
         r"""
         TODO: is there even a point to using the coefficients here? I included them...
@@ -85,7 +92,7 @@ class Promolecule:
         # Define the property as a function, and call `_intensive_property` on it
         f = lambda atom: atom.mu
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
-    
+
     def eta(self, p=1):
         r"""
         TODO: is there even a point to using the coefficients here? I included them...
@@ -104,21 +111,18 @@ def _extensive_global_property(atoms, coeffs, f):
 
 def _extensive_local_property(atoms, atom_coords, coeffs, points, f):
     r"""Helper function for computing extensive local properties."""
-    # Initialize property to zeros
-    prop = np.zeros(len(points))
-    # Add contribution from each atom
-    for (atom, coord, coeff) in zip(atoms, atom_coords, coeffs):
-        # Get radius between points of interest and atom
-        radii = np.linalg.norm(points - coord, axis=1)
-        # Compute property at the proper radiii
-        prop += coeff * f(atom, radii)
-    return prop
+    # Add contribution from each atom, calculating the radius between
+    # the points of interest and each atom inside the generator
+    return sum(
+        coeff * f(atom, np.linalg.norm(points - coord, axis=1))
+        for (atom, coord, coeff) in zip(atoms, atom_coords, coeffs)
+    )
 
 
 def _intensive_property(atoms, coeffs, f, p=1):
     r"""Helper function for computing intensive properties."""
     # P-mean of each atom's property value
-    return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / len(atoms)) ** (1 / p)
+    return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)) ** (1 / p)
 
 
 def _write_cube(fname, atnums, coords, charges, cb_origin, cb_shape, cb_axis, vdata):
@@ -165,4 +169,3 @@ def _write_cube(fname, atnums, coords, charges, cb_origin, cb_shape, cb_axis, vd
                     if (iz % 6 == 5):
                         cube.write("\n")
                 cube.write("\n")
-                        
