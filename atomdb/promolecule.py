@@ -29,21 +29,29 @@ __all__ = [
 class Promolecule:
     r"""Promolecule class."""
 
-    def __init__(self, atoms, coords, charges=None, mults=None, coeffs=None, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+    def __init__(self, atoms, coords, charges=None, mults=None, coeffs=None,
+                 dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH,
+                 units="bohr"):
         r"""
         """
         # Handle default charges and multiplicities
         if charges is None:
             charges = [0] * len(atoms)
         if mults is None:
-            mults = [0] * len(atoms)
+            mults = [1] * len(atoms)
         # Set atoms from species files
         self.atoms = [
             load(atom, charge, mult, dataset=dataset, datapath=datapath)
             for atom, charge, mult in zip(atoms, charges, mults)
         ]
         # Set coordinates
-        self.coords = np.array(coords)
+        self.coords = np.array(coords, dtype=float)
+        if units.lower() == "angstrom":
+            self.coords /= 1.8897259885789
+        elif units.lower() == "bohr":
+            self.coords /= 1
+        else:
+            raise ValueError("Incompatible value for \"units\"; must be 'bohr' or 'angstrom'")
         # Set coefficients
         if coeffs is None:
             self.coeffs = np.ones(len(atoms), dtype=float)
