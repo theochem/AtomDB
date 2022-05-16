@@ -28,6 +28,7 @@ load_slater_wfn : Function for reading and returning information from '.slater' 
 """
 
 
+from audioop import mul
 import numpy as np
 import os
 import re
@@ -644,22 +645,47 @@ def load_slater_wfn(element, anion=False, cation=False):
     return data
 
 
+def eval_multiplicity(orbitals, occupations):
+    r"""Evaluate multiplicity
+
+    Parameters
+    ----------
+    orbitals : list, (M,)
+        List of strings representing each of the orbitals in the electron configuration.
+        Ordered based on "S", "P", "D", etc. For example, Beryllium has ["1S", "2S"] in its electron 
+        configuration.
+    occupations : ndarray, (M, 1)
+        Number of electrons in each of the orbitals in the electron configuration.
+
+    Returns
+    -------
+    _type_
+        _description_
+    """
+    subshell_alphas = {'S': 1, 'P': 3, 'D': 5, 'F': 7}
+    na = 0
+    nb = 0
+    for i, orb in enumerate(orbitals):
+        na_sshell = subshell_alphas[orb[-1]]
+        row =  occupations[i][0] // na_sshell
+        col = occupations[i][0] % na_sshell
+        if row == 0:
+            na += row * na_sshell + col
+        elif row == 1:
+            na += row * na_sshell
+            nb += col
+    return (na - nb) + 1
+
+
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Compile the densities from Slater orbitals database entry."""
     # Check arguments
     if nexc != 0:
         raise ValueError("Nonzero value of `nexc` is not currently supported")
-
-    # Set up internal variables
-    elem = atomdb.element_symbol(elem)
-    natom = atomdb.element_number(elem)
-    nelec = natom - charge
-    nspin = mult - 1
-    n_up = (nelec + nspin) // 2
-    n_dn = (nelec - nspin) // 2
-    basis = None
-
-    # Get information about the element
+    if charge != 0 and abs(charge) > 1:
+        raise ValueError(f"`charge` must be one of -1, 0 or 1")
+    
+    # Get information about the element and label as neutral or charged specie
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
     if charge == 0:
         an, cat = [False, False]  
@@ -668,8 +694,23 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         sign = lambda x: (1, -1)[x<0]       
         an, cat = [False, True][::sign(charge)] 
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
+
+    # Set up internal variables
+    elem = atomdb.element_symbol(elem)
+    natom = atomdb.element_number(elem)
+    nelec = natom - charge
+    nspin = mult - 1
+    # n_up = (nelec + nspin) // 2
+    # n_dn = (nelec - nspin) // 2
+    basis = None    
     
+    # Retrieve Slater data
     specie =  AtomicDensity(elem, anion=an, cation=cat)
+
+    # Check multiplicity value
+    multiplicity = eval_multiplicity(specie.orbitals, specie.orbitals_occupation)
+    if mult != multiplicity:
+        raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
 
     # Get electronic structure data
     energy = specie.energy[0]
