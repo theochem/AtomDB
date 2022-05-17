@@ -454,35 +454,9 @@ def get_element_data(elem):
 
 
 def get_docstring(dataset):
-    slater_doc = """ 
-    Species included
+    """Retrieve the dataset doctring."""
+    submodule = import_module(f"atomdb.datasets.{dataset}")
+    return submodule.DOCSTRING
 
-    `neutrals` He to Xe, Cs to Lr
-    `cations` Li to Cs
-    `anions` H to I
-   
-    The slater files, both anion, cation and neutral, were obtained from the paper, 
-    `(1999), Int. J. Quantum Chem., 71: 491-497 <https://onlinelibrary.wiley.com/doi/abs/10.1002/(SICI)1097-461X(1999)71:6%3C491::AID-QUA6%3E3.0.CO;2-T>`_
+
     
-    The neutral heavy elements were obtained from the paper, 
-    `Theor Chem Acc 104, 411–413 (2000) <https://link.springer.com/article/10.1007/s002140000150>`_
-    """
-
-    nist_doc = """Load data from database_beta_1.3.0.h5 file"""
-
-    numeric_doc = """Load data from desnity.out file"""
-
-    nist_doc = """Conceptual DFT properties for atoms
-
-        Species included
-
-        `neutrals` H to Lr
-        `cations` H to Lr
-        `anions` H to Lr
-
-        The values was obtained from the paper, `Phys. Chem. Chem. Phys., 2016,18, 25721-25734 <https://doi.org/10.1039/C6CP04533B>`_.
-        For each element/charge pair the values correspond to the most stable electronic configuration.        
-        """
-
-    heather ={'slater': slater_doc, 'nist': nist_doc, 'numeric': numeric_doc}
-    return heather[dataset]

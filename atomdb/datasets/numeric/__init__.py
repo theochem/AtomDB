@@ -85,6 +85,13 @@ def load_numerical_hf_data():
     return species
 
 
+DOCSTRING = """Numeric Dataset
+
+Load data from desnity.out file into a `SpeciesTable`.
+
+"""
+
+
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Compile the densities from Slater orbitals database entry."""
     # Check arguments

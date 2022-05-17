@@ -41,7 +41,13 @@ NPOINTS = 100
 BASIS = 'aug-ccpwCVQZ'
 
 
-# def run(elem, charge, mult, nexc, basis, dataset, datapath):
+DOCSTRING = """Heat-bath Configuration Interaction (HCI) Dataset
+
+Electronic structure and density properties evaluated with aug-ccpwCVQZ basis set
+
+"""
+
+
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Run an HCI computation and compile the AtomDB database entry."""
     # Check arguments

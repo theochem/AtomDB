@@ -675,6 +675,22 @@ def eval_multiplicity(orbitals, occupations):
             na += row * na_sshell
             nb += col
     return (na - nb) + 1
+ 
+
+DOCSTRING = """Slater Dataset
+
+The following neutral and ionic (+/- 1 charge) species are available:
+
+`neutrals` He to Xe, Cs to Lr
+`cations` Li to Cs
+`anions` H to I
+
+The Slater basis set information for both anion, cation and neutral, was obtained from the paper:
+`(1999), Int. J. Quantum Chem., 71: 491-497 <https://onlinelibrary.wiley.com/doi/abs/10.1002/(SICI)1097-461X(1999)71:6%3C491::AID-QUA6%3E3.0.CO;2-T>`_
+
+The neutral heavy elements were obtained from: 
+`Theor Chem Acc 104, 411–413 (2000) <https://link.springer.com/article/10.1007/s002140000150>`_
+"""
 
 
 def run(elem, charge, mult, nexc, dataset, datapath):

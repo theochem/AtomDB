@@ -33,6 +33,20 @@ __all__ = [
 ]
 
 
+DOCSTRING = """Conceptual DFT Dataset
+
+The following neutral and ionic species are available
+
+`neutrals` H to Lr
+`cations` H to Lr
+`anions` H to Lr (up to charge -2)
+
+The values were obtained from the paper, `Phys. Chem. Chem. Phys., 2016,18, 25721-25734 <https://doi.org/10.1039/C6CP04533B>`_.
+For each element/charge pair the values correspond to the most stable electronic configuration.
+
+"""
+
+
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Parse NIST related data and compile the AtomDB database entry."""
     # Check arguments
