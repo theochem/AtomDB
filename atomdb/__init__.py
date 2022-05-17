@@ -22,6 +22,8 @@ from atomdb.units import *
 
 from atomdb.api import *
 
+from atomdb.promolecule import *
+
 
 __version__ = version
 r"""AtomDB version string."""
