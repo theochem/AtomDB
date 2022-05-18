@@ -178,7 +178,7 @@ class Species(SpeciesData):
     #
     # Density splines
     #
-    def dens_spline(self, points, spin='ab', index=None, log=False):
+    def dens_spline(self, points, spin="ab", index=None, log=False):
         """Compute electron density
 
         Parameters
@@ -195,17 +195,26 @@ class Species(SpeciesData):
             Whether the logarithm of the density is used for interpolation, by default False
 
         """
-        spins = {'a': self.dens_up, 'b': self.dens_dn, 'ab': self.dens_tot, 'm': self.dens_mag}
+        spins = {
+            "a": self.dens_up,
+            "b": self.dens_dn,
+            "ab": self.dens_tot,
+            "m": self.dens_mag,
+        }
         if index is None:
             if spins[spin] is not None:
                 spline = cubic_interp(self.rs, spins[spin], log=log)
             else:
-                raise ValueError(f'Density spline for occupied `{spin}` spin-orbitals unavailable')
+                raise ValueError(
+                    f"Density spline for occupied `{spin}` spin-orbitals unavailable"
+                )
         else:
-            raise NotImplementedError('Desnity for a subset of orbitals is not supported yet.')
+            raise NotImplementedError(
+                "Desnity for a subset of orbitals is not supported yet."
+            )
         return spline(points)
 
-    def d_dens_spline(self, points, spin='ab', index=None, log=False):
+    def d_dens_spline(self, points, spin="ab", index=None, log=False):
         r"""Compute derivative of electron density.
 
         Parameters
@@ -222,38 +231,65 @@ class Species(SpeciesData):
             Whether the logarithm of the density is used for interpolation, by default False
 
         """
-        spins = {'a': self.d_dens_up, 'b': self.d_dens_dn, 'ab': self.d_dens_tot, 'm': self.d_dens_mag}
+        spins = {
+            "a": self.d_dens_up,
+            "b": self.d_dens_dn,
+            "ab": self.d_dens_tot,
+            "m": self.d_dens_mag,
+        }
         if index is None:
             if spins[spin] is not None:
                 spline = cubic_interp(self.rs, spins[spin], log=log)
             else:
-                raise ValueError(f'Density derivative spline for occupied `{spin}` spin-orbitals unavailable.')
+                raise ValueError(
+                    f"Density derivative spline for occupied `{spin}` spin-orbitals unavailable."
+                )
         else:
-            raise NotImplementedError('Desnity derivative for a subset of orbitals is not supported yet.')
+            raise NotImplementedError(
+                "Desnity derivative for a subset of orbitals is not supported yet."
+            )
         return spline(points)
 
-    def ked_spline(self, points, spin='ab', index=None, log=True):
+    def ked_spline(self, points, spin="ab", index=None, log=True):
         r"""Compute positive definite kinetic energy density."""
-        spins = {'a': self.ked_up, 'b': self.ked_dn, 'ab': self.ked_tot, 'm': self.ked_mag}
+        spins = {
+            "a": self.ked_up,
+            "b": self.ked_dn,
+            "ab": self.ked_tot,
+            "m": self.ked_mag,
+        }
         if index is None:
             if spins[spin] is not None:
                 spline = cubic_interp(self.rs, spins[spin], log=log)
             else:
-                raise ValueError(f'Kinetic energy density for occupied `{spin}` spin-orbitals unavailable.')
+                raise ValueError(
+                    f"Kinetic energy density for occupied `{spin}` spin-orbitals unavailable."
+                )
         else:
-            raise NotImplementedError('Kinetic energy density for a subset of orbitals is not supported yet.')
+            raise NotImplementedError(
+                "Kinetic energy density for a subset of orbitals is not supported yet."
+            )
         return spline(points)
 
-    def lapl_spline(self, points, spin='ab', index=None, log=False):
+    def lapl_spline(self, points, spin="ab", index=None, log=False):
         r"""Compute Laplacian of electron density."""
-        spins = {'a': self.lapl_up, 'b': self.lapl_dn, 'ab': self.lapl_tot, 'm': self.lapl_mag}
+        spins = {
+            "a": self.lapl_up,
+            "b": self.lapl_dn,
+            "ab": self.lapl_tot,
+            "m": self.lapl_mag,
+        }
         if index is None:
             if spins[spin] is not None:
                 spline = cubic_interp(self.rs, spins[spin], log=log)
             else:
-                raise ValueError(f'Density laplacian for occupied `{spin}` spin-orbitals unavailable')
+                raise ValueError(
+                    f"Density laplacian for occupied `{spin}` spin-orbitals unavailable"
+                )
         else:
-            raise NotImplementedError('Desnity laplacian for a subset of orbitals is not supported yet.')
+            raise NotImplementedError(
+                "Desnity laplacian for a subset of orbitals is not supported yet."
+            )
         return spline(points)
 
     def to_dict(self):
@@ -269,7 +305,11 @@ class Species(SpeciesData):
 
         def default(self, obj):
             r"""Default encode function."""
-            return obj.tolist() if isinstance(obj, ndarray) else JSONEncoder.default(self, obj)
+            return (
+                obj.tolist()
+                if isinstance(obj, ndarray)
+                else JSONEncoder.default(self, obj)
+            )
 
     @staticmethod
     def _msgfile(elem, charge, mult, nexc, dataset, datapath):
@@ -279,24 +319,35 @@ class Species(SpeciesData):
     def _dump(self, datapath):
         r"""Dump the Species instance to a MessagePack file in the database."""
         # Get database entry filename
-        fn = Species._msgfile(self.elem, self.charge, self.mult, self.nexc, self.dataset, datapath)
+        fn = Species._msgfile(
+            self.elem, self.charge, self.mult, self.nexc, self.dataset, datapath
+        )
         # Convert numpy arrays to raw bytes for dumping as msgpack
-        msg = {k: _array_to_bytes(v) if isinstance(v, ndarray) else v for k, v in asdict(self).items()}
+        msg = {
+            k: _array_to_bytes(v) if isinstance(v, ndarray) else v
+            for k, v in asdict(self).items()
+        }
         # Dump msgpack entry to database
         with open(fn, "wb") as f:
             f.write(pack_msg(msg))
 
 
-def load(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+def load(
+    elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH
+):
     r"""Load an atomic or ionic species from the AtomDB database."""
     # Load database msgpack entry
     with open(Species._msgfile(elem, charge, mult, nexc, dataset, datapath), "rb") as f:
         msg = unpack_msg(f)
     # Convert raw bytes back to numpy arrays, initialize the Species instance, return it
-    return Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
+    return Species(
+        **{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()}
+    )
 
 
-def compile(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+def compile(
+    elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH
+):
     r"""Compile an atomic or ionic species into the AtomDB database."""
     # Ensure directories exist
     makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
@@ -307,14 +358,16 @@ def compile(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAUL
     submodule.run(elem, charge, mult, nexc, dataset, datapath)._dump(datapath)
 
 
-def datafile(suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
+def datafile(
+    suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH
+):
     r"""Return the filename of a raw data file."""
     # Check that all non-optional arguments are specified
     if dataset is None:
         raise ValueError("Argument `dataset` cannot be unspecified")
     # Format the filename specified and return it
     suffix = f"{'' if suffix.startswith('.') else '_'}{suffix.lower()}"
-    if dataset.split('_')[0] == 'hci':
+    if dataset.split("_")[0] == "hci":
         prefix = f"{str(element_number(elem)).zfill(3)}"
         tag = f"q{str(charge).zfill(3)}_m{mult:02d}_k{nexc:02}_sp_{dataset}"
     return join(datapath, f"{dataset.lower()}/raw/{prefix}_{tag}{suffix}")
@@ -355,7 +408,9 @@ class interp1d_log(interp1d):
 def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
     cls = interp1d_log if log else interp1d
-    return cls(x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True)
+    return cls(
+        x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True
+    )
 
 
 class _AtomicOrbitals(object):
@@ -417,10 +472,10 @@ def get_element_data(elem):
 
     z = element_number(elem)
     convertor_types = {
-        'int': (lambda s: int(s)),
-        'float': (lambda s : float(s)),
-        'au': (lambda s : float(s)),    # just for clarity, atomic units
-        'str': (lambda s: s.strip()),
+        "int": (lambda s: int(s)),
+        "float": (lambda s: float(s)),
+        "au": (lambda s: float(s)),  # just for clarity, atomic units
+        "str": (lambda s: s.strip()),
         "angstrom": (lambda s: float(s) * angstrom),
         "2angstrom": (lambda s: float(s) * angstrom / 2),
         "angstrom**3": (lambda s: float(s) * angstrom ** 3),
@@ -440,16 +495,16 @@ def get_element_data(elem):
 
         cov_radii = {}
         vdw_radii = {}
-        mass = 0. # Initialize mass so it's never unbound
-        for idx, (name, val) in enumerate(zip(names, data[z-1])):
-            if 'cov_radius' in name:
+        mass = 0.0  # Initialize mass so it's never unbound
+        for idx, (name, val) in enumerate(zip(names, data[z - 1])):
+            if "cov_radius" in name:
                 kval = name.split("_")[-1]
                 cov_radii[kval] = convertors[idx](val) if val != "" else None
-            elif 'vdw_radius' in name:
+            elif "vdw_radius" in name:
                 kval = name.split("_")[-1]
                 vdw_radii[kval] = convertors[idx](val) if val != "" else None
-            elif name == 'mass':
-                mass = float(val)     # mass = convertors[idx](val)
+            elif name == "mass":
+                mass = float(val)  # mass = convertors[idx](val)
     return cov_radii, vdw_radii, mass
 
 
@@ -457,6 +512,3 @@ def get_docstring(dataset):
     """Retrieve the dataset doctring."""
     submodule = import_module(f"atomdb.datasets.{dataset}")
     return submodule.DOCSTRING
-
-
-    
