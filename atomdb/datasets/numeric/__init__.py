@@ -123,10 +123,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Compute densities and derivatives
     dens_tot = data['density']
-    d_dens_tot = data['gradient']
+    # d_dens_tot = data['gradient']
 
     # Compute laplacian and kinetic energy density
-    lapl_tot = data['laplacian']
+    # lapl_tot = data['laplacian']
     ked_tot = None
     
 
@@ -145,7 +145,6 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         energy,
         rs=points,
         dens_tot=dens_tot,
-        d_dens_tot=d_dens_tot,
-        lapl_tot=lapl_tot,
+        # lapl_tot=lapl_tot,
         ked_tot=ked_tot,
     )
