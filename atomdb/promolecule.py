@@ -101,7 +101,7 @@ class Promolecule:
         self.coords = coords
         self.coeffs = coeffs
 
-    def density(self, points, spin='ab', log=False):
+    def density(self, points, spin="ab", log=False):
         r"""
         Compute the electron density of the promolecule at the desired points.
 
@@ -118,9 +118,11 @@ class Promolecule:
         """
         # Define the property as a function, and call `_extensive_global_property` on it
         f = lambda atom, radii: atom.dens_spline(radii, spin=spin, log=log)
-        return _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
+        return _extensive_local_property(
+            self.atoms, self.coords, self.coeffs, points, f
+        )
 
-    def ked(self, points, spin='ab', log=False):
+    def ked(self, points, spin="ab", log=False):
         r"""
         Compute the kinetic energy density of the promolecule at the desired points.
 
@@ -134,7 +136,9 @@ class Promolecule:
 
         """
         f = lambda atom, radii: atom.ked_spline(radii, spin=spin, log=log)
-        return _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
+        return _extensive_local_property(
+            self.atoms, self.coords, self.coeffs, points, f
+        )
 
     def energy(self):
         r"""Compute the energy of the promolecule."""
@@ -189,7 +193,15 @@ class Promolecule:
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
 
-def make_promolecule(atoms, coords, charges=None, mults=None, units="bohr", dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+def make_promolecule(
+    atoms,
+    coords,
+    charges=None,
+    mults=None,
+    units="bohr",
+    dataset=DEFAULT_DATASET,
+    datapath=DEFAULT_DATAPATH,
+):
     r"""
     Construct a Promolecule instance from a set of atoms and their coordinates, charges,
     and multiplicities.
@@ -233,18 +245,29 @@ def make_promolecule(atoms, coords, charges=None, mults=None, units="bohr", data
         else:
             # Floor charge
             try:
-                specie = load(atom, np.floor(charge), mult, dataset=dataset, datapath=datapath)
+                specie = load(
+                    atom, np.floor(charge), mult, dataset=dataset, datapath=datapath
+                )
                 promol_species.append(specie)
                 promol_coords.append(coord)
                 promol_coeffs.append(np.ceil(charge) - charge)
             except FileNotFoundError:
-                specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
+                specie = load(
+                    atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath
+                )
                 promol_species.append(specie)
                 promol_coords.append(coord)
-                promol_coeffs.append((element_number(atom) - charge) / (element_number(atom) - np.ceil(charge)))
-                warn("Coefficient of a species in the promolecule is >1, intensive properties might be incorrect")
+                promol_coeffs.append(
+                    (element_number(atom) - charge)
+                    / (element_number(atom) - np.ceil(charge))
+                )
+                warn(
+                    "Coefficient of a species in the promolecule is >1, intensive properties might be incorrect"
+                )
             # Ceilling charge
-            specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
+            specie = load(
+                atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath
+            )
             promol_species.append(specie)
             promol_coords.append(coord)
             promol_coeffs.append(charge - np.floor(charge))
@@ -282,7 +305,9 @@ def _extensive_local_property(atoms, atom_coords, coeffs, points, f):
 def _intensive_property(atoms, coeffs, f, p=1):
     r"""Helper function for computing intensive properties."""
     # P-mean of each atom's property value
-    return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)) ** (1 / p)
+    return (
+        sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)
+    ) ** (1 / p)
 
 
 def _write_cube(fname, atnums, coords, charges, cb_origin, cb_shape, cb_axis, vdata):
@@ -307,25 +332,31 @@ def _write_cube(fname, atnums, coords, charges, cb_origin, cb_shape, cb_axis, vd
     vdata : np.array
         Volumetri data
     """
-    comments = " PROMOLECULE CUBE FILE\n  'OUTER LOOP: X, MIDDLE LOOP: Y, INNER LOOP: Z'\n"
+    comments = (
+        " PROMOLECULE CUBE FILE\n  'OUTER LOOP: X, MIDDLE LOOP: Y, INNER LOOP: Z'\n"
+    )
     natom = len(atnums)
     nx, ny, nz = cb_shape
-    _format = lambda scalar, vector: f"{scalar:5d}" + "".join(f"{v:11.6f}" for v in vector) + "\n"
-    with open(fname, 'w') as cube:
+    _format = (
+        lambda scalar, vector: f"{scalar:5d}"
+        + "".join(f"{v:11.6f}" for v in vector)
+        + "\n"
+    )
+    with open(fname, "w") as cube:
         # Header section
         cube.write(comments)
-        cube.write(_format(natom, cb_origin)) # 3rd line #atoms and origin
+        cube.write(_format(natom, cb_origin))  # 3rd line #atoms and origin
         for i in range(3):
-            cube.write(_format(cb_shape[i], cb_axis[i])) # axis #voxels and vector
+            cube.write(_format(cb_shape[i], cb_axis[i]))  # axis #voxels and vector
         for z, q, xyz in zip(atnums, charges, coords):
-            qxyz = [q]+xyz.tolist()
-            cube.write(_format(z, qxyz)) # atom#, charge and coordinates
+            qxyz = [q] + xyz.tolist()
+            cube.write(_format(z, qxyz))  # atom#, charge and coordinates
         # Volumetric data
-        vdata = vdata.reshape((nx,ny,nz))
+        vdata = vdata.reshape((nx, ny, nz))
         for ix in range(nx):
             for iy in range(ny):
                 for iz in range(nz):
-                    cube.write(f' {vdata[ix, iy, iz]:12.5E}')
-                    if (iz % 6 == 5):
+                    cube.write(f" {vdata[ix, iy, iz]:12.5E}")
+                    if iz % 6 == 5:
                         cube.write("\n")
                 cube.write("\n")
