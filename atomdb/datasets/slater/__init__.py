@@ -740,10 +740,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     dens_tot = specie.atomic_density(points, "total")
     dens_core = specie.atomic_density(points, "core")
     dens_valence = specie.atomic_density(points, "valence")
-    d_dens_tot = specie.derivative_density(points)
+    # d_dens_tot = specie.derivative_density(points)
 
     # Compute laplacian and kinetic energy density
-    lapl_tot = None
+    # lapl_tot = None
     ked_tot = specie.lagrangian_kinetic_energy(points)
     
 
@@ -764,6 +764,5 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         _mo_occ,
         rs=points,
         dens_tot=dens_tot,
-        d_dens_tot=d_dens_tot,
         ked_tot=ked_tot,
     )

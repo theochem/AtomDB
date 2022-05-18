@@ -76,7 +76,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Prepare data for computing Species properties
     dm1_up, dm1_dn = data['rdm1']
     dm1_tot = dm1_up + dm1_dn
-    dm1_mag = dm1_up - dm1_dn
+    # dm1_mag = dm1_up - dm1_dn
 
     # Make grid
     rs = np.linspace(*BOUND, NPOINTS)
@@ -85,26 +85,19 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Compute densities and derivatives
     obasis, coord_types = from_iodata(scfdata)
-    order = np.array([1, 0, 0])
+    # order = np.array([1, 0, 0])
     dens_up = eval_dens(dm1_up, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     dens_dn = eval_dens(dm1_dn, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     dens_tot = eval_dens(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    dens_mag = eval_dens(dm1_mag, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    d_dens_up = eval_d_dens(order, dm1_up, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    d_dens_dn = eval_d_dens(order, dm1_dn, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    d_dens_tot = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    d_dens_mag = eval_d_dens(order, dm1_mag, obasis, grid, coord_type=coord_types, transform=mo_coeff)
 
     # Compute laplacian and kinetic energy density
-    order = np.array([2, 0, 0])
-    lapl_up = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    lapl_dn = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    lapl_tot = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    lapl_mag = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    # order = np.array([2, 0, 0])
+    # lapl_up = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    # lapl_dn = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    # lapl_tot = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     ked_up = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     ked_dn = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     ked_tot = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    ked_mag = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     #
     # Element properties
     #
@@ -140,17 +133,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         dens_up,
         dens_dn,
         dens_tot,
-        dens_mag,
-        d_dens_up,
-        d_dens_dn,
-        d_dens_tot,
-        d_dens_mag,
-        lapl_up,
-        lapl_dn,
-        lapl_tot,
-        lapl_mag,
+        # lapl_up,
+        # lapl_dn,
+        # lapl_tot,
         ked_up,
         ked_dn,
         ked_tot,
-        ked_mag,
     )
