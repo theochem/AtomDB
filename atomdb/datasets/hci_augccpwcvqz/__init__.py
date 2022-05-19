@@ -24,6 +24,7 @@ from gbasis.wrappers import from_iodata
 from gbasis.evals.density import evaluate_density as eval_dens
 from gbasis.evals.density import evaluate_deriv_density as eval_d_dens
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
+from gbasis.evals.density import evaluate_basis
 
 import atomdb
 
@@ -46,6 +47,32 @@ DOCSTRING = """Heat-bath Configuration Interaction (HCI) Dataset
 Electronic structure and density properties evaluated with aug-ccpwCVQZ basis set
 
 """
+
+
+def eval_orbs_density(one_density_matrix, orb_eval):
+    r"""Return each orbital density evaluated at a set of points
+
+    rho_i(r) = \sum_j P_ij \phi_i(r) \phi_j(r)
+
+    Parameters
+    ----------
+    one_density_matrix : np.ndarray(K_orb, K_orb)
+        One-electron density matrix (1DM) from K orbitals
+    orb_eval : np.ndarray(K_orb, N)
+        orbitals evaluated at a set of grid points (N).
+        These orbitals must be the basis used to evaluate the 1DM.
+
+    Returns
+    -------
+    orb_dens : np.ndarray(K_orb, N)
+        orbitals density at a set of grid points (N)
+    """
+    #
+    # Following lines were taken from Gbasis eval.py module (L60-L61)
+    #
+    density = one_density_matrix.dot(orb_eval)
+    density *= orb_eval
+    return density
 
 
 def run(elem, charge, mult, nexc, dataset, datapath):
@@ -88,9 +115,13 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Compute densities
     obasis, coord_types = from_iodata(scfdata)
-    dens_up = eval_dens(dm1_up, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    dens_dn = eval_dens(dm1_dn, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    dens_tot = eval_dens(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    orb_eval = evaluate_basis(obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    orbs_dens_up = eval_orbs_density(dm1_up, orb_eval)
+    orbs_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
+    orbs_dens = np.array([orbs_dens_up, orbs_dens_dn])
+    # dens_up = eval_dens(dm1_up, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    # dens_dn = eval_dens(dm1_dn, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    # dens_tot = eval_dens(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
 
     # Compute kinetic energy density
     ked_up = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
@@ -130,9 +161,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         mu,
         eta,
         rs,
-        dens_up,
-        dens_dn,
-        dens_tot,
+        orbs_dens,
+        # dens_up,
+        # dens_dn,
+        # dens_tot,
         ked_up,
         ked_dn,
         ked_tot,
