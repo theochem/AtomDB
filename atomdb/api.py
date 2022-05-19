@@ -115,8 +115,10 @@ class SpeciesData:
     # Electronic and molecular orbital energies
     #
     energy: float = field(default=None)
-    _mo_energies: ndarray = field(default=None)
-    _mo_occs: ndarray = field(default=None)
+    _mo_energy_a: ndarray = field(default=None)
+    _mo_energy_b: ndarray = field(default=None)
+    _mo_occs_a: ndarray = field(default=None)
+    _mo_occs_b: ndarray = field(default=None)
     #
     # Conceptual DFT related properties
     #
@@ -148,7 +150,7 @@ class Species(SpeciesData):
         r"""Initialize a Species Instance."""
         # Initialize superclass
         SpeciesData.__init__(self, *args, **kwargs)
-        self.ao = _AtomicOrbitals(self._mo_occs, self._mo_energies)
+        self.ao = _AtomicOrbitals(self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b)
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
@@ -162,8 +164,7 @@ class Species(SpeciesData):
     #
     # Density splines
     #
-    # NOTE: derivatives of spline requires eval on points
-    def interpolate_dens(self, spin='ab', index=None, log=False):
+    def interpolate_dens(self, spin='ab', index=None, log=False, deriv=0):
         """Compute electron density
 
         Parameters
@@ -178,6 +179,10 @@ class Species(SpeciesData):
             Whether the logarithm of the density is used for interpolation, by default False
 
         """
+        if spin not in ['a', 'b', 'ab', 'm']:
+            raise ValueError(
+                f"Density values for `{spin}` spin-orbitals unavailable."
+            )
         if spin == 'a':
             value_array = self.dens_up
         elif spin == 'b':
@@ -190,33 +195,24 @@ class Species(SpeciesData):
             except TypeError:
                 raise ValueError(
                     f"Magnetic density values unavailable."
-                )
-        else:
-            raise ValueError(
-                f"Density values for occupied `{spin}` spin-orbitals unavailable."
-            )
-        
+                )        
         if index is not None:
             raise NotImplementedError(
                 "Desnity for a subset of orbitals is not supported yet."
             )
-        
-        return cubic_interp(self.rs, value_array, log=log)
+        # spline = cubic_interp(self.rs, value_array, log=log)
+        # if deriv > 0:
+        #     spline = [spline._spline.derivative(nu=i) for i in range(0,deriv+1)]
+        spline = cubic_interp(self.rs, value_array, log=log)._spline.derivative(nu=deriv)
+
+        return spline
 
     def interpolate_ked(self, spin='ab', index=None, log=True):
         r"""Compute positive definite kinetic energy density."""
-        # spins = {
-        #     "a": self.ked_up,
-        #     "b": self.ked_dn,
-        #     "ab": self.ked_tot,
-        #     "m": self.dens_up - self.dens_dn,
-        # }
-        # try:
-        #     value_array = spins[spin]
-        # except KeyError:
-        #     raise ValueError(
-        #         f"Kinetic energy density for occupied `{spin}` spin-orbitals unavailable."
-        #     )
+        if spin not in ['a', 'b', 'ab', 'm']:
+            raise ValueError(
+                f"Kinetic energy density for `{spin}` spin-orbitals unavailable."
+            )
         if spin == 'a':
             value_array = self.ked_up
         elif spin == 'b':
@@ -230,10 +226,6 @@ class Species(SpeciesData):
                 raise ValueError(
                     f"Magnetic KED values unavailable."
                 )
-        else:
-            raise ValueError(
-                f"Kinetic energy density for occupied `{spin}` spin-orbitals unavailable."
-            )
         if index is not None:
             raise NotImplementedError(
                 "Kinetic energy density for a subset of orbitals is not supported yet."
@@ -365,9 +357,11 @@ def cubic_interp(x, y, log=False):
 class _AtomicOrbitals(object):
     """Atomic orbitals class."""
 
-    def __init__(self, ao_occs, ao_energies) -> None:
-        self.occs = ao_occs
-        self.energies = ao_energies
+    def __init__(self, occs_a, occs_b, energy_a, energy_b) -> None:
+        self.occs_a = occs_a
+        self.occs_b = occs_b
+        self.energy_a = energy_a
+        self.energy_b = energy_b
 
 
 def get_element_data(elem):

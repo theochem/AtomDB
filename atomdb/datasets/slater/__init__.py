@@ -645,6 +645,36 @@ def load_slater_wfn(element, anion=False, cation=False):
     return data
 
 
+def split_configuration(orbitals, occupations):
+    r"""Split electronic configuration into alpha and beta components following Hund's rule
+
+    Returns
+    -------
+    occs_a : list
+        alpha electronic configuration for each orbital (M values)
+    occs_b : list
+        beta electronic configuration for each orbital (M values)
+    """
+    subshell_alphas = {'S': 1, 'P': 3, 'D': 5, 'F': 7}
+    occs_a = []
+    occs_b = []
+    for i, orb in enumerate(orbitals):
+        n_el = (occupations[i] - 1)   # N electrons in sub shell - 1
+        na_sshell = subshell_alphas[orb[-1]]  # N alpha electrons in sub shell
+        row =  n_el // na_sshell
+        col = n_el % na_sshell
+        if row == 0:
+            na = (row * na_sshell + col) + 1
+            nb = 0
+        else:
+            na = na_sshell
+            nb = (row * na_sshell + col) - na + 1
+        occs_a.append(na)
+        occs_b.append(nb)
+    
+    return np.array(occs_a), np.array(occs_b)
+
+
 def eval_multiplicity(orbitals, occupations):
     r"""Evaluate multiplicity
 
@@ -654,26 +684,17 @@ def eval_multiplicity(orbitals, occupations):
         List of strings representing each of the orbitals in the electron configuration.
         Ordered based on "S", "P", "D", etc. For example, Beryllium has ["1S", "2S"] in its electron 
         configuration.
-    occupations : ndarray, (M, 1)
+    occupations : ndarray, (M,)
         Number of electrons in each of the orbitals in the electron configuration.
 
     Returns
     -------
-    _type_
-        _description_
+    Spin multiplicity : int
+
     """
-    subshell_alphas = {'S': 1, 'P': 3, 'D': 5, 'F': 7}
-    na = 0
-    nb = 0
-    for i, orb in enumerate(orbitals):
-        na_sshell = subshell_alphas[orb[-1]]
-        row =  occupations[i][0] // na_sshell
-        col = occupations[i][0] % na_sshell
-        if row == 0:
-            na += row * na_sshell + col
-        elif row == 1:
-            na += row * na_sshell
-            nb += col
+    occs_a, occs_b = split_configuration(orbitals, occupations)
+    na = sum(occs_a)
+    nb = sum(occs_b)
     return (na - nb) + 1
  
 
@@ -724,22 +745,24 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     specie =  AtomicDensity(elem, anion=an, cation=cat)
 
     # Check multiplicity value
-    multiplicity = eval_multiplicity(specie.orbitals, specie.orbitals_occupation)
+    mo_occ = specie.orbitals_occupation.ravel()  # these are configurations not occupations
+    multiplicity = eval_multiplicity(specie.orbitals, mo_occ)
     if mult != multiplicity:
         raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
 
     # Get electronic structure data
     energy = specie.energy[0]
-    _mo_energy = specie.orbitals_energy.ravel()
-    _mo_occ = specie.orbitals_occupation.ravel()
+    mo_energies_a = specie.orbitals_energy.ravel()  # assuming same alpha and beta energies
+    mo_occ_a, mo_occ_b = split_configuration(specie.orbitals, mo_occ)
 
     # Make grid
     points = np.linspace(*BOUND, NPOINTS)
 
     # Compute densities and derivatives
+    dens_orbs = specie.phi_matrix(points)**2 / (4 * np.pi)
     dens_tot = specie.atomic_density(points, "total")
-    dens_core = specie.atomic_density(points, "core")
-    dens_valence = specie.atomic_density(points, "valence")
+    # dens_core = specie.atomic_density(points, "core")
+    # dens_valence = specie.atomic_density(points, "valence")
     # d_dens_tot = specie.derivative_density(points)
 
     # Compute laplacian and kinetic energy density
@@ -760,8 +783,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         vdw_radii,
         mass,
         energy,
-        _mo_energy,
-        _mo_occ,
+        _mo_energy_a=mo_energies_a,
+        _mo_energy_b=mo_energies_a,
+        _mo_occs_a=mo_occ_a,
+        _mo_occs_b=mo_occ_b,
         rs=points,
         dens_tot=dens_tot,
         ked_tot=ked_tot,

@@ -65,8 +65,12 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Load restricted Hartree-Fock SCF
     scfdata = load_one(atomdb.datafile(".molden", elem, charge, mult, nexc, dataset, datapath))
-    _mo_energy = scfdata.mo.energies
-    _mo_occ = scfdata.mo.occs
+    norba = data.mo.norba
+    mo_e_up = data.mo.energies[:norba]
+    mo_e_dn = data.mo.energies[norba:]
+    occs_up, occs_dn = data.mo.occs[:norba], data.mo.occs[norba:]
+    # _mo_energies = np.array([_mo_e_up, _mo_e_dn])  # (energy_a, energy_b)
+    # _mo_occs = np.array([occs_up, occs_dn])  # (occs_a, occs_b)
     mo_coeff = scfdata.mo.coeffs
 
     # Load HCI data
@@ -76,25 +80,19 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Prepare data for computing Species properties
     dm1_up, dm1_dn = data['rdm1']
     dm1_tot = dm1_up + dm1_dn
-    # dm1_mag = dm1_up - dm1_dn
 
     # Make grid
     rs = np.linspace(*BOUND, NPOINTS)
     grid = np.zeros((NPOINTS, 3))
     grid[:, 0] = rs
 
-    # Compute densities and derivatives
+    # Compute densities
     obasis, coord_types = from_iodata(scfdata)
-    # order = np.array([1, 0, 0])
     dens_up = eval_dens(dm1_up, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     dens_dn = eval_dens(dm1_dn, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     dens_tot = eval_dens(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
 
-    # Compute laplacian and kinetic energy density
-    # order = np.array([2, 0, 0])
-    # lapl_up = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    # lapl_dn = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    # lapl_tot = eval_d_dens(order, dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    # Compute kinetic energy density
     ked_up = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     ked_dn = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     ked_tot = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
@@ -124,8 +122,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         vdw_radii,
         mass,
         energy,
-        _mo_energy,
-        _mo_occ,
+        mo_e_up,
+        mo_e_dn,
+        occs_up,
+        occs_dn,
         ip,
         mu,
         eta,
@@ -133,9 +133,6 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         dens_up,
         dens_dn,
         dens_tot,
-        # lapl_up,
-        # lapl_dn,
-        # lapl_tot,
         ked_up,
         ked_dn,
         ked_tot,
