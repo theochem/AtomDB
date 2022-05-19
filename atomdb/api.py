@@ -77,13 +77,25 @@ ELEMENTS = (
 r"""Tuple of the symbols for each of the 118 elements. The zeroth element is a placeholder."""
 
 
+MULTIPLICITIES = (
+    # fmt: off
+    0, 2, 1, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4,
+    7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 6, 7, 6, 5, 4, 1, 2,
+    1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 1, 4, 5, 6, 7, 8, 9, 6, 5, 4, 3, 2, 1, 2,
+    3, 4, 5, 6, 5, 4, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4, 5, 6, 7, 8,
+    9, 6, 5, 4, 3,
+    # fmt: on
+)
+r"""Tuple of the multiplicities for each isoelectronic series (up to 100 electrons).
+The zeroth element is a placeholder."""
+
+
 # The correct way to convert numpy arrays to bytes is different on Mac/"Darwin"
 if platform == "darwin":
     # Mac
     def _array_to_bytes(array):
         r"""Convert a numpy.ndarray instance to bytes."""
         return array.tobytes()
-
 
 else:
     # Linux and friends
@@ -205,13 +217,9 @@ class Species(SpeciesData):
             if spins[spin] is not None:
                 spline = cubic_interp(self.rs, spins[spin], log=log)
             else:
-                raise ValueError(
-                    f"Density spline for occupied `{spin}` spin-orbitals unavailable"
-                )
+                raise ValueError(f"Density spline for occupied `{spin}` spin-orbitals unavailable")
         else:
-            raise NotImplementedError(
-                "Desnity for a subset of orbitals is not supported yet."
-            )
+            raise NotImplementedError("Desnity for a subset of orbitals is not supported yet.")
         return spline(points)
 
     def d_dens_spline(self, points, spin="ab", index=None, log=False):
@@ -305,11 +313,7 @@ class Species(SpeciesData):
 
         def default(self, obj):
             r"""Default encode function."""
-            return (
-                obj.tolist()
-                if isinstance(obj, ndarray)
-                else JSONEncoder.default(self, obj)
-            )
+            return obj.tolist() if isinstance(obj, ndarray) else JSONEncoder.default(self, obj)
 
     @staticmethod
     def _msgfile(elem, charge, mult, nexc, dataset, datapath):
@@ -319,35 +323,26 @@ class Species(SpeciesData):
     def _dump(self, datapath):
         r"""Dump the Species instance to a MessagePack file in the database."""
         # Get database entry filename
-        fn = Species._msgfile(
-            self.elem, self.charge, self.mult, self.nexc, self.dataset, datapath
-        )
+        fn = Species._msgfile(self.elem, self.charge, self.mult, self.nexc, self.dataset, datapath)
         # Convert numpy arrays to raw bytes for dumping as msgpack
         msg = {
-            k: _array_to_bytes(v) if isinstance(v, ndarray) else v
-            for k, v in asdict(self).items()
+            k: _array_to_bytes(v) if isinstance(v, ndarray) else v for k, v in asdict(self).items()
         }
         # Dump msgpack entry to database
         with open(fn, "wb") as f:
             f.write(pack_msg(msg))
 
 
-def load(
-    elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH
-):
+def load(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Load an atomic or ionic species from the AtomDB database."""
     # Load database msgpack entry
     with open(Species._msgfile(elem, charge, mult, nexc, dataset, datapath), "rb") as f:
         msg = unpack_msg(f)
     # Convert raw bytes back to numpy arrays, initialize the Species instance, return it
-    return Species(
-        **{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()}
-    )
+    return Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
 
 
-def compile(
-    elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH
-):
+def compile(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Compile an atomic or ionic species into the AtomDB database."""
     # Ensure directories exist
     makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
@@ -358,9 +353,7 @@ def compile(
     submodule.run(elem, charge, mult, nexc, dataset, datapath)._dump(datapath)
 
 
-def datafile(
-    suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH
-):
+def datafile(suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
     r"""Return the filename of a raw data file."""
     # Check that all non-optional arguments are specified
     if dataset is None:
@@ -408,9 +401,7 @@ class interp1d_log(interp1d):
 def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
     cls = interp1d_log if log else interp1d
-    return cls(
-        x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True
-    )
+    return cls(x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True)
 
 
 class _AtomicOrbitals(object):
