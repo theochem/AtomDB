@@ -30,7 +30,7 @@ from sys import platform
 
 from msgpack import Packer, Unpacker
 
-from numpy import ndarray, frombuffer, exp, log
+from numpy import ndarray, frombuffer, exp, log, sum
 
 from scipy.interpolate import interp1d
 
@@ -130,11 +130,12 @@ class SpeciesData:
     #
     rs: ndarray = field(default=None)
     #
-    # Density
+    # Orbitals Density
     #
-    dens_up: ndarray = field(default=None)
-    dens_dn: ndarray = field(default=None)
-    dens_tot: ndarray = field(default=None)
+    # orbs_dens_up: ndarray = field(default=None)
+    # orbs_dens_dn: ndarray = field(default=None)
+    # orbs_dens_tot: ndarray = field(default=None)
+    orbs_dens: ndarray = field(default=None)
     #
     # Kinetic energy density
     #
@@ -177,29 +178,38 @@ class Species(SpeciesData):
             from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included, by default None
         log : bool, optional
             Whether the logarithm of the density is used for interpolation, by default False
+        deriv : int, optional
+            0 : spline of density
+            1 : first derivative of spline
+            2 : second derivative of spline
+            Default is 0
 
         """
         if spin not in ['a', 'b', 'ab', 'm']:
-            raise ValueError(
-                f"Density values for `{spin}` spin-orbitals unavailable."
-            )
-        if spin == 'a':
-            value_array = self.dens_up
+            raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
+        if spin in ['a', 'b', 'm'] and len(self.orbs_dens) != 2:
+            raise ValueError(f"Density values for `{spin}` spin-orbitals unavailable.")
+        if spin == 'ab' and self.orbs_dens is None:
+            raise ValueError(f"Electron density values unavailable in dataset {self.dataset}.")
+
+        if spin == 'ab':
+            if len(self.orbs_dens) == 2:
+                orbs_dens = self.orbs_dens[0] + self.orbs_dens[1]
+            else:
+                orbs_dens = self.orbs_dens[0]
+        elif spin == 'a':
+            orbs_dens = self.orbs_dens[0]
         elif spin == 'b':
-            value_array = self.dens_dn
-        elif spin == 'ab':
-            value_array = self.dens_tot
+            orbs_dens = self.orbs_dens[1]
         elif spin == 'm':
-            try:
-                value_array = self.dens_up - self.dens_dn
-            except TypeError:
-                raise ValueError(
-                    f"Magnetic density values unavailable."
-                )        
+            orbs_dens = self.orbs_dens[0] - self.orbs_dens[1]
+        
         if index is not None:
-            raise NotImplementedError(
-                "Desnity for a subset of orbitals is not supported yet."
-            )
+            orbs_dens = orbs_dens[index]   # M(K_orb,N)
+            # raise NotImplementedError(
+            #     "Desnity for a subset of orbitals is not supported yet."
+            # )
+        value_array = sum(orbs_dens, axis=0)
         # spline = cubic_interp(self.rs, value_array, log=log)
         # if deriv > 0:
         #     spline = [spline._spline.derivative(nu=i) for i in range(0,deriv+1)]
