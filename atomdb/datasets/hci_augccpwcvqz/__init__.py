@@ -92,10 +92,11 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Load restricted Hartree-Fock SCF
     scfdata = load_one(atomdb.datafile(".molden", elem, charge, mult, nexc, dataset, datapath))
-    norba = data.mo.norba
-    mo_e_up = data.mo.energies[:norba]
-    mo_e_dn = data.mo.energies[norba:]
-    occs_up, occs_dn = data.mo.occs[:norba], data.mo.occs[norba:]
+    norba = scfdata.mo.norba
+    mo_e_up = scfdata.mo.energies[:norba]
+    mo_e_dn = scfdata.mo.energies[norba:]
+    occs_up = scfdata.mo.occs[:norba]
+    occs_dn = scfdata.mo.occs[norba:]
     # _mo_energies = np.array([_mo_e_up, _mo_e_dn])  # (energy_a, energy_b)
     # _mo_occs = np.array([occs_up, occs_dn])  # (occs_a, occs_b)
     mo_coeff = scfdata.mo.coeffs
@@ -116,17 +117,20 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Compute densities
     obasis, coord_types = from_iodata(scfdata)
     orb_eval = evaluate_basis(obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    orbs_dens_up = eval_orbs_density(dm1_up, orb_eval)
-    orbs_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
-    orbs_dens = np.array([orbs_dens_up, orbs_dens_dn])
-    # dens_up = eval_dens(dm1_up, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    # dens_dn = eval_dens(dm1_dn, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    orb_dens_up = eval_orbs_density(dm1_up, orb_eval)
+    orb_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
+    orb_dens_tot = orb_dens_up + orb_dens_dn
+    dens_tot = np.sum(orb_dens_tot, axis=0)
     # dens_tot = eval_dens(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
 
     # Compute kinetic energy density
+    # TODO: replace bellow by kinetic energy density per orbital
     ked_up = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     ked_dn = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
     ked_tot = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+
+    # Density and KED spherical average (TODO)
+
     #
     # Element properties
     #
@@ -160,12 +164,11 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         ip,
         mu,
         eta,
-        rs,
-        orbs_dens,
-        # dens_up,
-        # dens_dn,
-        # dens_tot,
-        ked_up,
-        ked_dn,
-        ked_tot,
+        rs=rs,
+        orb_dens_up=orb_dens_up,
+        orb_dens_dn=orb_dens_dn,
+        dens_tot=dens_tot,
+        ked_up=ked_up,
+        ked_dn=ked_dn,
+        ked_tot=ked_tot,
     )
