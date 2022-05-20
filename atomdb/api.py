@@ -130,12 +130,11 @@ class SpeciesData:
     #
     rs: ndarray = field(default=None)
     #
-    # Orbitals Density
+    # Density
     #
-    # orbs_dens_up: ndarray = field(default=None)
-    # orbs_dens_dn: ndarray = field(default=None)
-    # orbs_dens_tot: ndarray = field(default=None)
-    orbs_dens: ndarray = field(default=None)
+    orb_dens_up: ndarray = field(default=None)
+    orb_dens_dn: ndarray = field(default=None)
+    dens_tot: ndarray = field(default=None)
     #
     # Kinetic energy density
     #
@@ -174,7 +173,7 @@ class Species(SpeciesData):
             Type of occupied spin orbitals which can be either "a" (for alpha), "b" (for
             beta), "ab" (for alpha + beta), and, "m" (for alpha - beta), by default 'ab'
         index : sequence of int, optional
-            Sequence of integers representing the occupied spin orbitals which are indexed
+            Sequence of integers representing the spin orbitals which are indexed
             from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included, by default None
         log : bool, optional
             Whether the logarithm of the density is used for interpolation, by default False
@@ -187,32 +186,35 @@ class Species(SpeciesData):
         """
         if spin not in ['a', 'b', 'ab', 'm']:
             raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
-        if spin in ['a', 'b', 'm'] and len(self.orbs_dens) != 2:
+        if spin in ['a', 'b', 'm'] and (self.orb_dens_up is None):
             raise ValueError(f"Density values for `{spin}` spin-orbitals unavailable.")
-        if spin == 'ab' and self.orbs_dens is None:
-            raise ValueError(f"Electron density values unavailable in dataset {self.dataset}.")
+        if index is not None and (self.orb_dens_up is None):
+            raise ValueError("Can not perform indexing since densities per orbital is missing in this dataset.")
 
-        if spin == 'ab':
-            if len(self.orbs_dens) == 2:
-                orbs_dens = self.orbs_dens[0] + self.orbs_dens[1]
-            else:
-                orbs_dens = self.orbs_dens[0]
-        elif spin == 'a':
-            orbs_dens = self.orbs_dens[0]
+        # Assign cases that require spin-densitiy data. Since these are always
+        # stored as density per orbital they work for any `index` parameter case.
+        if spin == 'a':
+            orbs_dens = self.orb_dens_up
         elif spin == 'b':
-            orbs_dens = self.orbs_dens[1]
+            orbs_dens = self.orb_dens_dn
         elif spin == 'm':
-            orbs_dens = self.orbs_dens[0] - self.orbs_dens[1]
+            orbs_dens = self.orb_dens_up - self.orb_dens_dn
         
-        if index is not None:
-            orbs_dens = orbs_dens[index]   # M(K_orb,N)
-            # raise NotImplementedError(
-            #     "Desnity for a subset of orbitals is not supported yet."
-            # )
-        value_array = sum(orbs_dens, axis=0)
-        # spline = cubic_interp(self.rs, value_array, log=log)
-        # if deriv > 0:
-        #     spline = [spline._spline.derivative(nu=i) for i in range(0,deriv+1)]
+        # Evaluate property values for interpolation. 
+        # Total density (ab) is evaluated from spin components when indexing is required
+        if index is None:
+            if spin == 'ab':
+                value_array = self.dens_tot
+            else:
+                value_array = sum(orbs_dens, axis=0)
+        else:
+            if spin == 'ab':
+                orbs_dens = self._orb_dens_up + self._orb_dens_dn
+            orbs_dens = orbs_dens[index]             # M(K_orb,N)
+            value_array = sum(orbs_dens, axis=0)     # (N,)
+        
+        if log and deriv > 0:
+            raise NotImplementedError("Derives not supported for logarithmic transformation")
         spline = cubic_interp(self.rs, value_array, log=log)._spline.derivative(nu=deriv)
 
         return spline
@@ -240,7 +242,6 @@ class Species(SpeciesData):
             raise NotImplementedError(
                 "Kinetic energy density for a subset of orbitals is not supported yet."
             )
-         
         return cubic_interp(self.rs, value_array, log=log)
 
     def to_dict(self):
