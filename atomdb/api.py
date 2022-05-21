@@ -132,8 +132,8 @@ class SpeciesData:
     #
     # Density
     #
-    orb_dens_up: ndarray = field(default=None)
-    orb_dens_dn: ndarray = field(default=None)
+    _orb_dens_up: ndarray = field(default=None)
+    _orb_dens_dn: ndarray = field(default=None)
     dens_tot: ndarray = field(default=None)
     #
     # Kinetic energy density
@@ -151,6 +151,8 @@ class Species(SpeciesData):
         # Initialize superclass
         SpeciesData.__init__(self, *args, **kwargs)
         self.ao = _AtomicOrbitals(self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b)
+        self._orb_dens_up = self._to_ndarray(self._orb_dens_up, self.ao.norba, len(self.rs))
+        self._orb_dens_dn = self._to_ndarray(self._orb_dens_dn, self.ao.norba, len(self.rs))
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
@@ -160,6 +162,9 @@ class Species(SpeciesData):
         self.charge = self.natom - self.nelec
         self.mult = self.nspin + 1
         self.doc = get_docstring(self.dataset)
+    
+    def _to_ndarray(self, array1d, n, m):
+        return array1d.reshape(n, m) if array1d is not None else None
 
     #
     # Density splines
@@ -186,19 +191,19 @@ class Species(SpeciesData):
         """
         if spin not in ['a', 'b', 'ab', 'm']:
             raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
-        if spin in ['a', 'b', 'm'] and (self.orb_dens_up is None):
+        if spin in ['a', 'b', 'm'] and (self._orb_dens_up is None):
             raise ValueError(f"Density values for `{spin}` spin-orbitals unavailable.")
-        if index is not None and (self.orb_dens_up is None):
+        if index is not None and (self._orb_dens_up is None):
             raise ValueError("Can not perform indexing since densities per orbital is missing in this dataset.")
 
         # Assign cases that require spin-densitiy data. Since these are always
         # stored as density per orbital they work for any `index` parameter case.
         if spin == 'a':
-            orbs_dens = self.orb_dens_up
+            orbs_dens = self._orb_dens_up
         elif spin == 'b':
-            orbs_dens = self.orb_dens_dn
+            orbs_dens = self._orb_dens_dn
         elif spin == 'm':
-            orbs_dens = self.orb_dens_up - self.orb_dens_dn
+            orbs_dens = self._orb_dens_up - self._orb_dens_dn
         
         # Evaluate property values for interpolation. 
         # Total density (ab) is evaluated from spin components when indexing is required
@@ -373,6 +378,8 @@ class _AtomicOrbitals(object):
         self.occs_b = occs_b
         self.energy_a = energy_a
         self.energy_b = energy_b
+        self.norba = len(energy_a) if energy_a is not None else None
+        self.norbb = len(energy_b) if energy_b is not None else None
 
 
 def get_element_data(elem):
