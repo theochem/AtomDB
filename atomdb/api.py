@@ -138,8 +138,8 @@ class SpeciesData:
     #
     # Kinetic energy density
     #
-    ked_up: ndarray = field(default=None)
-    ked_dn: ndarray = field(default=None)
+    _orb_ked_up: ndarray = field(default=None)
+    _orb_ked_dn: ndarray = field(default=None)
     ked_tot: ndarray = field(default=None)
 
 
@@ -153,6 +153,8 @@ class Species(SpeciesData):
         self.ao = _AtomicOrbitals(self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b)
         self._orb_dens_up = self._to_ndarray(self._orb_dens_up, self.ao.norba, len(self.rs))
         self._orb_dens_dn = self._to_ndarray(self._orb_dens_dn, self.ao.norba, len(self.rs))
+        self._orb_ked_up = self._to_ndarray(self._orb_ked_up, self.ao.norba, len(self.rs))
+        self._orb_ked_dn = self._to_ndarray(self._orb_ked_dn, self.ao.norba, len(self.rs))
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
@@ -230,30 +232,41 @@ class Species(SpeciesData):
         
         return cubic_interp(self.rs, value_array, log=log)
 
-    def interpolate_ked(self, spin='ab', index=None, log=True):
+    def interpolate_ked(self, spin='ab', index=None, log=True, deriv=0):
         r"""Compute positive definite kinetic energy density."""
         if spin not in ['a', 'b', 'ab', 'm']:
-            raise ValueError(
-                f"Kinetic energy density for `{spin}` spin-orbitals unavailable."
-            )
+            raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
+        if spin in ['a', 'b', 'm'] and (self._orb_ked_up is None):
+            raise ValueError(f"Kinetic energy density for `{spin}` spin-orbitals unavailable.")
+        if index is not None and (self._orb_ked_up is None):
+            raise ValueError("Can not perform indexing since orbital densities are missing in this dataset.")
+
+        # Assign cases that require spin-densitiy data. Since these are stored as density
+        # per orbital they work for any `index` parameter case.
         if spin == 'a':
-            value_array = self.ked_up
+            orbs_ked = self._orb_ked_up
         elif spin == 'b':
-            value_array = self.ked_dn
-        elif spin == 'ab':
-            value_array = self.ked_tot
+            orbs_ked = self._orb_ked_dn
         elif spin == 'm':
-            try:
-                value_array = self.ked_up - self.dens_dn
-            except TypeError:
-                raise ValueError(
-                    f"Magnetic KED values unavailable."
-                )
-        if index is not None:
-            raise NotImplementedError(
-                "Kinetic energy density for a subset of orbitals is not supported yet."
-            )
-        return cubic_interp(self.rs, value_array, log=log)
+            orbs_ked = self._orb_ked_up - self._orb_ked_dn
+        
+        # Evaluate property values for interpolation. 
+        # Total density (ab) is evaluated from spin components when indexing is required
+        if index is None:
+            if spin == 'ab':
+                value_array = self.ked_tot
+            else:
+                value_array = sum(orbs_ked, axis=0)
+        else:
+            if spin == 'ab':
+                orbs_ked = self._orb_ked_up + self._orb_ked_dn
+            orbs_ked = orbs_ked[index]              # M(K_orb,N)
+            value_array = sum(orbs_ked, axis=0)     # (N,)
+        
+        if log and deriv > 0:
+            raise NotImplementedError("Derives not supported for logarithmic transformation")
+            
+        return cubic_interp(self.rs, value_array, log=log)._spline.derivative(nu=deriv)
 
     def to_dict(self):
         r"""Return the dictionary representation of the Species instance."""
