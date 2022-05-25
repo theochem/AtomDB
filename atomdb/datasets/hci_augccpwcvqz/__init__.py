@@ -25,6 +25,7 @@ from gbasis.evals.density import evaluate_density as eval_dens
 from gbasis.evals.density import evaluate_deriv_density as eval_d_dens
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
 from gbasis.evals.density import evaluate_basis
+from gbasis.evals.eval_deriv import evaluate_deriv_basis
 
 import atomdb
 
@@ -73,6 +74,20 @@ def eval_orbs_density(one_density_matrix, orb_eval):
     density = one_density_matrix.dot(orb_eval)
     density *= orb_eval
     return density
+
+
+def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type='spherical'):
+    "Adapted from Gbasis"
+    orbt_ked = 0
+    for orders in np.identity(3, dtype=int):
+        deriv_orb_eval_one = evaluate_deriv_basis(
+            basis, points, orders, transform=transform, coord_type=coord_type
+        )
+        deriv_orb_eval_two = deriv_orb_eval_one  # orders_one == orders_two
+        density = one_density_matrix.dot(deriv_orb_eval_two)
+        density *= deriv_orb_eval_one
+        orbt_ked += density
+    return 0.5 * orbt_ked
 
 
 def run(elem, charge, mult, nexc, dataset, datapath):
@@ -124,10 +139,11 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # dens_tot = eval_dens(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
 
     # Compute kinetic energy density
-    # TODO: replace bellow by kinetic energy density per orbital
-    ked_up = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    ked_dn = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
-    ked_tot = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    # ked_tot = eval_pd_ked(dm1_tot, obasis, grid, coord_type=coord_types, transform=mo_coeff)
+    orb_ked_up = eval_orb_ked(dm1_up, obasis, grid, transform=mo_coeff, coord_type=coord_types)
+    orb_ked_dn = eval_orb_ked(dm1_dn, obasis, grid, transform=mo_coeff, coord_type=coord_types)
+    orb_ked_tot = orb_ked_up + orb_ked_dn
+    ked_tot = np.sum(orb_ked_tot, axis=0)
 
     # Density and KED spherical average (TODO)
 
@@ -168,7 +184,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         _orb_dens_up=orb_dens_up.flatten(),
         _orb_dens_dn=orb_dens_dn.flatten(),
         dens_tot=dens_tot,
-        ked_up=ked_up,
-        ked_dn=ked_dn,
+        _orb_ked_up=orb_ked_up.flatten(),
+        _orb_ked_dn=orb_ked_dn.flatten(),
         ked_tot=ked_tot,
     )
