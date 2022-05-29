@@ -169,7 +169,7 @@ class Species(SpeciesData):
     #
     # Density splines
     #
-    def interpolate_dens(self, spin='ab', index=None, log=False, deriv=0):
+    def interpolate_dens(self, spin='ab', index=None, log=False):
         """Compute electron density
 
         Parameters
@@ -182,12 +182,22 @@ class Species(SpeciesData):
             from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included, by default None
         log : bool, optional
             Whether the logarithm of the density is used for interpolation, by default False
-        deriv : int, optional
-            0 : spline of density
-            1 : first derivative of spline
-            2 : second derivative of spline
-            Default is 0
-
+        
+        Returns
+        -------
+        Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
+            a callable function evaluating the density and its derivatives up to order 2 given
+            a set of radial points (1-D array).
+        
+        Examples
+        --------
+        # Generate the interpolator for the atomic density and its derivatives 
+        >>> dens_spline = interpolate_dens(log=True)
+        # Define a radial set of points to be interpolated
+        >>> x = np.arange(0, 5)
+        >>> dens = dens_spline(x)            # interpolated density
+        >>> d_dens = dens_spline(x, deriv=1) # interpolated derivative of density 
+        >>> d_dens = dens_spline(x, deriv=2) # interpolated second derivative of density
         """
         if spin not in ['a', 'b', 'ab', 'm']:
             raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
@@ -218,11 +228,10 @@ class Species(SpeciesData):
             orbs_dens = orbs_dens[index]             # M(K_orb,N)
             value_array = sum(orbs_dens, axis=0)     # (N,)
         
-        if log and deriv > 0:
-            raise NotImplementedError("Derives not supported for logarithmic transformation")
-        spline = cubic_interp(self.rs, value_array, log=log)._spline.derivative(nu=deriv)
+        # if log and deriv > 0:
+        #     raise NotImplementedError("Derives not supported for logarithmic transformation")
 
-        return spline
+        return cubic_interp(self.rs, value_array, log=log)
 
     def interpolate_ked(self, spin='ab', index=None, log=True):
         r"""Compute positive definite kinetic energy density."""
@@ -357,14 +366,70 @@ class interp1d_log(interp1d):
         r"""Initialize the interp1d_log instance."""
         interp1d.__init__(self, x, log(y), **kwargs)
 
-    def __call__(self, x):
-        r"""Compute the interpolation at some x-values."""
-        return exp(interp1d.__call__(self, x))
+    def __call__(self, x, deriv=0):
+        r"""Compute the interpolation at some x-values.
+        
+        Parameters
+        ----------
+        x : ndarray(M,)
+            points to be interpolated.
+        deriv: int, optional
+            order of spline derivative to evaluate. Must be one of 0, 1 and 2, default is 0.
+        
+        Returns
+        -------
+        ndarray(M,)
+            Interpolated values (1-D array).
+        """
+        if deriv not in [0, 1, 2]:
+            raise NotImplementedError
+        
+        y = exp(interp1d.__call__(self, x))
+        if deriv == 1:
+            # d(rho(r)) = d(log(rho(r))) * rho(r)
+            dlogy = self._spline.__call__(x, nu=1)
+            y = dlogy.flatten() * y
+        elif deriv == 2:
+            # d^2(rho(r)) = d^2(log(rho(r))) * rho(r) + [d(rho(r))]^2/rho(r)
+            dlogy = self._spline.__call__(x, nu=1)
+            d2logy = self._spline.__call__(x, nu=2)
+            y = d2logy.flatten() * y + dlogy.flatten()**2 * y 
+        
+        return y
+
+
+class interp1d_(interp1d):
+    r"""Interpolate over a 1-D grid."""
+
+    def __init__(self, x, y, **kwargs):
+        r"""Initialize the interp1d_log instance."""
+        interp1d.__init__(self, x, y, **kwargs)
+
+    def __call__(self, x, deriv=0):
+        r"""Compute the interpolation at some x-values.
+        
+        Parameters
+        ----------
+        x : ndarray(M,)
+            points to be interpolated.
+        deriv: int, optional
+            order of spline derivative to evaluate, default is 0.
+        
+        Returns
+        -------
+        ndarray(M,)
+            Interpolated values (1-D array).
+        """
+        if deriv != 0:
+            y = self._spline.__call__(x, nu=deriv)
+        else:
+            y = interp1d.__call__(self, x)
+        return y
 
 
 def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
-    cls = interp1d_log if log else interp1d
+    cls = interp1d_log if log else interp1d_
     return cls(
         x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True
     )
