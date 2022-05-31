@@ -32,7 +32,7 @@ from msgpack import Packer, Unpacker
 
 from numpy import ndarray, frombuffer, exp, log, sum
 
-from scipy.interpolate import interp1d
+from scipy.interpolate import CubicSpline
 
 from csv import reader
 
@@ -197,7 +197,7 @@ class Species(SpeciesData):
         >>> x = np.arange(0, 5)
         >>> dens = dens_spline(x)            # interpolated density
         >>> d_dens = dens_spline(x, deriv=1) # interpolated derivative of density 
-        >>> d_dens = dens_spline(x, deriv=2) # interpolated second derivative of density
+        >>> d2_dens = dens_spline(x, deriv=2) # interpolated second derivative of density
         """
         if spin not in ['a', 'b', 'ab', 'm']:
             raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
@@ -228,9 +228,6 @@ class Species(SpeciesData):
             orbs_dens = orbs_dens[index]             # M(K_orb,N)
             value_array = sum(orbs_dens, axis=0)     # (N,)
         
-        # if log and deriv > 0:
-        #     raise NotImplementedError("Derives not supported for logarithmic transformation")
-
         return cubic_interp(self.rs, value_array, log=log)
 
     def interpolate_ked(self, spin='ab', index=None, log=True):
@@ -359,12 +356,12 @@ def unpack_msg(msg):
     return Unpacker(msg, use_list=False, strict_map_key=True).unpack()
 
 
-class interp1d_log(interp1d):
+class cubicspline_log(CubicSpline):
     r"""Interpolate over a 1-D grid."""
 
     def __init__(self, x, y, **kwargs):
-        r"""Initialize the interp1d_log instance."""
-        interp1d.__init__(self, x, log(y), **kwargs)
+        r"""Initialize the CubicSpline instance."""
+        CubicSpline.__init__(self, x, log(y), **kwargs)
 
     def __call__(self, x, deriv=0):
         r"""Compute the interpolation at some x-values.
@@ -384,26 +381,26 @@ class interp1d_log(interp1d):
         if deriv not in [0, 1, 2]:
             raise NotImplementedError
         
-        y = exp(interp1d.__call__(self, x))
+        y = exp(CubicSpline.__call__(self, x))
         if deriv == 1:
             # d(rho(r)) = d(log(rho(r))) * rho(r)
-            dlogy = self._spline.__call__(x, nu=1)
+            dlogy = CubicSpline.__call__(self, x, nu=1)
             y = dlogy.flatten() * y
         elif deriv == 2:
             # d^2(rho(r)) = d^2(log(rho(r))) * rho(r) + [d(rho(r))]^2/rho(r)
-            dlogy = self._spline.__call__(x, nu=1)
-            d2logy = self._spline.__call__(x, nu=2)
-            y = d2logy.flatten() * y + dlogy.flatten()**2 * y 
+            dlogy = CubicSpline.__call__(self, x, nu=1)
+            d2logy = CubicSpline.__call__(self, x, nu=2)
+            y = d2logy.flatten() * y + dlogy.flatten()**2 * y
         
         return y
 
 
-class interp1d_(interp1d):
+class cubicspline_(CubicSpline):
     r"""Interpolate over a 1-D grid."""
 
     def __init__(self, x, y, **kwargs):
-        r"""Initialize the interp1d_log instance."""
-        interp1d.__init__(self, x, y, **kwargs)
+        r"""Initialize the CubicSpline instance."""
+        CubicSpline.__init__(self, x, y, **kwargs)
 
     def __call__(self, x, deriv=0):
         r"""Compute the interpolation at some x-values.
@@ -420,18 +417,14 @@ class interp1d_(interp1d):
         ndarray(M,)
             Interpolated values (1-D array).
         """
-        if deriv != 0:
-            y = self._spline.__call__(x, nu=deriv)
-        else:
-            y = interp1d.__call__(self, x)
-        return y
+        return CubicSpline.__call__(self, x, nu=deriv)
 
 
 def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
-    cls = interp1d_log if log else interp1d_
+    cls = cubicspline_log if log else cubicspline_
     return cls(
-        x, y, kind="cubic", copy=False, fill_value="extrapolate", assume_sorted=True
+        x, y, axis=0, bc_type='not-a-knot', extrapolate=True
     )
 
 
