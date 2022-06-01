@@ -43,8 +43,8 @@ def test_numerical_hf_data_h():
     # check shape of arrays
     assert_equal(sp.rs.shape, (122,))
     assert_equal(sp.dens_tot.shape, (122,))
-    assert_equal(sp.d_dens_tot.shape, (122,))
-    assert_equal(sp.lapl_tot.shape, (122,))
+    # assert_equal(sp.d_dens_tot.shape, (122,))
+    # assert_equal(sp.lapl_tot.shape, (122,))
     # check array elements
     assert_equal(sp.rs >= 0.0, [True] * 122)
     assert_equal(sp.dens_tot >= 0.0, [True] * 122)
@@ -53,10 +53,10 @@ def test_numerical_hf_data_h():
     assert_almost_equal(sp.dens_tot[:2], [0.318309887124870, 0.306860767394852], decimal=10)
     assert_almost_equal(sp.dens_tot[4:6], [0.304551328899830, 0.303684673354233], decimal=10)
     assert_almost_equal(sp.dens_tot[-2:], [0., 0.], decimal=10)
-    assert_almost_equal(sp.d_dens_tot[:2], [-0.636619761671399, -0.613581739284137], decimal=10)
-    assert_almost_equal(sp.d_dens_tot[-2:], [0., 0.], decimal=10)
-    assert_almost_equal(sp.lapl_tot[:2], [0., -0.218412158120713e-1], decimal=10)
-    assert_almost_equal(sp.lapl_tot[-2:], [0., 0.], decimal=10)
+    # assert_almost_equal(sp.d_dens_tot[:2], [-0.636619761671399, -0.613581739284137], decimal=10)
+    # assert_almost_equal(sp.d_dens_tot[-2:], [0., 0.], decimal=10)
+    # assert_almost_equal(sp.lapl_tot[:2], [0., -0.218412158120713e-1], decimal=10)
+    # assert_almost_equal(sp.lapl_tot[-2:], [0., 0.], decimal=10)
 
 
 def test_numerical_hf_data_h_anion():
@@ -72,8 +72,8 @@ def test_numerical_hf_data_h_anion():
     # check shape of arrays
     assert_equal(sp.rs.shape, (139,))
     assert_equal(sp.dens_tot.shape, (139,))
-    assert_equal(sp.d_dens_tot.shape, (139,))
-    assert_equal(sp.lapl_tot.shape, (139,))
+    # assert_equal(sp.d_dens_tot.shape, (139,))
+    # assert_equal(sp.lapl_tot.shape, (139,))
     # check array elements
     assert_equal(sp.rs >= 0., [True] * 139)
     assert_equal(sp.dens_tot >= 0., [True] * 139)
@@ -83,9 +83,9 @@ def test_numerical_hf_data_h_anion():
     assert_almost_equal(sp.dens_tot[:2], [0.309193381788357, 0.298087713771564], decimal=10)
     assert_almost_equal(sp.dens_tot[7:9], [0.293177850175325, 0.292176126765437], decimal=10)
     assert_almost_equal(sp.dens_tot[-20:], [0.] * 20, decimal=10)
-    assert_almost_equal(sp.d_dens_tot[:2], [-0.618386750431843, -0.594311093621533], decimal=10)
-    assert_almost_equal(sp.d_dens_tot[20:22], [-0.543476018733641, -0.538979599233911], decimal=10)
-    assert_almost_equal(sp.d_dens_tot[-20:], [0.] * 20, decimal=10)
-    assert_almost_equal(sp.lapl_tot[:2], [0.0, -0.211096500535927e-1], decimal=10)
-    assert_almost_equal(sp.lapl_tot[26:28], [-0.811997961294052e-1, -0.848374851308609e-1], decimal=10)
-    assert_almost_equal(sp.lapl_tot[-15:], [0.] * 15, decimal=10)
+    # assert_almost_equal(sp.d_dens_tot[:2], [-0.618386750431843, -0.594311093621533], decimal=10)
+    # assert_almost_equal(sp.d_dens_tot[20:22], [-0.543476018733641, -0.538979599233911], decimal=10)
+    # assert_almost_equal(sp.d_dens_tot[-20:], [0.] * 20, decimal=10)
+    # assert_almost_equal(sp.lapl_tot[:2], [0.0, -0.211096500535927e-1], decimal=10)
+    # assert_almost_equal(sp.lapl_tot[26:28], [-0.811997961294052e-1, -0.848374851308609e-1], decimal=10)
+    # assert_almost_equal(sp.lapl_tot[-15:], [0.] * 15, decimal=10)
