@@ -232,7 +232,7 @@ class Species(SpeciesData):
         
         return cubic_interp(self.rs, value_array, log=log)
 
-    def interpolate_ked(self, spin='ab', index=None, log=True, deriv=0):
+    def interpolate_ked(self, spin='ab', index=None, log=True):
         r"""Compute positive definite kinetic energy density."""
         if spin not in ['a', 'b', 'ab', 'm']:
             raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
@@ -262,11 +262,8 @@ class Species(SpeciesData):
                 orbs_ked = self._orb_ked_up + self._orb_ked_dn
             orbs_ked = orbs_ked[index]              # M(K_orb,N)
             value_array = sum(orbs_ked, axis=0)     # (N,)
-        
-        if log and deriv > 0:
-            raise NotImplementedError("Derives not supported for logarithmic transformation")
             
-        return cubic_interp(self.rs, value_array, log=log)._spline.derivative(nu=deriv)
+        return cubic_interp(self.rs, value_array, log=log)
 
     def to_dict(self):
         r"""Return the dictionary representation of the Species instance."""
