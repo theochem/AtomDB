@@ -39,9 +39,9 @@ import atomdb
 __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
 
 
-BOUND = (0.01, 1.0)
+BOUND = (0.0, 15.0)
 
-NPOINTS = 100
+NPOINTS = 10000
 
 
 class AtomicDensity:
@@ -672,7 +672,7 @@ def split_configuration(orbitals, occupations):
         occs_a.append(na)
         occs_b.append(nb)
     
-    return np.array(occs_a), np.array(occs_b)
+    return np.array(occs_a, dtype=float), np.array(occs_b, dtype=float)
 
 
 def eval_multiplicity(orbitals, occupations):
@@ -695,7 +695,7 @@ def eval_multiplicity(orbitals, occupations):
     occs_a, occs_b = split_configuration(orbitals, occupations)
     na = sum(occs_a)
     nb = sum(occs_b)
-    return (na - nb) + 1
+    return int((na - nb)) + 1
  
 
 DOCSTRING = """Slater Dataset
