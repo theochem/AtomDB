@@ -523,7 +523,7 @@ def get_element_data(elem):
                 kval = name.split("_")[-1]
                 vdw_radii[kval] = convertors[idx](val) if val != "" else None
             elif name == "mass":
-                mass = float(val)  # mass = convertors[idx](val)
+                mass = float(val) if val != "" else None
     return cov_radii, vdw_radii, mass
 
 
