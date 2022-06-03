@@ -97,6 +97,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Check arguments
     if nexc != 0:
         raise ValueError("Nonzero value of `nexc` is not currently supported")
+    # FIXME: check input multiplicity against tabulated values for isoelectronic serie
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
@@ -145,6 +146,5 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         energy,
         rs=points,
         dens_tot=dens_tot,
-        # lapl_tot=lapl_tot,
         ked_tot=ked_tot,
     )
