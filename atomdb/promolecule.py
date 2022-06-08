@@ -117,7 +117,7 @@ class Promolecule:
 
         """
         # Define the property as a function, and call `_extensive_global_property` on it
-        f = lambda atom, radii: atom.dens_spline(radii, spin=spin, log=log)
+        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
         return _extensive_local_property(
             self.atoms, self.coords, self.coeffs, points, f
         )
@@ -135,7 +135,7 @@ class Promolecule:
             May be slightly more accurate.
 
         """
-        f = lambda atom, radii: atom.ked_spline(radii, spin=spin, log=log)
+        f = lambda atom: atom.interpolate_ked(spin=spin, log=log)
         return _extensive_local_property(
             self.atoms, self.coords, self.coeffs, points, f
         )
@@ -296,9 +296,10 @@ def _extensive_local_property(atoms, atom_coords, coeffs, points, f):
     r"""Helper function for computing extensive local properties."""
     # Add contribution from each atom, calculating the radius between
     # the points of interest and each atom inside the generator
+    splines = [f(atom) for atom in atoms]
     return sum(
-        coeff * f(atom, np.linalg.norm(points - coord, axis=1))
-        for (atom, coord, coeff) in zip(atoms, atom_coords, coeffs)
+        coeff * spline(np.linalg.norm(points - coord, axis=1))
+        for (spline, coord, coeff) in zip(splines, atom_coords, coeffs)
     )
 
 
