@@ -116,11 +116,9 @@ class Promolecule:
             May be slightly more accurate.
 
         """
-        # Define the property as a function, and call `_extensive_global_property` on it
+        # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
-        return _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f
-        )
+        return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
 
     def ked(self, points, spin="ab", log=False):
         r"""
@@ -136,9 +134,7 @@ class Promolecule:
 
         """
         f = lambda atom: atom.interpolate_ked(spin=spin, log=log)
-        return _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f
-        )
+        return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
 
     def energy(self):
         r"""Compute the energy of the promolecule."""
@@ -191,6 +187,118 @@ class Promolecule:
         # Define the property as a function, and call `_intensive_property` on it
         f = lambda atom: atom.eta
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
+
+    def gradient(self, points, spin="ab", log=False):
+        r"""
+        Compute the electron density gradient of the promolecule at the desired points.
+
+        Parameters
+        ----------
+        points: np.ndarray((N, 3), dtype=float)
+            Points at which to compute the density.
+        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+        log: bool, default=False
+            Whether to compute the log of the density instead of the density itself.
+            May be slightly more accurate.
+        
+        """
+        # Define the property as a function, and call `_extensive_local_property` on it
+        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
+        atoms_ddens = _extensive_local_property(
+            self.atoms, self.coords, self.coeffs, points, f, deriv=1
+        )
+        # Define a unit vector function
+        unit_v = lambda vector: vector / np.linalg.norm(vector)
+
+        return sum(
+            ddens[:, None] * unit_v(points - coord)
+            for (ddens, coord) in zip(atoms_ddens, self.coords)
+        ).T
+
+    def hessian(self, points, spin="ab", log=False):
+        r"""
+        Compute the promolecule's electron density Hessian at the desired points.
+
+        Parameters
+        ----------
+        points: np.ndarray((N, 3), dtype=float)
+            Points at which to compute the density.
+        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+        log: bool, default=False
+            Whether to compute the log of the density instead of the density itself.
+            May be slightly more accurate.
+        
+        """
+        # Define the property as a function, and call `_extensive_local_property` on it
+        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
+        atoms_ddens = _extensive_local_property(
+            self.atoms, self.coords, self.coeffs, points, f, deriv=1
+        )
+        atoms_d2dens = _extensive_local_property(
+            self.atoms, self.coords, self.coeffs, points, f, deriv=2
+        )
+
+        # Evaluate the derivatives of the radii
+        atoms_router_triu = np.array(
+            [_radial_vector_outer_triu(points - coord) for coord in self.coords]
+        )
+
+        # Get the unique elements of the Hessian
+        # \sum_A c_A [d^2f_A/dx^2, d^2f_A/dxdy, d^2f_A/dxdz, d^2f_A/dydz, d^2f_A/dz]
+        # where
+        # d^2f_A/dx^2 = (d^2f_A/dr^2 - df_A/dr) (dr_A/dx)^2 + shift
+        # d^2f_A/dxdy = (d^2f_A/dr^2 - df_A/dr) d^r_A/dx d^r_A/dy
+        interm = 0
+        for (d2dens, ddens, rhess) in zip(atoms_d2dens, atoms_ddens, atoms_router_triu):
+            interm += (d2dens - ddens)[:, None] * rhess
+
+        # Reconstruct the Hessian matrix
+        mask = [0, 1, 2, 4, 5, 8]  # upper triangular indexes row-major order
+        hess = np.zeros((len(points), 9))
+        hess[:, mask] = interm
+        hess = hess.reshape(len(points), 3, 3)
+        # Shift diagonal terms by \sum_A c_A df_A/dr |r - R_A|^(-1)
+        for i in range(3):
+            hess[:, i, i] += sum(
+                ddens / np.linalg.norm(points - coord)
+                for (ddens, coord) in zip(atoms_ddens, self.coords)
+            )
+        hess += hess.transpose((0, 2, 1))
+        for p in range(len(points)):
+            hess[p] = hess[p] - np.diag(np.diag(hess[p]) / 2)
+        return hess
+
+    def laplacian(self, points, spin="ab", log=False):
+        r"""
+        Compute the promolecule's electron density Laplacian at the desired points.
+
+        Parameters
+        ----------
+        points: np.ndarray((N, 3), dtype=float)
+            Points at which to compute the density.
+        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+        log: bool, default=False
+            Whether to compute the log of the density instead of the density itself.
+            May be slightly more accurate.
+        
+        """
+        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
+        shift = lambda dens, radii: 3 * dens / np.linalg.norm(radii)
+        # Radial derivatives of the density
+        atoms_ddens = _extensive_local_property(
+            self.atoms, self.coords, self.coeffs, points, f, deriv=1
+        )
+        atoms_d2dens = _extensive_local_property(
+            self.atoms, self.coords, self.coeffs, points, f, deriv=2
+        )
+
+        return sum(
+            d2dens - ddens + shift(ddens, points - coord)
+            for (d2dens, ddens, coord) in zip(atoms_d2dens, atoms_ddens, self.coords)
+        )
 
 
 def make_promolecule(
@@ -245,29 +353,22 @@ def make_promolecule(
         else:
             # Floor charge
             try:
-                specie = load(
-                    atom, np.floor(charge), mult, dataset=dataset, datapath=datapath
-                )
+                specie = load(atom, np.floor(charge), mult, dataset=dataset, datapath=datapath)
                 promol_species.append(specie)
                 promol_coords.append(coord)
                 promol_coeffs.append(np.ceil(charge) - charge)
             except FileNotFoundError:
-                specie = load(
-                    atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath
-                )
+                specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
                 promol_species.append(specie)
                 promol_coords.append(coord)
                 promol_coeffs.append(
-                    (element_number(atom) - charge)
-                    / (element_number(atom) - np.ceil(charge))
+                    (element_number(atom) - charge) / (element_number(atom) - np.ceil(charge))
                 )
                 warn(
                     "Coefficient of a species in the promolecule is >1, intensive properties might be incorrect"
                 )
             # Ceilling charge
-            specie = load(
-                atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath
-            )
+            specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
             promol_species.append(specie)
             promol_coords.append(coord)
             promol_coeffs.append(charge - np.floor(charge))
@@ -292,15 +393,15 @@ def _extensive_global_property(atoms, coeffs, f):
     return sum(coeff * f(atom) for atom, coeff in zip(atoms, coeffs))
 
 
-def _extensive_local_property(atoms, atom_coords, coeffs, points, f):
+def _extensive_local_property(atoms, atom_coords, coeffs, points, f, deriv=0):
     r"""Helper function for computing extensive local properties."""
     # Add contribution from each atom, calculating the radius between
     # the points of interest and each atom inside the generator
     splines = [f(atom) for atom in atoms]
-    return sum(
-        coeff * spline(np.linalg.norm(points - coord, axis=1))
+    return [
+        coeff * spline(np.linalg.norm(points - coord, axis=1), deriv=deriv)
         for (spline, coord, coeff) in zip(splines, atom_coords, coeffs)
-    )
+    ]
 
 
 def _intensive_property(atoms, coeffs, f, p=1):
@@ -311,53 +412,14 @@ def _intensive_property(atoms, coeffs, f, p=1):
     ) ** (1 / p)
 
 
-def _write_cube(fname, atnums, coords, charges, cb_origin, cb_shape, cb_axis, vdata):
-    """_summary_
-
-    Parameters
-    ----------
-    fname : srt
-        File name
-    atnums : list
-        Atomic numbers
-    coords : np.array
-        Atomic coordinates
-    charges : list
-        Atomic charges
-    cb_origin : np.array
-        Box origin.
-    cb_shape : list
-        Box resolution on each axis
-    cb_axis : np.array
-        Box (X, Y, Z) axis vectors. 3D Matrix
-    vdata : np.array
-        Volumetri data
-    """
-    comments = (
-        " PROMOLECULE CUBE FILE\n  'OUTER LOOP: X, MIDDLE LOOP: Y, INNER LOOP: Z'\n"
-    )
-    natom = len(atnums)
-    nx, ny, nz = cb_shape
-    _format = (
-        lambda scalar, vector: f"{scalar:5d}"
-        + "".join(f"{v:11.6f}" for v in vector)
-        + "\n"
-    )
-    with open(fname, "w") as cube:
-        # Header section
-        cube.write(comments)
-        cube.write(_format(natom, cb_origin))  # 3rd line #atoms and origin
-        for i in range(3):
-            cube.write(_format(cb_shape[i], cb_axis[i]))  # axis #voxels and vector
-        for z, q, xyz in zip(atnums, charges, coords):
-            qxyz = [q] + xyz.tolist()
-            cube.write(_format(z, qxyz))  # atom#, charge and coordinates
-        # Volumetric data
-        vdata = vdata.reshape((nx, ny, nz))
-        for ix in range(nx):
-            for iy in range(ny):
-                for iz in range(nz):
-                    cube.write(f" {vdata[ix, iy, iz]:12.5E}")
-                    if iz % 6 == 5:
-                        cube.write("\n")
-                cube.write("\n")
+def _radial_vector_outer_triu(radii):
+    r""" Evaluate the outer products of a set of radial unit vectrors."""
+    # Define a unit vector function
+    unit_v = lambda vector: vector / np.linalg.norm(vector)
+    # Store only upper triangular elements of the matrix.
+    indices = [0, 1, 2, 4, 5, 8]  # row-major order (ij = 3 * i + j)
+    radv_outer = np.empty((len(radii), len(indices)))
+    # Outer product of each radial unit vector
+    for col, ij in enumerate(indices):
+        radv_outer[:, col] = unit_v(radii)[:, ij // 3] * unit_v(radii)[:, ij % 3]
+    return radv_outer
