@@ -70,3 +70,15 @@ def test_gaussian_hf_data_be():
     assert_almost_equal(4 * np.pi * np.trapz(grid ** 2 * dens, grid), 4, decimal=4)
     dens_a = np.sum(orb_dens_a, axis=0)
     assert_almost_equal(4 * np.pi * np.trapz(grid ** 2 * dens_a, grid), 2, decimal=4)
+    # check interpolated densities
+    spline = sp.interpolate_dens(spin='ab', log=False)
+    assert_almost_equal(spline(grid), dens, decimal=6)
+    spline = sp.interpolate_ked(spin='ab', log=False)
+    assert_almost_equal(spline(grid), sp.ked_tot, decimal=6)
+    # FIXME: density derivatives tests fail.
+    # # check density derivatives
+    # stepsize = 1e-8
+    # gradient = np.gradient(dens, stepsize)
+    # assert_almost_equal(spline(grid, deriv=1), gradient, decimal=6)
+    # d2dens = np.gradient(gradient, stepsize)
+    # assert_almost_equal(spline(grid, deriv=2), d2dens, decimal=6)
