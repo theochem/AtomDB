@@ -15,8 +15,8 @@
 
 r"""AtomDB promolecule submodule."""
 
-from .api import DEFAULT_DATAPATH, DEFAULT_DATASET
-from .api import load, element_number
+from .api import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES
+from .api import load, element_number, element_symbol
 
 from numbers import Integral
 
@@ -118,7 +118,7 @@ class Promolecule:
         """
         # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
-        return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
+        return 4 * np.pi * sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
 
     def ked(self, points, spin="ab", log=False):
         r"""
@@ -302,7 +302,7 @@ class Promolecule:
 
 
 def make_promolecule(
-    atoms,
+    atnums,
     coords,
     charges=None,
     mults=None,
@@ -316,8 +316,8 @@ def make_promolecule(
 
     Parameters
     ----------
-    atoms: list of str
-        List of element symbols for each atom.
+    atnums: list of int
+        List of element number for each atom.
     coords: list of np.ndarray((3,), dtype=float)
         List of coordinates for each atom.
     charges: list of (int | float), default=[0, ..., 0]
@@ -332,11 +332,12 @@ def make_promolecule(
         System path where the desired data set is located.
 
     """
+    atoms = [element_symbol(atom) for atom in atnums]
     # Handle default "None" parameters
     if charges is None:
         charges = [0] * len(atoms)
     if mults is None:
-        mults = [1] * len(atoms)
+        mults = [MULTIPLICITIES[atnum - charge] for (atnum, charge) in zip(atnums, charges)]
     # Construct linear combination of species
     promol_species = []
     promol_coords = []
@@ -399,7 +400,7 @@ def _extensive_local_property(atoms, atom_coords, coeffs, points, f, deriv=0):
     # the points of interest and each atom inside the generator
     splines = [f(atom) for atom in atoms]
     return [
-        coeff * spline(np.linalg.norm(points - coord, axis=1), deriv=deriv)
+        coeff * np.linalg.norm(points - coord, axis=1)**2 * spline(np.linalg.norm(points - coord, axis=1), deriv=deriv)
         for (spline, coord, coeff) in zip(splines, atom_coords, coeffs)
     ]
 
