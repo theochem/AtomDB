@@ -151,10 +151,10 @@ class Species(SpeciesData):
         # Initialize superclass
         SpeciesData.__init__(self, *args, **kwargs)
         self.ao = _AtomicOrbitals(self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b)
-        self._orb_dens_up = self._to_ndarray(self._orb_dens_up, self.ao.norba, len(self.rs))
-        self._orb_dens_dn = self._to_ndarray(self._orb_dens_dn, self.ao.norba, len(self.rs))
-        self._orb_ked_up = self._to_ndarray(self._orb_ked_up, self.ao.norba, len(self.rs))
-        self._orb_ked_dn = self._to_ndarray(self._orb_ked_dn, self.ao.norba, len(self.rs))
+        self._orb_dens_up = self._to_ndarray(self._orb_dens_up, self.ao.norba)
+        self._orb_dens_dn = self._to_ndarray(self._orb_dens_dn, self.ao.norba)
+        self._orb_ked_up = self._to_ndarray(self._orb_ked_up, self.ao.norba)
+        self._orb_ked_dn = self._to_ndarray(self._orb_ked_dn, self.ao.norba)
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
@@ -165,8 +165,8 @@ class Species(SpeciesData):
         self.mult = self.nspin + 1
         self.doc = get_docstring(self.dataset)
     
-    def _to_ndarray(self, array1d, n, m):
-        return array1d.reshape(n, m) if array1d is not None else None
+    def _to_ndarray(self, array1d, n):
+        return array1d.reshape(n, -1) if array1d is not None else None
 
     #
     # Density splines
