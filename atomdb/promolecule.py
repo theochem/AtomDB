@@ -378,7 +378,7 @@ def make_promolecule(
     if units == "bohr":
         promol_coords /= 1.0
     elif units == "angstrom":
-        promol_coords /= 1.8897259885789
+        promol_coords /= 0.52917721092
     else:
         raise ValueError("Invalid `units` parameter; must be 'bohr' or 'angstrom'")
     # Convert coefficients to array
