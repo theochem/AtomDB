@@ -39,7 +39,7 @@ import atomdb
 __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
 
 
-BOUND = (0.0, 15.0)
+BOUND = (1e-5, 15.0)
 
 NPOINTS = 10000
 

@@ -76,6 +76,9 @@ def test_slater_positive_definite_kinetic_energy(atom, charge, mult, tol):
     answer = -fix_sign(sp.energy)
     # assert np.all(np.abs(integral - answer) < tol)
     assert_almost_equal(integral, answer, decimal=tol)
+    # check interpolated density
+    spline = sp.interpolate_ked(spin='ab', log=False)
+    assert_almost_equal(spline(grid), energ, decimal=6)
 
 
 @pytest.mark.parametrize(
@@ -85,7 +88,7 @@ def test_slater_atomic_density(atom, mult, answer):
     # load Be atomic and density data
     sp = load(atom, 0, mult, dataset="slater", datapath=TEST_DATAPATH)
     # get density evaluated on an equally distant radial grid
-    # grid = np.arange(0.0, 15.0, 0.00001)
+    # grid = np.arange(1e-5, 15.0, 0.00001)
     # dens = be.atomic_density(grid, mode="total")
     # core = be.atomic_density(grid, mode="core")
     # valn = be.atomic_density(grid, mode="valence")
@@ -99,21 +102,69 @@ def test_slater_atomic_density(atom, mult, answer):
     # assert_almost_equal(dens, core + valn, decimal=6)
     # check number of electrons
     assert_almost_equal(4 * np.pi * np.trapz(grid ** 2 * dens, grid), answer, decimal=6)
+    # check interpolated density
+    spline = sp.interpolate_dens(spin='ab', log=False)
+    assert_almost_equal(spline(grid), dens, decimal=6)
 
 
 @pytest.mark.parametrize(
     "atom, charge, mult, answer", [("H", -1, 1, 2.0), ("C", -1, 4, 7.0), ("C", 1, 2, 5.0)]
 )
 def test_slater_atomic_density_ions(atom, charge, mult, answer):
-    # load Be atomic and density data
+    # load atomic and density data
     sp = load(atom, charge, mult, dataset="slater", datapath=TEST_DATAPATH)
-    # get density evaluated on an equally distant radial grid (0.0, 25.0, 0.00001)
+    # get density evaluated on an equally distant radial grid (1e-5, 25.0, 0.00001)
     grid = sp.rs
     dens = sp.dens_tot
     # check shape
     assert_equal(dens.shape, grid.shape)
     # check number of electrons
     assert_almost_equal(4 * np.pi * np.trapz(grid ** 2 * dens, grid), answer, decimal=6)
+    # check interpolated density
+    spline = sp.interpolate_dens(spin='ab', log=False)
+    assert_almost_equal(spline(grid), dens, decimal=6)
+
+
+@pytest.mark.xfail
+@pytest.mark.parametrize(
+    "atom, charge, mult", [("H", 0, 2), ("Be", 0, 1), ("Cl", 0, 2), ("Ne", 0, 1)]
+)
+def test_slater_atomic_density_gradient(atom, charge, mult):
+    # load atomic and density data
+    sp = load(atom, charge, mult, dataset="slater", datapath=TEST_DATAPATH)
+    # get density derivative evaluated on a radial grid
+    grid = sp.rs
+    spline = sp.interpolate_dens(spin='ab', log=False)
+    gradient = spline(grid, deriv=1)
+    # get reference values from Slater wfn raw files
+    id = f"{str(sp.natom).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
+    fname = f'{id}_slater_gradient.npy'
+    answer = np.load(f'{TEST_DATAPATH}/slater/db/{fname}')
+    # check shape of arrays
+    assert_equal(gradient.shape, grid.shape)
+    # check array elements
+    assert_almost_equal(gradient[:5], answer[:5], decimal=3)
+
+
+@pytest.mark.xfail
+def test_slater_h_anion_density_splines():
+    # load Be atomic and density data
+    sp = load('H', -1, 1, dataset="slater", datapath=TEST_DATAPATH)
+    # get density evaluated on an equally distant radial grid
+    # grid = np.arange(0.0, 15.0, 0.00001)
+    grid = sp.rs
+    dens = sp.dens_tot
+    # check interpolated densities
+    spline = sp.interpolate_dens(spin='ab', log=False)
+    assert_almost_equal(spline(grid), dens, decimal=6)
+    spline = sp.interpolate_ked(spin='ab', log=False)
+    assert_almost_equal(spline(grid), sp.ked_tot, decimal=6)
+    # check density derivatives
+    stepsize = 1e-8
+    gradient = np.load('slater_h_anion_gradient.npy')
+    assert_almost_equal(spline(grid, deriv=1), gradient, decimal=6)
+    d2dens = np.gradient(gradient, stepsize)
+    assert_almost_equal(spline(grid, deriv=2), d2dens, decimal=6)
 
 
 def test_slater_missing_attributes():
