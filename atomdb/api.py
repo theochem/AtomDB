@@ -52,7 +52,7 @@ __all__ = [
 ]
 
 
-DEFAULT_DATASET = "hci"
+DEFAULT_DATASET = "slater"
 r"""Default dataset to query."""
 
 

@@ -118,7 +118,7 @@ class Promolecule:
         """
         # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
-        return 4 * np.pi * sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
+        return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
 
     def ked(self, points, spin="ab", log=False):
         r"""
@@ -338,7 +338,11 @@ def make_promolecule(
     if charges is None:
         charges = [0 for _ in atoms]
     if mults is None:
-        mults = [MULTIPLICITIES[atnum - charge] for (atnum, charge) in zip(atnums, charges)]
+        try:
+            mults = [MULTIPLICITIES[atnum - charge] for (atnum, charge) in zip(atnums, charges)]
+        except TypeError:
+            # FIXME: force non-int charge to be integer here, It will be overwritten bellow.
+            mults = [MULTIPLICITIES[atnum - int(charge)] for (atnum, charge) in zip(atnums, charges)]
     # Construct linear combination of species
     promol_species = []
     promol_coords = []
@@ -355,8 +359,9 @@ def make_promolecule(
         else:
             # Floor charge
             try:
-                mult_floor = MULTIPLICITIES[atnum - np.floor(charge)]
-                specie = load(atom, np.floor(charge), mult, dataset=dataset, datapath=datapath)
+                charge_floor = np.floor(charge).astype(int)
+                mult_floor = MULTIPLICITIES[atnum - charge_floor]
+                specie = load(atom, charge_floor, mult_floor, dataset=dataset, datapath=datapath)
                 promol_species.append(specie)
                 promol_coords.append(coord)
                 promol_coeffs.append(np.ceil(charge) - charge)
@@ -367,10 +372,20 @@ def make_promolecule(
                 promol_coeffs.append((element_number(atom) - charge) / (element_number(atom) - np.ceil(charge)))
                 warn("Coefficient of a species in the promolecule is >1, intensive properties might be incorrect")
             # Ceilling charge
-            specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
-            promol_species.append(specie)
-            promol_coords.append(coord)
-            promol_coeffs.append(charge - np.floor(charge))
+            # FIXME: handle H^+
+            try:
+                charge_ceil = np.ceil(charge).astype(int)
+                mult_ceil = MULTIPLICITIES[atnum - charge_ceil]
+                specie = load(atom, charge_ceil, mult_ceil, dataset=dataset, datapath=datapath)
+                promol_species.append(specie)
+                promol_coords.append(coord)
+                promol_coeffs.append(charge - np.floor(charge))
+            except FileNotFoundError:
+                specie = load(atom, np.floor(charge).astype(int), mult, dataset=dataset, datapath=datapath)
+                promol_species.append(specie)
+                promol_coords.append(coord)
+                promol_coeffs.append(0.)
+                warn("Coefficient of a species in the promolecule is =0, properties might be incorrect")
     # Check coordinate units, convert to array
     units = units.lower()
     promol_coords = np.asarray(promol_coords, dtype=float)
@@ -398,7 +413,7 @@ def _extensive_local_property(atoms, atom_coords, coeffs, points, f, deriv=0):
     # the points of interest and each atom inside the generator
     splines = [f(atom) for atom in atoms]
     return [
-        coeff * np.linalg.norm(points - coord, axis=1)**2 * spline(np.linalg.norm(points - coord, axis=1), deriv=deriv)
+        coeff * spline(np.linalg.norm(points - coord, axis=1), deriv=deriv)
         for (spline, coord, coeff) in zip(splines, atom_coords, coeffs)
     ]
 
