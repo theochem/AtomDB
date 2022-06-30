@@ -372,20 +372,15 @@ def make_promolecule(
                 promol_coeffs.append((element_number(atom) - charge) / (element_number(atom) - np.ceil(charge)))
                 warn("Coefficient of a species in the promolecule is >1, intensive properties might be incorrect")
             # Ceilling charge
+            charge_ceil = np.ceil(charge).astype(int)
+            mult_ceil = MULTIPLICITIES[atnum - charge_ceil]
             # FIXME: handle H^+
-            try:
-                charge_ceil = np.ceil(charge).astype(int)
-                mult_ceil = MULTIPLICITIES[atnum - charge_ceil]
-                specie = load(atom, charge_ceil, mult_ceil, dataset=dataset, datapath=datapath)
-                promol_species.append(specie)
-                promol_coords.append(coord)
-                promol_coeffs.append(charge - np.floor(charge))
-            except FileNotFoundError:
-                specie = load(atom, np.floor(charge).astype(int), mult, dataset=dataset, datapath=datapath)
-                promol_species.append(specie)
-                promol_coords.append(coord)
-                promol_coeffs.append(0.)
-                warn("Coefficient of a species in the promolecule is =0, properties might be incorrect")
+            if mult_ceil == 0:
+                mult_ceil = 1
+            specie = load(atom, charge_ceil, mult_ceil, dataset=dataset, datapath=datapath)
+            promol_species.append(specie)
+            promol_coords.append(coord)
+            promol_coeffs.append(charge - np.floor(charge))
     # Check coordinate units, convert to array
     units = units.lower()
     promol_coords = np.asarray(promol_coords, dtype=float)
