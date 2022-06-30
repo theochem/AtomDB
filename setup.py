@@ -30,4 +30,5 @@ if __name__ == '__main__':
         packages=['atomdb'],
         package_dir={'atomdb': 'atomdb'},
         include_package_data=True,
+        install_requires=["numpy", "scipy", "msgpack", "h5py"]
     )
