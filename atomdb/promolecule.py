@@ -15,8 +15,8 @@
 
 r"""AtomDB promolecule submodule."""
 
-from .api import DEFAULT_DATAPATH, DEFAULT_DATASET
-from .api import load, element_number
+from .api import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES
+from .api import load, element_number, element_symbol
 
 from numbers import Integral
 
@@ -302,7 +302,7 @@ class Promolecule:
 
 
 def make_promolecule(
-    atoms,
+    atnums,
     coords,
     charges=None,
     mults=None,
@@ -316,8 +316,8 @@ def make_promolecule(
 
     Parameters
     ----------
-    atoms: list of str
-        List of element symbols for each atom.
+    atnums: list of int
+        List of element number for each atom.
     coords: list of np.ndarray((3,), dtype=float)
         List of coordinates for each atom.
     charges: list of (int | float), default=[0, ..., 0]
@@ -332,16 +332,22 @@ def make_promolecule(
         System path where the desired data set is located.
 
     """
-    # Handle default "None" parameters
+    # Get atomic symbols from inputs
+    atoms = [element_symbol(atom) for atom in atnums]
+    # Handle default charge and multiplicity parameters
     if charges is None:
-        charges = [0] * len(atoms)
+        charges = [0 for _ in atoms]
     if mults is None:
-        mults = [1] * len(atoms)
+        try:
+            mults = [MULTIPLICITIES[atnum - charge] for (atnum, charge) in zip(atnums, charges)]
+        except TypeError:
+            # FIXME: force non-int charge to be integer here, It will be overwritten bellow.
+            mults = [MULTIPLICITIES[atnum - int(charge)] for (atnum, charge) in zip(atnums, charges)]
     # Construct linear combination of species
     promol_species = []
     promol_coords = []
     promol_coeffs = []
-    for (atom, coord, charge, mult) in zip(atoms, coords, charges, mults):
+    for (atom, atnum, coord, charge, mult) in zip(atoms, atnums, coords, charges, mults):
         if not isinstance(mult, Integral):
             raise ValueError("Non-integer multiplicity is invalid")
         if isinstance(charge, Integral):
@@ -353,7 +359,9 @@ def make_promolecule(
         else:
             # Floor charge
             try:
-                specie = load(atom, np.floor(charge), mult, dataset=dataset, datapath=datapath)
+                charge_floor = np.floor(charge).astype(int)
+                mult_floor = MULTIPLICITIES[atnum - charge_floor]
+                specie = load(atom, charge_floor, mult_floor, dataset=dataset, datapath=datapath)
                 promol_species.append(specie)
                 promol_coords.append(coord)
                 promol_coeffs.append(np.ceil(charge) - charge)
@@ -361,14 +369,15 @@ def make_promolecule(
                 specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
                 promol_species.append(specie)
                 promol_coords.append(coord)
-                promol_coeffs.append(
-                    (element_number(atom) - charge) / (element_number(atom) - np.ceil(charge))
-                )
-                warn(
-                    "Coefficient of a species in the promolecule is >1, intensive properties might be incorrect"
-                )
+                promol_coeffs.append((element_number(atom) - charge) / (element_number(atom) - np.ceil(charge)))
+                warn("Coefficient of a species in the promolecule is >1, intensive properties might be incorrect")
             # Ceilling charge
-            specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
+            charge_ceil = np.ceil(charge).astype(int)
+            mult_ceil = MULTIPLICITIES[atnum - charge_ceil]
+            # FIXME: handle H^+
+            if mult_ceil == 0:
+                mult_ceil = 1
+            specie = load(atom, charge_ceil, mult_ceil, dataset=dataset, datapath=datapath)
             promol_species.append(specie)
             promol_coords.append(coord)
             promol_coeffs.append(charge - np.floor(charge))

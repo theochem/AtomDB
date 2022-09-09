@@ -52,7 +52,7 @@ __all__ = [
 ]
 
 
-DEFAULT_DATASET = "hci"
+DEFAULT_DATASET = "slater"
 r"""Default dataset to query."""
 
 
@@ -75,6 +75,19 @@ ELEMENTS = (
     # fmt: on
 )
 r"""Tuple of the symbols for each of the 118 elements. The zeroth element is a placeholder."""
+
+
+MULTIPLICITIES = (
+    # fmt: off
+    0, 2, 1, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4,
+    7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 6, 7, 6, 5, 4, 1, 2,
+    1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 1, 4, 5, 6, 7, 8, 9, 6, 5, 4, 3, 2, 1, 2,
+    3, 4, 5, 6, 5, 4, 3, 2, 1, 2, 3, 4, 3, 2, 1, 2, 1, 2, 3, 4, 5, 6, 7, 8,
+    9, 6, 5, 4, 3,
+    # fmt: on
+)
+r"""Tuple of the multiplicities for each isoelectronic series (up to 100 electrons).
+The zeroth element is a placeholder."""
 
 
 # The correct way to convert numpy arrays to bytes is different on Mac/"Darwin"
