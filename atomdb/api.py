@@ -339,7 +339,7 @@ def compile(
     makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
     makedirs(join(datapath, f"{dataset}/raw"), exist_ok=True)
     # Import the compile script for the appropriate dataset
-    submodule = import_module(f"atomdb.datasets.{dataset}")
+    submodule = import_module(f"atomdb.datasets.{dataset}", package=datapath)
     # Compile the Species instance and dump the database entry
     submodule.run(elem, charge, mult, nexc, dataset, datapath)._dump(datapath)
 

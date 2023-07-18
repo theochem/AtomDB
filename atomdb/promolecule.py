@@ -201,7 +201,7 @@ class Promolecule:
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
-        
+
         """
         # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
@@ -229,7 +229,7 @@ class Promolecule:
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
-        
+
         """
         # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
@@ -283,7 +283,7 @@ class Promolecule:
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
-        
+
         """
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
         shift = lambda dens, radii: 3 * dens / np.linalg.norm(radii)
@@ -348,14 +348,19 @@ def make_promolecule(
     promol_coords = []
     promol_coeffs = []
     for (atom, atnum, coord, charge, mult) in zip(atoms, atnums, coords, charges, mults):
-        if not isinstance(mult, Integral):
+        # Integer multiplicity
+        if isinstance(mult, Integral) or np.isclose(mult, np.round(mult)):
+            pass
+        # Non-integer multiplicity
+        else:
             raise ValueError("Non-integer multiplicity is invalid")
-        if isinstance(charge, Integral):
-            # Integer charge
-            specie = load(atom, charge, mult, dataset=dataset, datapath=datapath)
+        # Integer charge
+        if isinstance(charge, Integral) or np.isclose(charge, np.round(charge)):
+            specie = load(atom, np.round(charge).astype(int), np.round(mult).astype(int), dataset=dataset, datapath=datapath)
             promol_species.append(specie)
             promol_coords.append(coord)
             promol_coeffs.append(1.0)
+        # Non-integer charge
         else:
             # Floor charge
             try:
@@ -366,7 +371,7 @@ def make_promolecule(
                 promol_coords.append(coord)
                 promol_coeffs.append(np.ceil(charge) - charge)
             except FileNotFoundError:
-                specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
+                specie = load(atom, np.ceil(charge), np.round(mult).astype(int), dataset=dataset, datapath=datapath)
                 promol_species.append(specie)
                 promol_coords.append(coord)
                 promol_coeffs.append((element_number(atom) - charge) / (element_number(atom) - np.ceil(charge)))

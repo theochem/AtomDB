@@ -53,15 +53,14 @@ if __name__ == "__main__":
         print("No command specified. Exiting...", file=stderr)
         exit(1)
 
+    # Parse element number argument
+    elem = args.elem if args.elem.isalpha() else int(args.elem)
+
     # Run specified command(s)
     if args.c:
-        atomdb.compile(args.elem, args.charge, args.mult, args.e, args.dataset)
+        atomdb.compile(elem, args.charge, args.mult, args.e, args.dataset)
     if args.q:
-        print(
-            atomdb.load(
-                args.elem, args.charge, args.mult, args.e, args.dataset
-            ).to_json()
-        )
+        print(atomdb.load(elem, args.charge, args.mult, args.e, args.dataset).to_json())
 
     # Exit successfully
     exit(0)
