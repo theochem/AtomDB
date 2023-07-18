@@ -64,8 +64,6 @@ will be hosted in another Git repo (AtomDB-Data) via LFS. If you are a developer
 database entries or writing new datasets, then you can set ``ATOMDB_DATAPATH`` to the location
 of the AtomDB-Data repo on your computer.
 
-Send Michael your SSH public key and ask him for the current URL for the AtomDB-Data repo.
-
 Contributing
 ------------
 
