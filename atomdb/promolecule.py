@@ -24,6 +24,7 @@ from warnings import warn
 
 import numpy as np
 
+from scipy.spatial import ConvexHull
 
 __all__ = [
     "Promolecule",
@@ -348,18 +349,70 @@ def make_promolecule(
     promol_coords = []
     promol_coeffs = []
     for (atom, atnum, coord, charge, mult) in zip(atoms, atnums, coords, charges, mults):
-        # Integer multiplicity
-        if isinstance(mult, Integral) or np.isclose(mult, np.round(mult)):
-            pass
+
         # Non-integer multiplicity
-        else:
-            raise ValueError("Non-integer multiplicity is invalid")
+        if not isinstance(mult, Integral) and not np.isclose(mult, np.round(mult)) and not isinstance(charge, Integral) and not np.isclose(charge, np.round(mult)):
+            # Check flat-plane conditions
+            charge_floor = np.floor(charge).astype(int)
+            charge_ceil  = np.ceil(charge).astype(int)
+            mult_floor   = np.floor(mult).astype(int)
+            mult_ceil    = np.ceil(mult).astype(int)
+            # if np.isclose(charge_floor, charge_ceil):
+            #     charge_ceil += 1
+            # if np.isclose(mult_floor, mult_ceil):
+            #     mult_ceil += 1
+            points       = np.zeros((8, 3))
+            specie       = load(atom, charge_floor, mult_floor, dataset=dataset, datapath=datapath)
+            points[0, 0] = charge_floor
+            points[0, 1] = mult_floor
+            points[0, 2] = specie.energy
+            specie       = load(atom, charge_ceil, mult_floor, dataset=dataset, datapath=datapath)
+            points[1, 0] = charge_ceil
+            points[1, 1] = mult_floor
+            points[1, 2] = specie.energy
+            specie       = load(atom, charge_floor, mult_ceil, dataset=dataset, datapath=datapath)
+            points[2, 0] = charge_floor
+            points[2, 1] = mult_ceil
+            points[2, 2] = specie.energy
+            specie       = load(atom, charge_ceil, mult_ceil, dataset=dataset, datapath=datapath)
+            points[3, 0] = charge_ceil
+            points[3, 1] = mult_ceil
+            points[3, 2] = specie.energy
+            points[4:, :2] = points[:4, :2]
+            hull = ConvexHull(points)
+            # Loop over plane equations of each facet
+            energy = np.inf
+            r = np.array([charge, mult, np.inf], dtype=float)
+            result = None
+            for i, (a, b, c, d) in enumerate(hull.equations):
+                e = -(a * charge + b * mult + d) / c
+                # Ignore facets attached to the bounding ceiling of the hull
+                if np.any(np.isclose(hull.points[hull.simplices[i], 2], 0.0)):
+                    continue
+                # Check that point is within triangular facet using its barycentric coordinates
+                r[2] = e
+                p1, p2, p3 = hull.points[hull.simplices[i, (0, 1, 2)]]
+                r_bary = _cart_to_bary(r, p1, p2, p3)
+                if np.any(r_bary < 0.0) or np.any(r_bary > 1.0):
+                    continue
+                # Update minimum energy
+                if e < energy:
+                    energy = e
+                    result = zip(r_bary, (p1[:2], p2[:2], p3[:2]))
+                    break
+            for (coeff, (c, m)) in result:
+                specie = load(atom, np.round(c).astype(int), np.round(m).astype(int), dataset=dataset, datapath=datapath)
+                promol_species.append(specie)
+                promol_coords.append(coord)
+                promol_coeffs.append(coeff)
+
         # Integer charge
-        if isinstance(charge, Integral) or np.isclose(charge, np.round(charge)):
+        elif isinstance(charge, Integral) or np.isclose(charge, np.round(charge)):
             specie = load(atom, np.round(charge).astype(int), np.round(mult).astype(int), dataset=dataset, datapath=datapath)
             promol_species.append(specie)
             promol_coords.append(coord)
             promol_coeffs.append(1.0)
+
         # Non-integer charge
         else:
             # Floor charge
@@ -437,3 +490,36 @@ def _radial_vector_outer_triu(radii):
     for col, ij in enumerate(indices):
         radv_outer[:, col] = unit_v(radii)[:, ij // 3] * unit_v(radii)[:, ij % 3]
     return radv_outer
+
+
+def _cart_to_bary(p0: np.ndarray, p1: np.ndarray, p2: np.ndarray, p3: np.ndarray) -> np.ndarray:
+    r"""
+    Convert a 3D cartesian vector to a barycentric vector.
+
+    Parameters
+    ----------
+    p0 : np.ndarray
+        3D cartesian vector of point to convert.
+    p1 : np.ndarray
+        First 3D cartesian point of triangle.
+    p2 : np.ndarray
+        Second 3D cartesian point of triangle.
+    p3 : np.ndarray
+        Third 3D cartesian point of triangle.
+
+    Returns
+    -------
+    p0_bary : np.ndarray
+        3D barycentric vector.
+
+    """
+    # Compute necessary PA - PB vectors
+    p03 = p0 - p3
+    p13 = p1 - p3
+    p23 = p2 - p3
+    # Compute barycentric coordinates of P0 (see paper, appendix B)
+    denom = p23[1] * p13[0] - p13[1] * p23[0]
+    lmbd_a = (p23[1] * p03[0] - p03[1] * p23[0]) / denom
+    lmbd_b = (p03[1] * p13[0] - p13[1] * p03[0]) / denom
+    lmbd_c = 1.0 - lmbd_a - lmbd_b
+    return np.array((lmbd_a, lmbd_b, lmbd_c), dtype=float)
