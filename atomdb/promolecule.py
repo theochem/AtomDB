@@ -343,40 +343,50 @@ def make_promolecule(
             mults = [MULTIPLICITIES[atnum - charge] for (atnum, charge) in zip(atnums, charges)]
         except TypeError:
             # FIXME: force non-int charge to be integer here, It will be overwritten bellow.
-            mults = [MULTIPLICITIES[atnum - int(charge)] for (atnum, charge) in zip(atnums, charges)]
+            mults = [MULTIPLICITIES[atnum - np.round(charge).astype(int)] for (atnum, charge) in zip(atnums, charges)]
     # Construct linear combination of species
     promol_species = []
     promol_coords = []
     promol_coeffs = []
     for (atom, atnum, coord, charge, mult) in zip(atoms, atnums, coords, charges, mults):
 
-        # Non-integer multiplicity
+        # Non-integer charge, non-integer multiplicity
         if not isinstance(mult, Integral) and not np.isclose(mult, np.round(mult)) and not isinstance(charge, Integral) and not np.isclose(charge, np.round(mult)):
             # Check flat-plane conditions
             charge_floor = np.floor(charge).astype(int)
             charge_ceil  = np.ceil(charge).astype(int)
-            mult_floor   = np.floor(mult).astype(int)
-            mult_ceil    = np.ceil(mult).astype(int)
-            # if np.isclose(charge_floor, charge_ceil):
-            #     charge_ceil += 1
-            # if np.isclose(mult_floor, mult_ceil):
-            #     mult_ceil += 1
+            if (element_number(atom) - charge_floor) % 2 == 0:
+                # Round up/down to nearest odd number
+                mult_floor1 = np.floor(mult / 2.0).astype(int) // 2 * 2 + 1
+                mult_ceil1 = np.ceil(mult).astype(int) // 2 * 2 + 1
+            else:
+                # Round up/down to nearest even number
+                mult_floor1 = np.floor(mult / 2.0).astype(int) * 2
+                mult_ceil1 = np.ceil(mult / 2.0).astype(int) * 2
+            if (element_number(atom) - charge_ceil) % 2 == 0:
+                # Round up/down to nearest odd number
+                mult_floor2 = np.floor(mult / 2.0).astype(int) // 2 * 2 + 1
+                mult_ceil2 = np.ceil(mult).astype(int) // 2 * 2 + 1
+            else:
+                # Round up/down to nearest even number
+                mult_floor2 = np.floor(mult / 2.0).astype(int) * 2
+                mult_ceil2 = np.ceil(mult / 2.0).astype(int) * 2
             points       = np.zeros((8, 3))
-            specie       = load(atom, charge_floor, mult_floor, dataset=dataset, datapath=datapath)
+            specie       = load(atom, charge_floor, mult_floor1, dataset=dataset, datapath=datapath)
             points[0, 0] = charge_floor
-            points[0, 1] = mult_floor
+            points[0, 1] = mult_floor1
             points[0, 2] = specie.energy
-            specie       = load(atom, charge_ceil, mult_floor, dataset=dataset, datapath=datapath)
+            specie       = load(atom, charge_ceil, mult_floor2, dataset=dataset, datapath=datapath)
             points[1, 0] = charge_ceil
-            points[1, 1] = mult_floor
+            points[1, 1] = mult_floor2
             points[1, 2] = specie.energy
-            specie       = load(atom, charge_floor, mult_ceil, dataset=dataset, datapath=datapath)
+            specie       = load(atom, charge_floor, mult_ceil1, dataset=dataset, datapath=datapath)
             points[2, 0] = charge_floor
-            points[2, 1] = mult_ceil
+            points[2, 1] = mult_ceil1
             points[2, 2] = specie.energy
-            specie       = load(atom, charge_ceil, mult_ceil, dataset=dataset, datapath=datapath)
+            specie       = load(atom, charge_ceil, mult_ceil2, dataset=dataset, datapath=datapath)
             points[3, 0] = charge_ceil
-            points[3, 1] = mult_ceil
+            points[3, 1] = mult_ceil2
             points[3, 2] = specie.energy
             points[4:, :2] = points[:4, :2]
             hull = ConvexHull(points)
@@ -406,15 +416,15 @@ def make_promolecule(
                 promol_coords.append(coord)
                 promol_coeffs.append(coeff)
 
-        # Integer charge
-        elif isinstance(charge, Integral) or np.isclose(charge, np.round(charge)):
+        # Integer charge, integer multiplicity
+        elif (isinstance(charge, Integral) or np.isclose(charge, np.round(charge))) and (isinstance(mult, Integral) or np.isclose(mult, np.round(mult))):
             specie = load(atom, np.round(charge).astype(int), np.round(mult).astype(int), dataset=dataset, datapath=datapath)
             promol_species.append(specie)
             promol_coords.append(coord)
             promol_coeffs.append(1.0)
 
-        # Non-integer charge
-        else:
+        # Non-integer charge, integer multiplicity
+        elif not isinstance(charge, Integral) and not np.isclose(charge, np.round(charge)) and (isinstance(mult, Integral) or np.isclose(mult, np.round(mult))):
             # Floor charge
             try:
                 charge_floor = np.floor(charge).astype(int)
@@ -439,6 +449,11 @@ def make_promolecule(
             promol_species.append(specie)
             promol_coords.append(coord)
             promol_coeffs.append(charge - np.floor(charge))
+
+        # Invalid charge/mult
+        else:
+            raise RuntimeError("Invalid combination of charge/mult")
+
     # Check coordinate units, convert to array
     units = units.lower()
     promol_coords = np.asarray(promol_coords, dtype=float)
