@@ -192,6 +192,16 @@ class Promolecule:
         r"""
         Compute the electron density gradient of the promolecule at the desired points.
 
+        Promolecular gradient:
+        .. math::
+            \nabla \rho_{\text{mol}}^{(0)} (\mathbf{R}) = \sum_{A=1}^{N_{\text{atoms}}} c_A \nabla \rho_A^{(0)}(\mathbf{R})
+
+        where,
+            :math:`N_{\text{atoms}}` is the number of atoms in the molecule.
+            :math:`c_A` are the coefficients of the specie.
+            :math:`R` are points in 3D cartesian coordinates.
+            :math:`\nabla \rho_A^{(0)}(\mathbf{R})` is the gradient of specie A.
+
         Parameters
         ----------
         points: np.ndarray((N, 3), dtype=float)
@@ -202,19 +212,30 @@ class Promolecule:
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
         
+        Returns
+        -------
+        gradient: np.ndarray((N, 3), dtype=float)
+        
         """
         # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
         atoms_ddens = _extensive_local_property(
             self.atoms, self.coords, self.coeffs, points, f, deriv=1
         )
-        # Define a unit vector function
-        unit_v = lambda vector: vector / np.linalg.norm(vector)
 
-        return sum(
-            ddens[:, None] * unit_v(points - coord)
+        # The cartesian gradient (\nabla \rho_A) has to be evaluated using the chain rule:
+        # \nabla \rho_A(x,y,z) = \frac{\partial \rho_A}{\partial r} *  \hat{r}
+        # where `\frac{\partial \rho_A}{\partial r}` is the gradient in spherical coordinates
+        # and   \hat{r} = [dr/dx, dr/dy, dr/dz] is the radial unit vector:
+        # dr/dx = (x - x_A) / |r-R_A|
+        #
+        # Define a unit vector function
+        unit_v = lambda vector: [dr/np.linalg.norm(dr ) for dr in vector]
+        gradients_atoms = [
+            ddens[:, None] * unit_v(points - coord) 
             for (ddens, coord) in zip(atoms_ddens, self.coords)
-        ).T
+            ]
+        return sum(gradients_atoms)
 
     def hessian(self, points, spin="ab", log=False):
         r"""
