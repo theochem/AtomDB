@@ -24,18 +24,12 @@ import atomdb
 
 
 # Initialize command line argument parser
-parser = ArgumentParser(
-    prog="python -m atomdb", description="Compile and/or query an AtomDB entry"
-)
+parser = ArgumentParser(prog="python -m atomdb", description="Compile and/or query an AtomDB entry")
 
 
 # Specify positional arguments and options
-parser.add_argument(
-    "-c", action="store_true", default=False, help="compile the specified entry"
-)
-parser.add_argument(
-    "-q", action="store_true", default=False, help="query the specified entry"
-)
+parser.add_argument("-c", action="store_true", default=False, help="compile the specified entry")
+parser.add_argument("-q", action="store_true", default=False, help="query the specified entry")
 parser.add_argument("dataset", type=str, help="name of dataset")
 parser.add_argument("elem", type=str, help="element symbol")
 parser.add_argument("charge", type=int, help="charge")
@@ -57,11 +51,7 @@ if __name__ == "__main__":
     if args.c:
         atomdb.compile(args.elem, args.charge, args.mult, args.e, args.dataset)
     if args.q:
-        print(
-            atomdb.load(
-                args.elem, args.charge, args.mult, args.e, args.dataset
-            ).to_json()
-        )
+        print(atomdb.load(args.elem, args.charge, args.mult, args.e, args.dataset).to_json())
 
     # Exit successfully
     exit(0)
