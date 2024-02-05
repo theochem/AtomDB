@@ -36,7 +36,7 @@ jobs:
 
       - name: Install development version
         run: |
-          pip install .
+          pip install -v .
 
       - name: Run pytest
         uses: pavelzw/pytest-action@v2
