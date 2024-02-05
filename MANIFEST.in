@@ -1,5 +1,4 @@
 include LICENSE
 include README.rst
 
-include atomdb/datasets/*/data/*
-include atomdb/datasets/*/raw_data/*
+include atomdb/datasets/*/db/*
