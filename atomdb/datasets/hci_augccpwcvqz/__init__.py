@@ -27,7 +27,7 @@ from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_
 from gbasis.evals.density import evaluate_basis
 from gbasis.evals.eval_deriv import evaluate_deriv_basis
 
-from grid.onedgrid import  UniformInteger
+from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
 from grid.atomgrid import AtomGrid
 
@@ -41,17 +41,17 @@ __all__ = [
 
 # Parameters to generate an atomic grid from uniform radial grid
 # Use 170 points, lmax = 21 for the Lebedev grid since our basis
-# don't go beyond l=10 in the spherical harmonics. 
-BOUND = (1e-5, 2e1) #(r_min, r_max)
+# don't go beyond l=10 in the spherical harmonics.
+BOUND = (1e-5, 2e1)  # (r_min, r_max)
 
 NPOINTS = 100
 
-SIZE = 170 # Lebedev grid sizes 
+SIZE = 170  # Lebedev grid sizes
 
-DEGREE = 21 #  Lebedev grid degrees
+DEGREE = 21  #  Lebedev grid degrees
 
 
-BASIS = 'aug-ccpwCVQZ'
+BASIS = "aug-ccpwCVQZ"
 
 
 DOCSTRING = """Heat-bath Configuration Interaction (HCI) Dataset
@@ -87,7 +87,7 @@ def eval_orbs_density(one_density_matrix, orb_eval):
     return density
 
 
-def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type='spherical'):
+def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type="spherical"):
     "Adapted from Gbasis"
     orbt_ked = 0
     for orders in np.identity(3, dtype=int):
@@ -120,23 +120,23 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     scfdata = load_one(atomdb.datafile(".molden", elem, charge, mult, nexc, dataset, datapath))
     norba = scfdata.mo.norba
     mo_e_up = scfdata.mo.energies[:norba]
-    mo_e_dn = mo_e_up         # since only alpha MO information in .molden
-    occs_up = scfdata.mo.occs # ndarray(nbasis, nmos)
+    mo_e_dn = mo_e_up  # since only alpha MO information in .molden
+    occs_up = scfdata.mo.occs  # ndarray(nbasis, nmos)
     occs_dn = None
     mo_coeff = scfdata.mo.coeffs
 
     # Load HCI data
     data = np.load(atomdb.datafile(".ci.npz", elem, charge, mult, nexc, dataset, datapath))
-    energy = data['energy'][0]
+    energy = data["energy"][0]
 
     # Prepare data for computing Species properties
-    dm1_up, dm1_dn = data['rdm1']
+    dm1_up, dm1_dn = data["rdm1"]
     dm1_tot = dm1_up + dm1_dn
 
     # Make grid
-    onedg = UniformInteger(NPOINTS) # number of uniform grid points.
-    rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg) # radial grid
-    atgrid = AtomGrid(rgrid, degrees=[DEGREE], sizes=[SIZE], center=np.array([0., 0., 0.]))
+    onedg = UniformInteger(NPOINTS)  # number of uniform grid points.
+    rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg)  # radial grid
+    atgrid = AtomGrid(rgrid, degrees=[DEGREE], sizes=[SIZE], center=np.array([0.0, 0.0, 0.0]))
 
     # Compute densities
     obasis, coord_types = from_iodata(scfdata)
@@ -145,12 +145,20 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     orb_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
     # orb_dens_tot = orb_dens_up + orb_dens_dn
     # dens_tot = np.sum(orb_dens_tot, axis=0)
-    dens_tot = eval_dens(dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=mo_coeff.T)
+    dens_tot = eval_dens(
+        dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=mo_coeff.T
+    )
 
     # Compute kinetic energy density
-    orb_ked_up = eval_orb_ked(dm1_up, obasis, atgrid.points, transform=mo_coeff.T, coord_type=coord_types)
-    orb_ked_dn = eval_orb_ked(dm1_dn, obasis, atgrid.points, transform=mo_coeff.T, coord_type=coord_types)
-    ked_tot = eval_pd_ked(dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=mo_coeff.T)
+    orb_ked_up = eval_orb_ked(
+        dm1_up, obasis, atgrid.points, transform=mo_coeff.T, coord_type=coord_types
+    )
+    orb_ked_dn = eval_orb_ked(
+        dm1_dn, obasis, atgrid.points, transform=mo_coeff.T, coord_type=coord_types
+    )
+    ked_tot = eval_pd_ked(
+        dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=mo_coeff.T
+    )
 
     # Density and KED spherical average
     dens_spherical_avg = atgrid.spherical_average(dens_tot)
@@ -177,9 +185,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     #
     # Conceptual-DFT properties (TODO)
     #
-    ip=None
-    mu=None
-    eta=None
+    ip = None
+    mu = None
+    eta = None
 
     # Return Species instance
     return atomdb.Species(

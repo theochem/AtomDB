@@ -211,11 +211,11 @@ class Promolecule:
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
-        
+
         Returns
         -------
         gradient: np.ndarray((N, 3), dtype=float)
-        
+
         """
         # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
@@ -230,11 +230,11 @@ class Promolecule:
         # dr/dx = (x - x_A) / |r-R_A|
         #
         # Define a unit vector function
-        unit_v = lambda vector: [dr/np.linalg.norm(dr ) for dr in vector]
+        unit_v = lambda vector: [dr / np.linalg.norm(dr) for dr in vector]
         gradients_atoms = [
-            ddens[:, None] * unit_v(points - coord) 
+            ddens[:, None] * unit_v(points - coord)
             for (ddens, coord) in zip(atoms_ddens, self.coords)
-            ]
+        ]
         return sum(gradients_atoms)
 
     def hessian(self, points, spin="ab", log=False):
@@ -250,7 +250,7 @@ class Promolecule:
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
-        
+
         """
         # Define the property as a function, and call `_extensive_local_property` on it
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
@@ -272,7 +272,7 @@ class Promolecule:
         # d^2f_A/dx^2 = (d^2f_A/dr^2 - df_A/dr) (dr_A/dx)^2 + shift
         # d^2f_A/dxdy = (d^2f_A/dr^2 - df_A/dr) d^r_A/dx d^r_A/dy
         interm = 0
-        for (d2dens, ddens, rhess) in zip(atoms_d2dens, atoms_ddens, atoms_router_triu):
+        for d2dens, ddens, rhess in zip(atoms_d2dens, atoms_ddens, atoms_router_triu):
             interm += (d2dens - ddens)[:, None] * rhess
 
         # Reconstruct the Hessian matrix
@@ -304,7 +304,7 @@ class Promolecule:
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
-        
+
         """
         f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
         shift = lambda dens, radii: 3 * dens / np.linalg.norm(radii)
@@ -363,12 +363,14 @@ def make_promolecule(
             mults = [MULTIPLICITIES[atnum - charge] for (atnum, charge) in zip(atnums, charges)]
         except TypeError:
             # FIXME: force non-int charge to be integer here, It will be overwritten bellow.
-            mults = [MULTIPLICITIES[atnum - int(charge)] for (atnum, charge) in zip(atnums, charges)]
+            mults = [
+                MULTIPLICITIES[atnum - int(charge)] for (atnum, charge) in zip(atnums, charges)
+            ]
     # Construct linear combination of species
     promol_species = []
     promol_coords = []
     promol_coeffs = []
-    for (atom, atnum, coord, charge, mult) in zip(atoms, atnums, coords, charges, mults):
+    for atom, atnum, coord, charge, mult in zip(atoms, atnums, coords, charges, mults):
         if not isinstance(mult, Integral):
             raise ValueError("Non-integer multiplicity is invalid")
         if isinstance(charge, Integral):
@@ -390,8 +392,12 @@ def make_promolecule(
                 specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
                 promol_species.append(specie)
                 promol_coords.append(coord)
-                promol_coeffs.append((element_number(atom) - charge) / (element_number(atom) - np.ceil(charge)))
-                warn("Coefficient of a species in the promolecule is >1, intensive properties might be incorrect")
+                promol_coeffs.append(
+                    (element_number(atom) - charge) / (element_number(atom) - np.ceil(charge))
+                )
+                warn(
+                    "Coefficient of a species in the promolecule is >1, intensive properties might be incorrect"
+                )
             # Ceilling charge
             charge_ceil = np.ceil(charge).astype(int)
             mult_ceil = MULTIPLICITIES[atnum - charge_ceil]
@@ -437,13 +443,13 @@ def _extensive_local_property(atoms, atom_coords, coeffs, points, f, deriv=0):
 def _intensive_property(atoms, coeffs, f, p=1):
     r"""Helper function for computing intensive properties."""
     # P-mean of each atom's property value
-    return (
-        sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)
-    ) ** (1 / p)
+    return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)) ** (
+        1 / p
+    )
 
 
 def _radial_vector_outer_triu(radii):
-    r""" Evaluate the outer products of a set of radial unit vectrors."""
+    r"""Evaluate the outer products of a set of radial unit vectrors."""
     # Define a unit vector function
     unit_v = lambda vector: vector / np.linalg.norm(vector)
     # Store only upper triangular elements of the matrix.

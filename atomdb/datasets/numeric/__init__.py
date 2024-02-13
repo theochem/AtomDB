@@ -39,11 +39,12 @@ def load_numerical_hf_data():
 
     def helper_skip():
         """Skip the header for each species."""
-        for _ in range(4): f.readline()
+        for _ in range(4):
+            f.readline()
 
     def helper_data():
         """Read the grid, density, gradient, laplacian values into arrays."""
-        data = u""
+        data = ""
         for i in range(number_points):
             data += f.readline()
         data = np.loadtxt(StringIO(data))
@@ -61,27 +62,36 @@ def load_numerical_hf_data():
                 # dictionary to store attributes of the new atomic species
                 kwargs = {}
 
-                atomic_number, number_electrons, number_points = [int(item) for item in line.split()]
+                atomic_number, number_electrons, number_points = [
+                    int(item) for item in line.split()
+                ]
                 energy = [float(item) for item in f.readline().split()]
                 assert len(energy) == 5
-                assert abs(sum(energy[:-1]) - energy[-1]) < 1.e-8  #1.e-12 didn"t work?!
+                assert abs(sum(energy[:-1]) - energy[-1]) < 1.0e-8  # 1.e-12 didn"t work?!
 
                 # store energy component values
-                kwargs["energy_components"] = dict([("T", energy[0]), ("Vne", energy[1]),
-                                                    ("J", energy[2]), ("Ex", energy[3]),
-                                                    ("E", energy[4])])
+                kwargs["energy_components"] = dict(
+                    [
+                        ("T", energy[0]),
+                        ("Vne", energy[1]),
+                        ("J", energy[2]),
+                        ("Ex", energy[3]),
+                        ("E", energy[4]),
+                    ]
+                )
 
                 grid, density, gradient, laplacian = helper_data()
                 assert grid.shape == density.shape == gradient.shape == laplacian.shape
 
                 # store grid dependent values
-                kwargs.update({"grid":grid, "density":density, "gradient":gradient,
-                               "laplacian":laplacian})
+                kwargs.update(
+                    {"grid": grid, "density": density, "gradient": gradient, "laplacian": laplacian}
+                )
 
                 # add the new atomic species
                 species[(atomic_number, number_electrons)] = kwargs
                 line = f.readline()
-                
+
     return species
 
 
@@ -120,16 +130,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     energy = data["energy_components"]["E"]
 
     # Make grid
-    points = data['grid']
+    points = data["grid"]
 
     # Compute densities and derivatives
-    dens_tot = data['density']
+    dens_tot = data["density"]
     # d_dens_tot = data['gradient']
 
     # Compute laplacian and kinetic energy density
     # lapl_tot = data['laplacian']
     ked_tot = None
-    
 
     # Return Species instance
     return atomdb.Species(

@@ -97,7 +97,6 @@ if platform == "darwin":
         r"""Convert a numpy.ndarray instance to bytes."""
         return array.tobytes()
 
-
 else:
     # Linux and friends
     def _array_to_bytes(array):
@@ -108,6 +107,7 @@ else:
 @dataclass(eq=False, order=False)
 class SpeciesData:
     r"""Properties of atomic and ionic species corresponding to fields in MessagePack files."""
+
     #
     # Species info
     #
@@ -163,7 +163,9 @@ class Species(SpeciesData):
         r"""Initialize a Species Instance."""
         # Initialize superclass
         SpeciesData.__init__(self, *args, **kwargs)
-        self.ao = _AtomicOrbitals(self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b)
+        self.ao = _AtomicOrbitals(
+            self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b
+        )
         self._orb_dens_up = self._to_ndarray(self._orb_dens_up, self.ao.norba)
         self._orb_dens_dn = self._to_ndarray(self._orb_dens_dn, self.ao.norba)
         self._orb_ked_up = self._to_ndarray(self._orb_ked_up, self.ao.norba)
@@ -177,14 +179,14 @@ class Species(SpeciesData):
         self.charge = self.natom - self.nelec
         self.mult = self.nspin + 1
         self.doc = get_docstring(self.dataset)
-    
+
     def _to_ndarray(self, array1d, n):
         return array1d.reshape(n, -1) if array1d is not None else None
 
     #
     # Density splines
     #
-    def interpolate_dens(self, spin='ab', index=None, log=False):
+    def interpolate_dens(self, spin="ab", index=None, log=False):
         """Compute electron density
 
         Parameters
@@ -197,85 +199,93 @@ class Species(SpeciesData):
             from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included, by default None
         log : bool, optional
             Whether the logarithm of the density is used for interpolation, by default False
-        
+
         Returns
         -------
         Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
             a callable function evaluating the density and its derivatives up to order 2 given
             a set of radial points (1-D array).
-        
+
         Examples
         --------
-        # Generate the interpolator for the atomic density and its derivatives 
+        # Generate the interpolator for the atomic density and its derivatives
         >>> dens_spline = interpolate_dens(log=True)
         # Define a radial set of points to be interpolated
         >>> x = np.arange(0, 5)
         >>> dens = dens_spline(x)            # interpolated density
-        >>> d_dens = dens_spline(x, deriv=1) # interpolated derivative of density 
+        >>> d_dens = dens_spline(x, deriv=1) # interpolated derivative of density
         >>> d2_dens = dens_spline(x, deriv=2) # interpolated second derivative of density
         """
-        if spin not in ['a', 'b', 'ab', 'm']:
-            raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
-        if spin in ['a', 'b', 'm'] and (self._orb_dens_up is None):
+        if spin not in ["a", "b", "ab", "m"]:
+            raise ValueError(
+                f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
+            )
+        if spin in ["a", "b", "m"] and (self._orb_dens_up is None):
             raise ValueError(f"Density values for `{spin}` spin-orbitals unavailable.")
         if index is not None and (self._orb_dens_up is None):
-            raise ValueError("Can not perform indexing since densities per orbital is missing in this dataset.")
+            raise ValueError(
+                "Can not perform indexing since densities per orbital is missing in this dataset."
+            )
 
         # Assign cases that require spin-densitiy data. Since these are always
         # stored as density per orbital they work for any `index` parameter case.
-        if spin == 'a':
+        if spin == "a":
             orbs_dens = self._orb_dens_up
-        elif spin == 'b':
+        elif spin == "b":
             orbs_dens = self._orb_dens_dn
-        elif spin == 'm':
+        elif spin == "m":
             orbs_dens = self._orb_dens_up - self._orb_dens_dn
-        
-        # Evaluate property values for interpolation. 
+
+        # Evaluate property values for interpolation.
         # Total density (ab) is evaluated from spin components when indexing is required
         if index is None:
-            if spin == 'ab':
+            if spin == "ab":
                 value_array = self.dens_tot
             else:
                 value_array = sum(orbs_dens, axis=0)
         else:
-            if spin == 'ab':
+            if spin == "ab":
                 orbs_dens = self._orb_dens_up + self._orb_dens_dn
-            orbs_dens = orbs_dens[index]             # M(K_orb,N)
-            value_array = sum(orbs_dens, axis=0)     # (N,)
-        
+            orbs_dens = orbs_dens[index]  # M(K_orb,N)
+            value_array = sum(orbs_dens, axis=0)  # (N,)
+
         return cubic_interp(self.rs, value_array, log=log)
 
-    def interpolate_ked(self, spin='ab', index=None, log=True):
+    def interpolate_ked(self, spin="ab", index=None, log=True):
         r"""Compute positive definite kinetic energy density."""
-        if spin not in ['a', 'b', 'ab', 'm']:
-            raise ValueError(f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`.")
-        if spin in ['a', 'b', 'm'] and (self._orb_ked_up is None):
+        if spin not in ["a", "b", "ab", "m"]:
+            raise ValueError(
+                f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
+            )
+        if spin in ["a", "b", "m"] and (self._orb_ked_up is None):
             raise ValueError(f"Kinetic energy density for `{spin}` spin-orbitals unavailable.")
         if index is not None and (self._orb_ked_up is None):
-            raise ValueError("Can not perform indexing since orbital densities are missing in this dataset.")
+            raise ValueError(
+                "Can not perform indexing since orbital densities are missing in this dataset."
+            )
 
         # Assign cases that require spin-densitiy data. Since these are stored as density
         # per orbital they work for any `index` parameter case.
-        if spin == 'a':
+        if spin == "a":
             orbs_ked = self._orb_ked_up
-        elif spin == 'b':
+        elif spin == "b":
             orbs_ked = self._orb_ked_dn
-        elif spin == 'm':
+        elif spin == "m":
             orbs_ked = self._orb_ked_up - self._orb_ked_dn
-        
-        # Evaluate property values for interpolation. 
+
+        # Evaluate property values for interpolation.
         # Total density (ab) is evaluated from spin components when indexing is required
         if index is None:
-            if spin == 'ab':
+            if spin == "ab":
                 value_array = self.ked_tot
             else:
                 value_array = sum(orbs_ked, axis=0)
         else:
-            if spin == 'ab':
+            if spin == "ab":
                 orbs_ked = self._orb_ked_up + self._orb_ked_dn
-            orbs_ked = orbs_ked[index]              # M(K_orb,N)
-            value_array = sum(orbs_ked, axis=0)     # (N,)
-            
+            orbs_ked = orbs_ked[index]  # M(K_orb,N)
+            value_array = sum(orbs_ked, axis=0)  # (N,)
+
         return cubic_interp(self.rs, value_array, log=log)
 
     def to_dict(self):
@@ -291,11 +301,7 @@ class Species(SpeciesData):
 
         def default(self, obj):
             r"""Default encode function."""
-            return (
-                obj.tolist()
-                if isinstance(obj, ndarray)
-                else JSONEncoder.default(self, obj)
-            )
+            return obj.tolist() if isinstance(obj, ndarray) else JSONEncoder.default(self, obj)
 
     @staticmethod
     def _msgfile(elem, charge, mult, nexc, dataset, datapath):
@@ -305,35 +311,26 @@ class Species(SpeciesData):
     def _dump(self, datapath):
         r"""Dump the Species instance to a MessagePack file in the database."""
         # Get database entry filename
-        fn = Species._msgfile(
-            self.elem, self.charge, self.mult, self.nexc, self.dataset, datapath
-        )
+        fn = Species._msgfile(self.elem, self.charge, self.mult, self.nexc, self.dataset, datapath)
         # Convert numpy arrays to raw bytes for dumping as msgpack
         msg = {
-            k: _array_to_bytes(v) if isinstance(v, ndarray) else v
-            for k, v in asdict(self).items()
+            k: _array_to_bytes(v) if isinstance(v, ndarray) else v for k, v in asdict(self).items()
         }
         # Dump msgpack entry to database
         with open(fn, "wb") as f:
             f.write(pack_msg(msg))
 
 
-def load(
-    elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH
-):
+def load(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Load an atomic or ionic species from the AtomDB database."""
     # Load database msgpack entry
     with open(Species._msgfile(elem, charge, mult, nexc, dataset, datapath), "rb") as f:
         msg = unpack_msg(f)
     # Convert raw bytes back to numpy arrays, initialize the Species instance, return it
-    return Species(
-        **{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()}
-    )
+    return Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
 
 
-def compile(
-    elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH
-):
+def compile(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Compile an atomic or ionic species into the AtomDB database."""
     # Ensure directories exist
     makedirs(join(datapath, f"{dataset}/db"), exist_ok=True)
@@ -344,9 +341,7 @@ def compile(
     submodule.run(elem, charge, mult, nexc, dataset, datapath)._dump(datapath)
 
 
-def datafile(
-    suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH
-):
+def datafile(suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_DATAPATH):
     r"""Return the filename of a raw data file."""
     # Check that all non-optional arguments are specified
     if dataset is None:
@@ -388,14 +383,14 @@ class cubicspline_log(CubicSpline):
 
     def __call__(self, x, deriv=0):
         r"""Compute the interpolation at some x-values.
-        
+
         Parameters
         ----------
         x : ndarray(M,)
             points to be interpolated.
         deriv: int, optional
             order of spline derivative to evaluate. Must be one of 0, 1 and 2, default is 0.
-        
+
         Returns
         -------
         ndarray(M,)
@@ -403,7 +398,7 @@ class cubicspline_log(CubicSpline):
         """
         if deriv not in [0, 1, 2]:
             raise NotImplementedError
-        
+
         y = exp(CubicSpline.__call__(self, x))
         if deriv == 1:
             # d(rho(r)) = d(log(rho(r))) * rho(r)
@@ -413,8 +408,8 @@ class cubicspline_log(CubicSpline):
             # d^2(rho(r)) = d^2(log(rho(r))) * rho(r) + [d(rho(r))]^2/rho(r)
             dlogy = CubicSpline.__call__(self, x, nu=1)
             d2logy = CubicSpline.__call__(self, x, nu=2)
-            y = d2logy.flatten() * y + dlogy.flatten()**2 * y
-        
+            y = d2logy.flatten() * y + dlogy.flatten() ** 2 * y
+
         return y
 
 
@@ -427,14 +422,14 @@ class cubicspline_(CubicSpline):
 
     def __call__(self, x, deriv=0):
         r"""Compute the interpolation at some x-values.
-        
+
         Parameters
         ----------
         x : ndarray(M,)
             points to be interpolated.
         deriv: int, optional
             order of spline derivative to evaluate, default is 0.
-        
+
         Returns
         -------
         ndarray(M,)
@@ -446,9 +441,7 @@ class cubicspline_(CubicSpline):
 def cubic_interp(x, y, log=False):
     r"""Create an interpolated cubic spline for the given data."""
     cls = cubicspline_log if log else cubicspline_
-    return cls(
-        x, y, axis=0, bc_type='not-a-knot', extrapolate=True
-    )
+    return cls(x, y, axis=0, bc_type="not-a-knot", extrapolate=True)
 
 
 class _AtomicOrbitals(object):
@@ -520,7 +513,7 @@ def get_element_data(elem):
         "str": (lambda s: s.strip()),
         "angstrom": (lambda s: float(s) * angstrom),
         "2angstrom": (lambda s: float(s) * angstrom / 2),
-        "angstrom**3": (lambda s: float(s) * angstrom ** 3),
+        "angstrom**3": (lambda s: float(s) * angstrom**3),
         "amu": (lambda s: float(s) * amu),
     }
 

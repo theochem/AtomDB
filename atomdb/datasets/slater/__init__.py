@@ -187,7 +187,9 @@ class AtomicDensity:
         if points.ndim != 1:
             raise ValueError("The argument point should be a 1D array.")
         # compute norm & pre-factor
-        norm = np.power(2. * exponent, number) * np.sqrt((2. * exponent) / factorial(2. * number))
+        norm = np.power(2.0 * exponent, number) * np.sqrt(
+            (2.0 * exponent) / factorial(2.0 * number)
+        )
         pref = np.power(points, number - 1).T
         # compute slater function
         slater = norm.T * pref * np.exp(-exponent * points).T
@@ -288,12 +290,12 @@ class AtomicDensity:
         orb_occs = self.orbitals_occupation
         if mode == "valence":
             orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
-            orb_occs = orb_occs * np.exp(-(self.orbitals_energy - orb_homo)**2)
+            orb_occs = orb_occs * np.exp(-((self.orbitals_energy - orb_homo) ** 2))
         elif mode == "core":
             orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
-            orb_occs = orb_occs * (1. - np.exp(-(self.orbitals_energy - orb_homo)**2))
+            orb_occs = orb_occs * (1.0 - np.exp(-((self.orbitals_energy - orb_homo) ** 2)))
         # compute density
-        dens = np.dot(self.phi_matrix(points)**2, orb_occs).ravel() / (4 * np.pi)
+        dens = np.dot(self.phi_matrix(points) ** 2, orb_occs).ravel() / (4 * np.pi)
         return dens
 
     @staticmethod
@@ -337,7 +339,7 @@ class AtomicDensity:
         """
         slater = AtomicDensity.slater_orbital(exponent, number, points)
         # derivative
-        deriv_pref = (number.T - 1.) / np.reshape(points, (points.shape[0], 1)) - exponent.T
+        deriv_pref = (number.T - 1.0) / np.reshape(points, (points.shape[0], 1)) - exponent.T
         deriv = deriv_pref * slater
         return deriv
 
@@ -367,26 +369,26 @@ class AtomicDensity:
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             slater = AtomicDensity.slater_orbital(exps, number, points)
             # derivative
-            deriv_pref = (number.T - 1.) - exps.T * np.reshape(points, (points.shape[0], 1))
+            deriv_pref = (number.T - 1.0) - exps.T * np.reshape(points, (points.shape[0], 1))
             deriv = deriv_pref * slater
             phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
 
         angular = []  # Angular numbers are l(l + 1)
         for index, orbital in enumerate(self.orbitals):
             if "S" in orbital:
-                angular.append(0.)
+                angular.append(0.0)
             elif "P" in orbital:
-                angular.append(2.)
+                angular.append(2.0)
             elif "D" in orbital:
-                angular.append(6.)
+                angular.append(6.0)
             elif "F" in orbital:
-                angular.append(12.)
+                angular.append(12.0)
 
         orb_occs = self.orbitals_occupation
-        energy = np.dot(phi_matrix**2., orb_occs).ravel() / 2.
+        energy = np.dot(phi_matrix**2.0, orb_occs).ravel() / 2.0
         # Add other term
-        molecular = self.phi_matrix(points)**2. * np.array(angular)
-        energy += np.dot(molecular, orb_occs).ravel() / 2.
+        molecular = self.phi_matrix(points) ** 2.0 * np.array(angular)
+        energy += np.dot(molecular, orb_occs).ravel() / 2.0
         return energy
 
     def derivative_density(self, points):
@@ -404,7 +406,7 @@ class AtomicDensity:
             The derivative of atomic density on the grid points.
         """
         factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=True)
-        derivative = np.dot(2. * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        derivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
         return derivative
 
 
@@ -423,21 +425,159 @@ def load_slater_wfn(element, anion=False, cation=False):
 
     """
     # Heavy atoms from atom cs to lr.
-    heavy_atoms = ["cs", "ba", "la", "ce", "pr", "nd", "pm", "sm", "eu", "gd", "tb", "dy", "ho",
-                   "er", "tm", "yb", "lu", "hf", "ta", "w", "re", "os", "ir", "pt", "au", "hg",
-                   "tl", "pb", "bi", "po", "at", "rn", "fr", "ra", "ac", "th", "pa", "u", "np",
-                   "pu", "am", "cm", "bk", "cf", "es", "fm", "md", "no", "lr"]
+    heavy_atoms = [
+        "cs",
+        "ba",
+        "la",
+        "ce",
+        "pr",
+        "nd",
+        "pm",
+        "sm",
+        "eu",
+        "gd",
+        "tb",
+        "dy",
+        "ho",
+        "er",
+        "tm",
+        "yb",
+        "lu",
+        "hf",
+        "ta",
+        "w",
+        "re",
+        "os",
+        "ir",
+        "pt",
+        "au",
+        "hg",
+        "tl",
+        "pb",
+        "bi",
+        "po",
+        "at",
+        "rn",
+        "fr",
+        "ra",
+        "ac",
+        "th",
+        "pa",
+        "u",
+        "np",
+        "pu",
+        "am",
+        "cm",
+        "bk",
+        "cf",
+        "es",
+        "fm",
+        "md",
+        "no",
+        "lr",
+    ]
 
-    anion_atoms = ["ag", "al", "as", "b", "br", "c", "cl", "co", "cr", "cu", "f", "fe", "ga",
-                   "ge", "h", "i", "in", "k", "li", "mn", "mo", "n", "na", "nb", "ni", "o",
-                   "p", "pd", "rb", "rh", "ru", "s", "sb", "sc", "se", "si", "sn", "tc", "te",
-                   "ti", "v", "y", "zr"]
+    anion_atoms = [
+        "ag",
+        "al",
+        "as",
+        "b",
+        "br",
+        "c",
+        "cl",
+        "co",
+        "cr",
+        "cu",
+        "f",
+        "fe",
+        "ga",
+        "ge",
+        "h",
+        "i",
+        "in",
+        "k",
+        "li",
+        "mn",
+        "mo",
+        "n",
+        "na",
+        "nb",
+        "ni",
+        "o",
+        "p",
+        "pd",
+        "rb",
+        "rh",
+        "ru",
+        "s",
+        "sb",
+        "sc",
+        "se",
+        "si",
+        "sn",
+        "tc",
+        "te",
+        "ti",
+        "v",
+        "y",
+        "zr",
+    ]
 
-    cation_atoms = ["ag", "al", "ar", "as", "b", "be", "br", "c", "ca", "cd", "cl", "co",
-                    "cr", "cs", "cu", "f", "fe", "ga", "ge", "i", "in", "k", "kr", "li",
-                    "mg", "mn", "mo", "n", "na", "nb", "ne", "ni", "o", "p", "pd", "rb",
-                    "rh", "ru", "s", "sb", "sc", "se", "si", "sn", "sr", "tc", "te", "ti",
-                    "v", "xe", "y", "zn", "zr"]
+    cation_atoms = [
+        "ag",
+        "al",
+        "ar",
+        "as",
+        "b",
+        "be",
+        "br",
+        "c",
+        "ca",
+        "cd",
+        "cl",
+        "co",
+        "cr",
+        "cs",
+        "cu",
+        "f",
+        "fe",
+        "ga",
+        "ge",
+        "i",
+        "in",
+        "k",
+        "kr",
+        "li",
+        "mg",
+        "mn",
+        "mo",
+        "n",
+        "na",
+        "nb",
+        "ne",
+        "ni",
+        "o",
+        "p",
+        "pd",
+        "rb",
+        "rh",
+        "ru",
+        "s",
+        "sb",
+        "sc",
+        "se",
+        "si",
+        "sn",
+        "sr",
+        "tc",
+        "te",
+        "ti",
+        "v",
+        "xe",
+        "y",
+        "zn",
+        "zr",
+    ]
 
     is_heavy_element = element.lower() in heavy_atoms
     if (anion or cation) and is_heavy_element:
@@ -480,8 +620,12 @@ def load_slater_wfn(element, anion=False, cation=False):
         shells = ["K", "L", "M", "N"]
 
         out = {}
-        orbitals = [str(x) + "S" for x in range(1, 8)] + [str(x) + "P" for x in range(2, 8)] + \
-                   [str(x) + "D" for x in range(3, 8)] + [str(x) + "F" for x in range(4, 8)]
+        orbitals = (
+            [str(x) + "S" for x in range(1, 8)]
+            + [str(x) + "P" for x in range(2, 8)]
+            + [str(x) + "D" for x in range(3, 8)]
+            + [str(x) + "F" for x in range(4, 8)]
+        )
         for orb in orbitals:
             # Initialize all atomic orbitals to zero electrons
             out[orb] = 0
@@ -506,14 +650,14 @@ def load_slater_wfn(element, anion=False, cation=False):
         for x in orbitals:
             if x in electron_config_list:
                 index = electron_config_list.index(x)
-                orbital = (electron_config_list[index: index + 2])
+                orbital = electron_config_list[index : index + 2]
 
                 if orbital[1] == "D" or orbital[1] == "F":
                     # num_electrons = re.sub('[(){}<>,]', "", electron_config_list.split(orbital)[1])
                     num_electrons = re.search(orbital + r"\((.*?)\)", electron_config_list).group(1)
                     out[orbital] = int(num_electrons)
                 else:
-                    out[orbital] = int(electron_config_list[index + 3: index + 4])
+                    out[orbital] = int(electron_config_list[index + 3 : index + 4])
 
         return {key: value for key, value in out.items() if value != 0}
 
@@ -580,26 +724,27 @@ def load_slater_wfn(element, anion=False, cation=False):
                 f.readline()
 
         next_line = f.readline()
-        energy = [float(next_line.split()[2])] + \
-                 [float(x) for x in (re.findall(r"[= -]\d+.\d+", f.readline()))[:-1]]
+        energy = [float(next_line.split()[2])] + [
+            float(x) for x in (re.findall(r"[= -]\d+.\d+", f.readline()))[:-1]
+        ]
 
         orbitals = []
-        orbitals_basis = {'S': [], 'P': [], 'D': [], "F": []}
+        orbitals_basis = {"S": [], "P": [], "D": [], "F": []}
         orbitals_cusp = []
         orbitals_energy = []
-        orbitals_exp = {'S': [], 'P': [], 'D': [], "F": []}
+        orbitals_exp = {"S": [], "P": [], "D": [], "F": []}
         orbitals_coeff = {}
 
         line = f.readline()
         while line.strip() != "":
             # If line has ___S___ or P or D where _ = " ".
-            if re.search(r'  [S|P|D|F]  ', line):
+            if re.search(r"  [S|P|D|F]  ", line):
                 # Get All The Orbitals
                 subshell = line.split()[0]
                 list_of_orbitals = line.split()[1:]
                 orbitals += list_of_orbitals
                 for x in list_of_orbitals:
-                    orbitals_coeff[x] = []   # Initilize orbitals inside coefficient dictionary
+                    orbitals_coeff[x] = []  # Initilize orbitals inside coefficient dictionary
 
                 # Get Energy, Cusp Levels
                 line = f.readline()
@@ -611,7 +756,7 @@ def load_slater_wfn(element, anion=False, cation=False):
                 line = f.readline()
 
                 # Get Exponents, Coefficients, Orbital Basis
-                while re.match(r'\A^\d' + subshell, line.lstrip()):
+                while re.match(r"\A^\d" + subshell, line.lstrip()):
 
                     list_words = line.split()
                     orbitals_exp[subshell] += [float(list_words[1])]
@@ -623,24 +768,32 @@ def load_slater_wfn(element, anion=False, cation=False):
             else:
                 line = f.readline()
 
-    data = {'configuration': configuration,
-            'energy': energy,
-            'orbitals': orbitals,
-            'orbitals_energy': np.array(orbitals_energy)[:, None],
-            'orbitals_cusp': np.array(orbitals_cusp)[:, None],
-            'orbitals_basis': orbitals_basis,
-            'orbitals_exp':
-                {key: np.asarray(value).reshape(len(value), 1) for key, value in orbitals_exp.items()
-                 if value != []},
-            'orbitals_coeff':
-                {key: np.asarray(value).reshape(len(value), 1)
-                 for key, value in orbitals_coeff.items() if value != []},
-            'orbitals_occupation': np.array([get_number_of_electrons_per_orbital(configuration)[k]
-                                             for k in orbitals])[:, None],
-            'basis_numbers':
-                {key: np.asarray([[int(x[0])] for x in value])
-                 for key, value in orbitals_basis.items() if len(value) != 0}
-            }
+    data = {
+        "configuration": configuration,
+        "energy": energy,
+        "orbitals": orbitals,
+        "orbitals_energy": np.array(orbitals_energy)[:, None],
+        "orbitals_cusp": np.array(orbitals_cusp)[:, None],
+        "orbitals_basis": orbitals_basis,
+        "orbitals_exp": {
+            key: np.asarray(value).reshape(len(value), 1)
+            for key, value in orbitals_exp.items()
+            if value != []
+        },
+        "orbitals_coeff": {
+            key: np.asarray(value).reshape(len(value), 1)
+            for key, value in orbitals_coeff.items()
+            if value != []
+        },
+        "orbitals_occupation": np.array(
+            [get_number_of_electrons_per_orbital(configuration)[k] for k in orbitals]
+        )[:, None],
+        "basis_numbers": {
+            key: np.asarray([[int(x[0])] for x in value])
+            for key, value in orbitals_basis.items()
+            if len(value) != 0
+        },
+    }
 
     return data
 
@@ -655,13 +808,13 @@ def split_configuration(orbitals, occupations):
     occs_b : list
         beta electronic configuration for each orbital (M values)
     """
-    subshell_alphas = {'S': 1, 'P': 3, 'D': 5, 'F': 7}
+    subshell_alphas = {"S": 1, "P": 3, "D": 5, "F": 7}
     occs_a = []
     occs_b = []
     for i, orb in enumerate(orbitals):
-        n_el = (occupations[i] - 1)   # N electrons in sub shell - 1
+        n_el = occupations[i] - 1  # N electrons in sub shell - 1
         na_sshell = subshell_alphas[orb[-1]]  # N alpha electrons in sub shell
-        row =  n_el // na_sshell
+        row = n_el // na_sshell
         col = n_el % na_sshell
         if row == 0:
             na = (row * na_sshell + col) + 1
@@ -671,7 +824,7 @@ def split_configuration(orbitals, occupations):
             nb = (row * na_sshell + col) - na + 1
         occs_a.append(na)
         occs_b.append(nb)
-    
+
     return np.array(occs_a, dtype=float), np.array(occs_b, dtype=float)
 
 
@@ -682,7 +835,7 @@ def eval_multiplicity(orbitals, occupations):
     ----------
     orbitals : list, (M,)
         List of strings representing each of the orbitals in the electron configuration.
-        Ordered based on "S", "P", "D", etc. For example, Beryllium has ["1S", "2S"] in its electron 
+        Ordered based on "S", "P", "D", etc. For example, Beryllium has ["1S", "2S"] in its electron
         configuration.
     occupations : ndarray, (M,)
         Number of electrons in each of the orbitals in the electron configuration.
@@ -696,7 +849,7 @@ def eval_multiplicity(orbitals, occupations):
     na = sum(occs_a)
     nb = sum(occs_b)
     return int((na - nb)) + 1
- 
+
 
 DOCSTRING = """Slater Dataset
 
@@ -709,7 +862,7 @@ The following neutral and ionic (+/- 1 charge) species are available:
 The Slater basis set information for both anion, cation and neutral, was obtained from the paper:
 `(1999), Int. J. Quantum Chem., 71: 491-497 <https://onlinelibrary.wiley.com/doi/abs/10.1002/(SICI)1097-461X(1999)71:6%3C491::AID-QUA6%3E3.0.CO;2-T>`_
 
-The neutral heavy elements were obtained from: 
+The neutral heavy elements were obtained from:
 `Theor Chem Acc 104, 411–413 (2000) <https://link.springer.com/article/10.1007/s002140000150>`_
 """
 
@@ -721,15 +874,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         raise ValueError("Nonzero value of `nexc` is not currently supported")
     if charge != 0 and abs(charge) > 1:
         raise ValueError(f"`charge` must be one of -1, 0 or 1")
-    
+
     # Get information about the element and label as neutral or charged specie
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
     if charge == 0:
-        an, cat = [False, False]  
+        an, cat = [False, False]
     else:
         # Flip Boolean list to assging cation/anion: https://stackoverflow.com/a/16726462
-        sign = lambda x: (1, -1)[x<0]       
-        an, cat = [False, True][::sign(charge)] 
+        sign = lambda x: (1, -1)[x < 0]
+        an, cat = [False, True][:: sign(charge)]
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
 
     # Set up internal variables
@@ -739,10 +892,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     nspin = mult - 1
     # n_up = (nelec + nspin) // 2
     # n_dn = (nelec - nspin) // 2
-    basis = None    
-    
+    basis = None
+
     # Retrieve Slater data
-    specie =  AtomicDensity(elem, anion=an, cation=cat)
+    specie = AtomicDensity(elem, anion=an, cation=cat)
 
     # Check multiplicity value
     mo_occ = specie.orbitals_occupation.ravel()  # these are configurations not occupations
@@ -759,7 +912,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     points = np.linspace(*BOUND, NPOINTS)
 
     # Compute densities and derivatives
-    dens_orbs = specie.phi_matrix(points)**2 / (4 * np.pi)
+    dens_orbs = specie.phi_matrix(points) ** 2 / (4 * np.pi)
     dens_tot = specie.atomic_density(points, "total")
     # dens_core = specie.atomic_density(points, "core")
     # dens_valence = specie.atomic_density(points, "valence")
@@ -768,7 +921,6 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Compute laplacian and kinetic energy density
     # lapl_tot = None
     ked_tot = specie.lagrangian_kinetic_energy(points)
-    
 
     # Return Species instance
     return atomdb.Species(
