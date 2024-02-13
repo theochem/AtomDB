@@ -27,7 +27,7 @@ from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_
 from gbasis.evals.density import evaluate_basis
 from gbasis.evals.eval_deriv import evaluate_deriv_basis
 
-from grid.onedgrid import  UniformInteger
+from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
 from grid.atomgrid import AtomGrid
 
@@ -43,14 +43,14 @@ __all__ = [
 
 # Parameters to generate an atomic grid from uniform radial grid
 # Use 170 points, lmax = 21 for the Lebedev grid since our basis
-# don't go beyond l=10 in the spherical harmonics. 
-BOUND = (1e-5, 2e1) #(r_min, r_max)
+# don't go beyond l=10 in the spherical harmonics.
+BOUND = (1e-5, 2e1)  # (r_min, r_max)
 
 NPOINTS = 1000
 
-SIZE = 170 # Lebedev grid sizes 
+SIZE = 170  # Lebedev grid sizes
 
-DEGREE = 21 #  Lebedev grid degrees
+DEGREE = 21  #  Lebedev grid degrees
 
 
 DOCSTRING = """Gaussian basis densities (UHF) Dataset
@@ -96,7 +96,7 @@ def eval_orbs_density(one_density_matrix, orb_eval):
     return density
 
 
-def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type='spherical'):
+def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type="spherical"):
     "Adapted from Gbasis"
     orbt_ked = 0
     for orders in np.identity(3, dtype=int):
@@ -125,7 +125,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     n_dn = (nelec - nspin) // 2
 
     # Load data from fchk
-    basis = 'def2-svpd'
+    basis = "def2-svpd"
     data = _load_fchk(natom, elem, nelec, mult, basis, datapath)
 
     # Unrestricted Hartree-Fock SCF results
@@ -135,7 +135,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     mo_e_dn = data.mo.energies[norba:]
     occs_up = data.mo.occs[:norba]
     occs_dn = data.mo.occs[norba:]
-    mo_coeffs = data.mo.coeffs # ndarray(nbasis, norba + norbb)
+    mo_coeffs = data.mo.coeffs  # ndarray(nbasis, norba + norbb)
     coeffs_a = mo_coeffs[:, :norba]
     coeffs_b = mo_coeffs[:, norba:]
 
@@ -146,9 +146,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     dm1_tot = dm1_up + dm1_dn
 
     # Make grid
-    onedg = UniformInteger(NPOINTS) # number of uniform grid points.
-    rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg) # radial grid
-    atgrid = AtomGrid(rgrid, degrees=[DEGREE], sizes=[SIZE], center=np.array([0., 0., 0.]))
+    onedg = UniformInteger(NPOINTS)  # number of uniform grid points.
+    rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg)  # radial grid
+    atgrid = AtomGrid(rgrid, degrees=[DEGREE], sizes=[SIZE], center=np.array([0.0, 0.0, 0.0]))
 
     # Compute densities
     obasis, coord_types = from_iodata(data)
@@ -182,15 +182,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
     if charge != 0:
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
-    
+
     # Conceptual-DFT properties (WIP)
     # NOTE: Only the alpha component of the MOs is used bellow
     mo_energy_occ_up = mo_e_up[:n_up]
     mo_energy_virt_up = mo_e_up[n_up:]
-    ip = -mo_energy_occ_up[-1] # - energy_HOMO_alpha
-    ea = -mo_energy_virt_up[0] # - energy_LUMO_alpha
-    mu=None
-    eta=None
+    ip = -mo_energy_occ_up[-1]  # - energy_HOMO_alpha
+    ea = -mo_energy_virt_up[0]  # - energy_LUMO_alpha
+    mu = None
+    eta = None
 
     # Return Species instance
     return atomdb.Species(
