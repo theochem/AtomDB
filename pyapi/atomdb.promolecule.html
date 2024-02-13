@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>atomdb.promolecule module &mdash; AtomDB  documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/override.css" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
+        <script>window.MathJax = {"tex": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true}, "options": {"ignoreHtmlClass": "tex2jax_ignore|mathjax_ignore|document", "processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+        <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="atomdb.units module" href="atomdb.units.html" />
+    <link rel="prev" title="atomdb.periodic module" href="atomdb.periodic.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            AtomDB
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">atomdb</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="atomdb.html">atomdb package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="atomdb.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="atomdb.api.html">atomdb.api module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.periodic.html">atomdb.periodic module</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">atomdb.promolecule module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.units.html">atomdb.units module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.version.html">atomdb.version module</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#module-contents">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">AtomDB</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">atomdb</a></li>
+          <li class="breadcrumb-item"><a href="atomdb.html">atomdb package</a></li>
+      <li class="breadcrumb-item active">atomdb.promolecule module</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/pyapi/atomdb.promolecule.rst" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <div class="section" id="module-atomdb.promolecule">
+<span id="atomdb-promolecule-module"></span><h1>atomdb.promolecule module<a class="headerlink" href="#module-atomdb.promolecule" title="Permalink to this heading"></a></h1>
+<p>AtomDB promolecule submodule.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Promolecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeffs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Promolecule class.</p>
+<p>A promolecule is an approximation of a molecule constructed from a linear combination of atomic
+and/or ionic species. Properties of this promolecule can be computed from those of the atomic
+and/or ionic species, depending on whether the property is an extensive one or an intensive one.</p>
+<p>For an extensive property, the formula is a linear combination:</p>
+<div class="math notranslate nohighlight">
+\[\text{prop.}_{\text{mol;extensive}}
+    = \sum_{A=1}^{N_{\text{atoms}}} c_A \text{prop.}_A\]</div>
+<p>For an intensive property, the formula is a mean:</p>
+<div class="math notranslate nohighlight">
+\[\text{prop.}_{\text{mol;intensive}}
+    = {\left\langle \left\{ \text{prop.}_A \right\}_{A=1}^{N_{\text{atoms}}} \right\rangle}_p\]</div>
+<p>where the parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> defines the type of mean used (1 = linear, 2 = geometric, etc.).</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.atoms">
+<span class="sig-name descname"><span class="pre">atoms</span></span><a class="headerlink" href="#atomdb.promolecule.Promolecule.atoms" title="Permalink to this definition"></a></dt>
+<dd><p>Species instances out of which the promolecule is composed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>list of <a class="reference internal" href="atomdb.api.html#atomdb.api.Species" title="atomdb.api.Species">Species</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.coords">
+<span class="sig-name descname"><span class="pre">coords</span></span><a class="headerlink" href="#atomdb.promolecule.Promolecule.coords" title="Permalink to this definition"></a></dt>
+<dd><p>Coordinates of each species component of the promolecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray((N, 3), dtype=float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.coeffs">
+<span class="sig-name descname"><span class="pre">coeffs</span></span><a class="headerlink" href="#atomdb.promolecule.Promolecule.coeffs" title="Permalink to this definition"></a></dt>
+<dd><p>Coefficients of each species component of the promolecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type</dt>
+<dd class="field-odd"><p>np.ndarray((N,), dtype=float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.density">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.density" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the electron density of the promolecule at the desired points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.ked">
+<span class="sig-name descname"><span class="pre">ked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.ked" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the kinetic energy density of the promolecule at the desired points.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.energy">
+<span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.energy" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the energy of the promolecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.mass">
+<span class="sig-name descname"><span class="pre">mass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.mass" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the mass of the promolecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.ip">
+<span class="sig-name descname"><span class="pre">ip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.ip" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the ionization potential of the promolecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.mu">
+<span class="sig-name descname"><span class="pre">mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.mu" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the chemical potential of the promolecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.eta">
+<span class="sig-name descname"><span class="pre">eta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.eta" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the chemical hardness of the promolecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coeffs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.__init__" title="Permalink to this definition"></a></dt>
+<dd><p>Initialize a Promolecule instance.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atoms</strong> (<em>list</em><em> of </em><a class="reference internal" href="atomdb.api.html#atomdb.api.Species" title="atomdb.api.Species"><em>Species</em></a>) – Species instances out of which the promolecule is composed.</p></li>
+<li><p><strong>coords</strong> (<em>np.ndarray</em><em>(</em><em>(</em><em>N</em><em>, </em><em>3</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – Coordinates of each species component of the promolecule.</p></li>
+<li><p><strong>coeffs</strong> (<em>np.ndarray</em><em>(</em><em>(</em><em>N</em><em>,</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – Coefficients of each species component of the promolecule.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id0">
+<span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id0" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the electron density of the promolecule at the desired points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>np.ndarray</em><em>(</em><em>(</em><em>N</em><em>, </em><em>3</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – Points at which to compute the density.</p></li>
+<li><p><strong>spin</strong> (<em>(</em><em>'ab'</em><em> | </em><em>'a'</em><em> | </em><em>'b'</em><em> | </em><em>'m'</em><em>)</em><em>, </em><em>default='ab'</em>) – Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.</p></li>
+<li><p><strong>log</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to compute the log of the density instead of the density itself.
+May be slightly more accurate.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id1">
+<span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id1" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the energy of the promolecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id2">
+<span class="sig-name descname"><span class="pre">eta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id2" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the chemical hardness of the promolecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>p</strong> (<em>int</em><em>, </em><em>default=1</em>) – Value of <code class="docutils literal notranslate"><span class="pre">p</span></code> for the p-mean computation of this intensive property.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.gradient">
+<span class="sig-name descname"><span class="pre">gradient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.gradient" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the electron density gradient of the promolecule at the desired points.</p>
+<p>Promolecular gradient:
+.. math:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>\<span class="n">nabla</span> \<span class="n">rho_</span><span class="p">{</span>\<span class="n">text</span><span class="p">{</span><span class="n">mol</span><span class="p">}}</span><span class="o">^</span><span class="p">{(</span><span class="mi">0</span><span class="p">)}</span> <span class="p">(</span>\<span class="n">mathbf</span><span class="p">{</span><span class="n">R</span><span class="p">})</span> <span class="o">=</span> \<span class="n">sum_</span><span class="p">{</span><span class="n">A</span><span class="o">=</span><span class="mi">1</span><span class="p">}</span><span class="o">^</span><span class="p">{</span><span class="n">N_</span><span class="p">{</span>\<span class="n">text</span><span class="p">{</span><span class="n">atoms</span><span class="p">}}}</span> <span class="n">c_A</span> \<span class="n">nabla</span> \<span class="n">rho_A</span><span class="o">^</span><span class="p">{(</span><span class="mi">0</span><span class="p">)}(</span>\<span class="n">mathbf</span><span class="p">{</span><span class="n">R</span><span class="p">})</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>where,</dt><dd><p><span class="math notranslate nohighlight">\(N_{\text{atoms}}\)</span> is the number of atoms in the molecule.
+<span class="math notranslate nohighlight">\(c_A\)</span> are the coefficients of the specie.
+<span class="math notranslate nohighlight">\(R\)</span> are points in 3D cartesian coordinates.
+<span class="math notranslate nohighlight">\(\nabla \rho_A^{(0)}(\mathbf{R})\)</span> is the gradient of specie A.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>np.ndarray</em><em>(</em><em>(</em><em>N</em><em>, </em><em>3</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – Points at which to compute the density.</p></li>
+<li><p><strong>spin</strong> (<em>(</em><em>'ab'</em><em> | </em><em>'a'</em><em> | </em><em>'b'</em><em> | </em><em>'m'</em><em>)</em><em>, </em><em>default='ab'</em>) – Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.</p></li>
+<li><p><strong>log</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to compute the log of the density instead of the density itself.
+May be slightly more accurate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>gradient</strong></p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>np.ndarray((N, 3), dtype=float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.hessian">
+<span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.hessian" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the promolecule’s electron density Hessian at the desired points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>np.ndarray</em><em>(</em><em>(</em><em>N</em><em>, </em><em>3</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – Points at which to compute the density.</p></li>
+<li><p><strong>spin</strong> (<em>(</em><em>'ab'</em><em> | </em><em>'a'</em><em> | </em><em>'b'</em><em> | </em><em>'m'</em><em>)</em><em>, </em><em>default='ab'</em>) – Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.</p></li>
+<li><p><strong>log</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to compute the log of the density instead of the density itself.
+May be slightly more accurate.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">ip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id3" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the ionization potential of the promolecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>p</strong> (<em>int</em><em>, </em><em>default=1</em>) – Value of <code class="docutils literal notranslate"><span class="pre">p</span></code> for the p-mean computation of this intensive property.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">ked</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id4" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the kinetic energy density of the promolecule at the desired points.</p>
+<dl class="simple">
+<dt>points: np.ndarray((N, 3), dtype=float)</dt><dd><p>Points at which to compute the density.</p>
+</dd>
+<dt>spin: (‘ab’ | ‘a’ | ‘b’ | ‘m’), default=’ab’</dt><dd><p>Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.</p>
+</dd>
+<dt>log: bool, default=False</dt><dd><p>Whether to compute the log of the density instead of the density itself.
+May be slightly more accurate.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.laplacian">
+<span class="sig-name descname"><span class="pre">laplacian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ab'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.laplacian" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the promolecule’s electron density Laplacian at the desired points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>np.ndarray</em><em>(</em><em>(</em><em>N</em><em>, </em><em>3</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – Points at which to compute the density.</p></li>
+<li><p><strong>spin</strong> (<em>(</em><em>'ab'</em><em> | </em><em>'a'</em><em> | </em><em>'b'</em><em> | </em><em>'m'</em><em>)</em><em>, </em><em>default='ab'</em>) – Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.</p></li>
+<li><p><strong>log</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to compute the log of the density instead of the density itself.
+May be slightly more accurate.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id5">
+<span class="sig-name descname"><span class="pre">mass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#id5" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the mass of the promolecule.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id6">
+<span class="sig-name descname"><span class="pre">mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#id6" title="Permalink to this definition"></a></dt>
+<dd><p>Compute the chemical potential of the promolecule.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>p</strong> (<em>int</em><em>, </em><em>default=1</em>) – Value of <code class="docutils literal notranslate"><span class="pre">p</span></code> for the p-mean computation of this intensive property.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="atomdb.promolecule.make_promolecule">
+<span class="sig-name descname"><span class="pre">make_promolecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bohr'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.make_promolecule" title="Permalink to this definition"></a></dt>
+<dd><p>Construct a Promolecule instance from a set of atoms and their coordinates, charges,
+and multiplicities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>atnums</strong> (<em>list</em><em> of </em><em>int</em>) – List of element number for each atom.</p></li>
+<li><p><strong>coords</strong> (<em>list</em><em> of </em><em>np.ndarray</em><em>(</em><em>(</em><em>3</em><em>,</em><em>)</em><em>, </em><em>dtype=float</em><em>)</em>) – List of coordinates for each atom.</p></li>
+<li><p><strong>charges</strong> (<em>list</em><em> of </em><em>(</em><em>int</em><em> | </em><em>float</em><em>)</em><em>, </em><em>default=</em><em>[</em><em>0</em><em>, </em><em>...</em><em>, </em><em>0</em><em>]</em>) – List of charges.</p></li>
+<li><p><strong>mults</strong> (<em>list</em><em> of </em><em>(</em><em>int</em><em>)</em><em>, </em><em>default=</em><em>[</em><em>1</em><em>, </em><em>...</em><em>, </em><em>1</em><em>]</em>) – List of multiplicities for each atom.</p></li>
+<li><p><strong>units</strong> (<em>(</em><em>'bohr'</em><em> | </em><em>'angstrom'</em><em>)</em>) – Units of <code class="docutils literal notranslate"><span class="pre">coords</span></code> values.</p></li>
+<li><p><strong>dataset</strong> (<em>str</em><em>, </em><em>default=DEFAULT_DATASET</em>) – Data set from which to load atomic species.</p></li>
+<li><p><strong>datapath</strong> (<em>str</em><em>, </em><em>default=DEFAULT_DATAPATH</em>) – System path where the desired data set is located.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="atomdb.periodic.html" class="btn btn-neutral float-left" title="atomdb.periodic module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="atomdb.units.html" class="btn btn-neutral float-right" title="atomdb.units module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, QC-Devs.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
