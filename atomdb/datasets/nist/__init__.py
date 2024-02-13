@@ -75,7 +75,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         # Neutral and cations
         z = str(natom).zfill(3)
         ne = str(nelec).zfill(3)
-        with h5.File(os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r") as f:
+        with h5.File(
+            os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
+        ) as f:
             mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
             energy = f[z][ne]["Energy"][...]
         # sort based on energy
@@ -92,7 +94,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         # isoelectronic species
         z = str(natom - charge).zfill(3)
         ne = str(nelec).zfill(3)
-        with h5.File(os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r") as f:
+        with h5.File(
+            os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
+        ) as f:
             mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
             energy = f[z][ne]["Energy"][...]
         # sort based on energy
@@ -109,15 +113,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
-    data = list(csv.reader(open(os.path.join(os.path.dirname(__file__), "raw/c6cp04533b1.csv"), "r")))
+    data = list(
+        csv.reader(open(os.path.join(os.path.dirname(__file__), "raw/c6cp04533b1.csv"), "r"))
+    )
     tabid = [i for i, row in enumerate(data) if "Element" in row]
     # Assign each conceptual-DFT data table to a variable.
     # Remove empty and header rows
-    table_ips = data[tabid[0]:tabid[1]]
+    table_ips = data[tabid[0] : tabid[1]]
     table_ips = [row for row in table_ips if len(row[1]) > 0]
-    table_mus = data[tabid[1]:tabid[2]]
+    table_mus = data[tabid[1] : tabid[2]]
     table_mus = [row for row in table_mus if len(row[1]) > 0]
-    table_etas = data[tabid[2]:]
+    table_etas = data[tabid[2] :]
     table_etas = [row for row in table_etas if len(row[1]) > 0]
     # Get property at table(natom, charge)
     colid = table_ips[0].index(str(charge))
