@@ -103,7 +103,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         raise ValueError("The charge must be greater than or equal to -1.")
     if charge == elem:
         raise ValueError("The atomic number and charge cannot be the same.")
-    
+
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
     natom = atomdb.element_number(elem)
