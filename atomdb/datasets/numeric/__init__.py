@@ -31,6 +31,8 @@ import numpy as np
 
 import atomdb
 
+from atomdb.api import MULTIPLICITIES
+
 
 def load_numerical_hf_data():
     """Load data from desnity.out file into a `SpeciesTable`."""
@@ -107,7 +109,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Check arguments
     if nexc != 0:
         raise ValueError("Nonzero value of `nexc` is not currently supported")
-    # FIXME: check input multiplicity against tabulated values for isoelectronic serie
+    if charge < -1:
+        raise ValueError("The charge must be greater than or equal to -1.")
+    if charge == elem:
+        raise ValueError("The atomic number and charge cannot be the same.")
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
@@ -117,6 +122,11 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
     basis = None
+
+    # Check that the input multiplicity corresponds to the most stable electronic configuration.
+    # For charged species take the multiplicity from the neutral isoelectronic species.
+    if mult != MULTIPLICITIES[nelec]:
+        raise ValueError(f"Multiplicity {mult} not available for {elem} with charge = {charge}.")
 
     species_table = load_numerical_hf_data()
     data = species_table[(natom, nelec)]
