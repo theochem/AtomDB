@@ -33,13 +33,11 @@ else:
                 data.append([element.replace("\\n", "\n") for element in row])
         return data
 
-
     def _indent_lines(input_string, indent):
         """Indent each line of a string by a given number of spaces."""
         lines = input_string.splitlines()
         indented_lines = [(indent * " ") + line for line in lines]
         return "\n".join(indented_lines)
-
 
     def _gendoc(info_file):
         """Generate a docstring for the Element class.
@@ -91,16 +89,22 @@ else:
                 if list(_prop2desc[i].values())[0] != "":
                     docstring += _indent_lines(f"{list(_prop2desc[i].values())[0]}", 4) + "\n"
                 if list(_prop2unit[i].values())[0] != "":
-                    docstring += _indent_lines(f"Units: {list(_prop2unit[i].values())[0]}", 4) + "\n"
+                    docstring += (
+                        _indent_lines(f"Units: {list(_prop2unit[i].values())[0]}", 4) + "\n"
+                    )
                 if list(_prop2source[i].values())[0] != "":
                     docstring += _indent_lines(f"{list(_prop2source[i].values())[0]}", 4) + "\n"
                 if list(_prop2url[i].values())[0] != "":
                     docstring += _indent_lines(f"{list(_prop2url[i].values())[0]}", 4) + "\n"
                 if list(_prop2notes[i].values())[0] != "":
-                    docstring += _indent_lines(f"Notes:\n{list(_prop2notes[i].values())[0]}", 4) + "\n"
+                    docstring += (
+                        _indent_lines(f"Notes:\n{list(_prop2notes[i].values())[0]}", 4) + "\n"
+                    )
             # if multiple sources are available
             else:
-                docstring += f"{i} : dict\n    Dictionary with the {_prop2name[i]} of the element.\n"
+                docstring += (
+                    f"{i} : dict\n    Dictionary with the {_prop2name[i]} of the element.\n"
+                )
                 # add a line docstring with the description, source, and url for each source
                 for j in _prop2col[i]:
                     if _prop2desc[i][j] != "":
@@ -109,10 +113,9 @@ else:
                         docstring += _indent_lines(f"Units: {_prop2unit[i][j]}", 8) + "\n"
         return docstring
 
-
     # Code to run when the module is imported
-    data_file = files('atomdb.data').joinpath('elements_data.csv')
-    info_file = files('atomdb.data').joinpath('data_info.csv')
+    data_file = files("atomdb.data").joinpath("elements_data.csv")
+    info_file = files("atomdb.data").joinpath("data_info.csv")
 
     # work with data from "elements_data.csv"
     data = _read_csv(open(data_file))
@@ -143,7 +146,6 @@ else:
     _prop2col = {}
     for column, (prop, key) in enumerate(zip(properties, key_sources)):
         _prop2col.setdefault(prop, {})[key] = {"ncol": column}
-
 
     class Atom:
         def __init__(self, id, charge=0):
@@ -201,7 +203,9 @@ else:
                 elif len(tmp_dict[i]) == 1 and "" in tmp_dict[i]:
                     tmp_dict[i] = data[self.atnum - 1][tmp_dict[i][""]["ncol"]]
                 else:
-                    tmp_dict[i] = {j: data[self.atnum - 1][tmp_dict[i][j]["ncol"]] for j in tmp_dict[i]}
+                    tmp_dict[i] = {
+                        j: data[self.atnum - 1][tmp_dict[i][j]["ncol"]] for j in tmp_dict[i]
+                    }
             # set the class attributes to the properties of the element
             self.__dict__.update(tmp_dict)
 
