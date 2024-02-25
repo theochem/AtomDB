@@ -8,6 +8,7 @@ Submodules
    :maxdepth: 4
 
    atomdb.api
+   atomdb.periodic
    atomdb.promolecule
    atomdb.units
    atomdb.version
