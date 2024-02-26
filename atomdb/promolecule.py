@@ -15,14 +15,22 @@
 
 r"""AtomDB promolecule submodule."""
 
-from .api import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES
-from .api import load, element_number, element_symbol
+from copy import deepcopy
+
+from itertools import chain, combinations
 
 from numbers import Integral
+
+from operator import itemgetter
 
 from warnings import warn
 
 import numpy as np
+
+from scipy.optimize import linprog
+
+from .api import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES
+from .api import load, load_all, element_number, element_symbol
 
 
 __all__ = [
@@ -83,9 +91,36 @@ class Promolecule:
 
     """
 
-    def __init__(self, atoms, coords, coeffs):
+    def __init__(self):
         r"""
         Initialize a Promolecule instance.
+
+        """
+        self.atoms = []
+        self.coords = []
+        self.coeffs = []
+
+    def append(self, atom, coord, coeff):
+        r"""
+        Add a species to a Promolecule instance.
+
+        Parameters
+        ----------
+        atom: Species
+            Species instance.
+        coord: np.ndarray(3, dtype=float)
+            Coordinates of species.
+        coeff: float
+            Coefficient of species.
+
+        """
+        self.atoms.append(atom)
+        self.coords.append(np.asarray(coord, dtype=float))
+        self.coeffs.append(coeff)
+
+    def extend(self, atoms, coords, coeffs):
+        r"""
+        Add several species to a Promolecule instance.
 
         Parameters
         ----------
@@ -97,9 +132,9 @@ class Promolecule:
             Coefficients of each species component of the promolecule.
 
         """
-        self.atoms = atoms
-        self.coords = coords
-        self.coeffs = coeffs
+        self.atoms.extend(atoms)
+        self.coords.extend(np.asarray(coord, dtype=float) for coord in coords)
+        self.coeffs.extend(coeffs)
 
     def density(self, points, spin="ab", log=False):
         r"""
@@ -353,74 +388,90 @@ def make_promolecule(
         System path where the desired data set is located.
 
     """
-    # Get atomic symbols from inputs
-    atoms = [element_symbol(atom) for atom in atnums]
-    # Handle default charge and multiplicity parameters
-    if charges is None:
-        charges = [0 for _ in atoms]
-    if mults is None:
-        try:
-            mults = [MULTIPLICITIES[atnum - charge] for (atnum, charge) in zip(atnums, charges)]
-        except TypeError:
-            # FIXME: force non-int charge to be integer here, It will be overwritten bellow.
-            mults = [
-                MULTIPLICITIES[atnum - int(charge)] for (atnum, charge) in zip(atnums, charges)
-            ]
-    # Construct linear combination of species
-    promol_species = []
-    promol_coords = []
-    promol_coeffs = []
-    for atom, atnum, coord, charge, mult in zip(atoms, atnums, coords, charges, mults):
-        if not isinstance(mult, Integral):
-            raise ValueError("Non-integer multiplicity is invalid")
-        if isinstance(charge, Integral):
-            # Integer charge
-            specie = load(atom, charge, mult, dataset=dataset, datapath=datapath)
-            promol_species.append(specie)
-            promol_coords.append(coord)
-            promol_coeffs.append(1.0)
-        else:
-            # Floor charge
-            try:
-                charge_floor = np.floor(charge).astype(int)
-                mult_floor = MULTIPLICITIES[atnum - charge_floor]
-                specie = load(atom, charge_floor, mult_floor, dataset=dataset, datapath=datapath)
-                promol_species.append(specie)
-                promol_coords.append(coord)
-                promol_coeffs.append(np.ceil(charge) - charge)
-            except FileNotFoundError:
-                specie = load(atom, np.ceil(charge), mult, dataset=dataset, datapath=datapath)
-                promol_species.append(specie)
-                promol_coords.append(coord)
-                promol_coeffs.append(
-                    (element_number(atom) - charge) / (element_number(atom) - np.ceil(charge))
-                )
-                warn(
-                    "Coefficient of a species in the promolecule is >1, intensive properties might be incorrect"
-                )
-            # Ceilling charge
-            charge_ceil = np.ceil(charge).astype(int)
-            mult_ceil = MULTIPLICITIES[atnum - charge_ceil]
-            # FIXME: handle H^+
-            if mult_ceil == 0:
-                mult_ceil = 1
-            specie = load(atom, charge_ceil, mult_ceil, dataset=dataset, datapath=datapath)
-            promol_species.append(specie)
-            promol_coords.append(coord)
-            promol_coeffs.append(charge - np.floor(charge))
-    # Check coordinate units, convert to array
+    # Check coordinate units
     units = units.lower()
-    promol_coords = np.asarray(promol_coords, dtype=float)
     if units == "bohr":
-        promol_coords /= 1.0
+        coords = [coord / 1 for coord in coords]
     elif units == "angstrom":
-        promol_coords /= 0.52917721092
+        coords = [coord / 0.52917721092 for coord in coords]
     else:
         raise ValueError("Invalid `units` parameter; must be 'bohr' or 'angstrom'")
-    # Convert coefficients to array
-    promol_coeffs = np.asarray(promol_coeffs, dtype=float)
+
+    # Get atomic symbols from inputs
+    atoms = [element_symbol(atom) for atom in atnums]
+
+    # Handle default charge parameters
+    if charges is None:
+        charges = [0 for _ in atnums]
+
+    # Handle default multiplicity parameters
+    if mults is None:
+        # Force non-int charge to be integer here; it will be overwritten below.
+        mults = [
+            MULTIPLICITIES[int(np.round(atnum - charge))]
+            for (atnum, charge) in zip(atnums, charges)
+        ]
+
+    # Construct linear combination of species
+    promol = Promolecule()
+
+    for atom, atnum, coord, charge, mult in zip(atoms, atnums, coords, charges, mults):
+
+        # Integer charge and multiplicity
+        #
+        if isinstance(charge, Integral) and isinstance(mult, Integral):
+            try:
+                specie = load(atom, charge, abs(mult), dataset=dataset, datapath=datapath)
+                if mult < 0:
+                    specie.spinpol = -1
+                promol.append(specie, coord, 1.0)
+                continue
+            except FileNotFoundError:
+                warn(
+                    "Unable to load species corresponding to `charge, mult`; "
+                    "generating species via linear combination of other species'"
+                )
+
+        # Non-integer charge and multiplicity
+        #
+        nelec = atnum - charge
+        nspin = np.sign(mult) * (abs(mult) - 1)
+        # Get all candidates for linear combination
+        species_list = load_all(atom, dataset=dataset, datapath=datapath)
+        for specie in species_list[: len(species_list)]:
+            if specie.nspin > 0:
+                specie_neg_spinpol = deepcopy(specie)
+                specie_neg_spinpol.spinpol = -1
+                species_list.append(specie_neg_spinpol)
+
+        trial_species = chain(combinations(species_list, 2), combinations(species_list, 3))
+        good_combs = []
+        for ts in trial_species:
+            energies = np.asarray([t.energy for t in ts], dtype=float)
+            result = linprog(
+                energies,
+                A_eq=np.asarray(
+                    [
+                        [1 for t in ts],
+                        [t.nelec for t in ts],
+                        [t.nspin * t.spinpol for t in ts],
+                    ],
+                    dtype=float,
+                ),
+                b_eq=np.asarray([1, nelec, nspin], dtype=float),
+                bounds=(0, 1),
+            )
+            if result.success:
+                good_combs.append((np.dot(energies, result.x), ts, [coords for t in ts], result.x))
+        if len(good_combs) > 0:
+            promol.extend(*(min(good_combs, key=itemgetter(0))[1:]))
+        else:
+            raise ValueError(
+                "Unable to construct species with non-integer charge/spin from database entries"
+            )
+
     # Return Promolecule instance
-    return Promolecule(promol_species, promol_coords, promol_coeffs)
+    return promol
 
 
 def _extensive_global_property(atoms, coeffs, f):
@@ -449,7 +500,7 @@ def _intensive_property(atoms, coeffs, f, p=1):
 
 
 def _radial_vector_outer_triu(radii):
-    r"""Evaluate the outer products of a set of radial unit vectrors."""
+    r"""Evaluate the outer products of a set of radial unit vectors."""
     # Define a unit vector function
     unit_v = lambda vector: vector / np.linalg.norm(vector)
     # Store only upper triangular elements of the matrix.
@@ -459,3 +510,21 @@ def _radial_vector_outer_triu(radii):
     for col, ij in enumerate(indices):
         radv_outer[:, col] = unit_v(radii)[:, ij // 3] * unit_v(radii)[:, ij % 3]
     return radv_outer
+
+
+def _cart_to_bary(x0, y0, s1, s2, s3):
+    r"""Helper function for computing barycentric coordinates."""
+    x1, x2, x3 = s1.nelec, s2.nelec, s3.nelec
+    y1, y2, y3 = s1.nspin, s2.nspin, s3.nspin
+    lambda1 = (
+        (y2 - y3) * (x0 - x3)
+        + (x3 - x2) * (y0 - y3) / (y2 - y3) * (x1 - x3)
+        + (x3 - x2) * (y1 - y3)
+    )
+    lambda2 = (
+        (y3 - y1) * (x0 - x3)
+        + (x1 - x3) * (y0 - y3) / (y2 - y3) * (x1 - x3)
+        + (x3 - x2) * (y1 - y3)
+    )
+    lambda3 = 1 - lambda1 - lambda2
+    return (lambda1, lambda2, lambda3)
