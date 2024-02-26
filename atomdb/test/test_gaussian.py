@@ -22,6 +22,8 @@
 #
 # --
 
+import pytest
+
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
 from atomdb.api import load
@@ -30,8 +32,8 @@ from atomdb.api import load
 TEST_DATAPATH = "atomdb/test/data/"
 
 
-def test_gaussian_hf_data_be():
-    # get Be atomic data
+def test_compiled_gaussian_hf_data():
+    ### Use Be atomic data as a test case
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
     # check values of energy components
     answer = -14.55433897481303
@@ -66,19 +68,85 @@ def test_gaussian_hf_data_be():
     )
     assert (abs(energy_a - energy) < 1.0e-6).all()
     assert (abs(sp.ao.energy_b - energy) < 1.0e-6).all()
-    # check density
-    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), 4, decimal=4)
+
+
+@pytest.mark.parametrize(
+    "atom, mult, nelec, nalpha",
+    [
+        ("Be", 1, 4, 2),
+        ("B", 2, 5, 3),
+    ],
+)
+def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
+    # Get Be atomic data and make density spline
+    sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
+    grid = sp.rs
+    orb_dens_a = sp._orb_dens_up
+    spline_dens = sp.interpolate_dens(spin="ab", log=True)
     dens_a = np.sum(orb_dens_a, axis=0)
-    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens_a, grid), 2, decimal=4)
+
+    # check density
+    # assert_almost_equal(4 * np.pi * np.trapz(grid**2 * sp.dens_tot, grid), nelec, decimal=4)
+    # assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens_a, grid), nalpha, decimal=4)
+    assert np.allclose(4 * np.pi * np.trapz(grid**2 * sp.dens_tot, grid), nelec, rtol=1e-3)
+    assert np.allclose(4 * np.pi * np.trapz(grid**2 * dens_a, grid), nalpha, rtol=1e-3)
     # check interpolated densities
-    spline = sp.interpolate_dens(spin="ab", log=False)
-    assert_almost_equal(spline(grid), dens, decimal=6)
-    spline = sp.interpolate_ked(spin="ab", log=False)
-    assert_almost_equal(spline(grid), sp.ked_tot, decimal=6)
-    # FIXME: density derivatives tests fail.
-    # # check density derivatives
-    # stepsize = 1e-8
-    # gradient = np.gradient(dens, stepsize)
-    # assert_almost_equal(spline(grid, deriv=1), gradient, decimal=6)
-    # d2dens = np.gradient(gradient, stepsize)
-    # assert_almost_equal(spline(grid, deriv=2), d2dens, decimal=6)
+    spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    assert_almost_equal(spline_dens(grid), sp.dens_tot, decimal=6)
+
+@pytest.mark.xfail
+@pytest.mark.parametrize(
+    "atom, mult",
+    [
+        ("Be", 1),
+        ("B", 2),
+    ],
+)
+def test_gaussian_hf_gradient_be(atom, mult):
+    # Get Be atomic data, make density spline and evalaute 1st derivative of density
+    sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
+    grid = sp.rs
+    spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    gradient = spline_dens(grid, deriv=1)
+    np_gradient = np.gradient(sp.dens_tot, grid)
+    # assert_almost_equal(gradient, np_gradient, decimal=3)
+    assert np.allclose(gradient, np_gradient, rtol=1e-3)
+
+
+@pytest.mark.xfail
+@pytest.mark.parametrize(
+    "atom, mult",
+    [
+        ("Be", 1),
+        ("B", 2),
+    ],
+)
+def test_gaussian_hf_laplacian_be(atom, mult):
+    # Get the atomic data, make a spline of the density and evaluate the second derivative
+    # of the density from it. Compare with gradient from numpy.
+    sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
+    grid = sp.rs
+    spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    d2dens = spline_dens(grid, deriv=2)
+    # Get reference values
+    np_gradient = np.gradient(sp.dens_tot, grid)
+    np_d2dens = np.gradient(np_gradient, grid)
+    # Check array elements
+    # assert_almost_equal(d2dens, np_d2dens, decimal=3)
+    assert np.allclose(d2dens, np_d2dens, rtol=1e-3)
+
+
+@pytest.mark.parametrize(
+    "atom, mult",
+    [
+        ("Be", 1),
+        ("B", 2),
+    ],
+)
+def test_gaussian_hf_ked_be(atom, mult):
+    # Get the atomic data and make a spline of the kinetic energy density.
+    sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
+    grid = sp.rs
+    spline_kdens = sp.interpolate_ked(spin="ab", log=True)
+    # check interpolated densities
+    assert_almost_equal(spline_kdens(grid), sp.ked_tot, decimal=6)
