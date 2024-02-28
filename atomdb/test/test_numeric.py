@@ -151,7 +151,7 @@ def test_numerical_hf_density_gradient(atom, charge, mult):
     ### the gradient at distances larger than half the covalent radius.
 
     # load atomic and density data and get density derivative evaluated on a radial grid
-    sp = load(atom, charge, mult, dataset="numeric", datapath=TEST_DATAPATH)    
+    sp = load(atom, charge, mult, dataset="numeric", datapath=TEST_DATAPATH)
     grid = sp.rs
     spline = sp.interpolate_dens(spin="ab", log=True)
     gradient = spline(grid, deriv=1)
@@ -162,7 +162,7 @@ def test_numerical_hf_density_gradient(atom, charge, mult):
     fname = f"{id}_numeric_gradient.npy"
     answer = np.load(f"{TEST_DATAPATH}/numeric/db/{fname}")
     # check array elements at distances larger than half covalent radius
-    radii_cutoff = sp.cov_radii["cordero"]/2
+    radii_cutoff = sp.cov_radii["cordero"] / 2
     indx_radii = np.where(grid > radii_cutoff)
     assert_almost_equal(gradient[indx_radii], answer[indx_radii], decimal=3)
 
