@@ -139,7 +139,7 @@ def test_slater_atomic_density_gradient(atom, charge, mult):
     fname = f"{id}_slater_gradient.npy"
     answer = np.load(f"{TEST_DATAPATH}/slater/db/{fname}")
     # check shape of arrays and array elements
-    assert_equal(gradient.shape, grid.shape)    
+    assert_equal(gradient.shape, grid.shape)
     # assert_almost_equal(gradient, answer, decimal=3)
     assert np.allclose(gradient, answer, rtol=1e-3)
 

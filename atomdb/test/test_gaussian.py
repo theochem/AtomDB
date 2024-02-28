@@ -94,6 +94,7 @@ def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
     spline_dens = sp.interpolate_dens(spin="ab", log=True)
     assert_almost_equal(spline_dens(grid), sp.dens_tot, decimal=6)
 
+
 @pytest.mark.xfail
 @pytest.mark.parametrize(
     "atom, mult",
