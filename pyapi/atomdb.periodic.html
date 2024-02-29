@@ -57,7 +57,7 @@
 <li class="toctree-l4"><a class="reference internal" href="atomdb.version.html">atomdb.version module</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="atomdb.html#module-atomdb">Module contents</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#module-contents">Module contents</a></li>
 </ul>
 </li>
 </ul>
@@ -90,118 +90,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <div class="section" id="module-atomdb.periodic">
-<span id="atomdb-periodic-module"></span><h1>atomdb.periodic module<a class="headerlink" href="#module-atomdb.periodic" title="Permalink to this heading"></a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="atomdb.periodic.Atom">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Atom</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.periodic.Atom" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Class to store the properties of the elements.</p>
-<blockquote>
-<div><dl class="simple">
-<dt>atnum<span class="classifier">int</span></dt><dd><p>Atomic number of the element.</p>
-</dd>
-<dt>symbol<span class="classifier">str</span></dt><dd><p>Chemical symbol of the element.</p>
-</dd>
-<dt>name<span class="classifier">str</span></dt><dd><p>Name of the element.</p>
-</dd>
-<dt>charge<span class="classifier">int</span></dt><dd><p>Charge of the atom.</p>
-</dd>
-<dt>multiplicity<span class="classifier">int</span></dt><dd><p>Multiplicity of the atom.</p>
-</dd>
-</dl>
-<p>cov_radius : dict
-Dictionary with the Covalent radius of the element.
-cordero : Covalent radius (derived from crystallographic data)</p>
-<blockquote>
-<div><p>Units: angstrom</p>
-</div></blockquote>
-<dl class="simple">
-<dt>bragg<span class="classifier">Bragg radius (covalent, metallic and ionic bonds, derived from crystallographic data)</span></dt><dd><p>Units: angstrom</p>
-</dd>
-<dt>slater<span class="classifier">Slater radius (covalent, metallic and ionic bonds, derived from crystallographic data)</span></dt><dd><p>Units: angstrom</p>
-</dd>
-</dl>
-</div></blockquote>
-<dl>
-<dt>vdw_radius<span class="classifier">dict</span></dt><dd><p>Dictionary with the van der Waals radius of the element.
-bondi : van der Waals radius according to Bondi</p>
-<blockquote>
-<div><p>Units: angstrom</p>
-</div></blockquote>
-<dl class="simple">
-<dt>truhlar<span class="classifier">van der Waals radii by Truhlar (corrections and additions to Bondi)</span></dt><dd><p>Units: angstrom</p>
-</dd>
-<dt>rt<span class="classifier">van der Waals radius according to Rowland and Taylor</span></dt><dd><p>Units: angstrom</p>
-</dd>
-<dt>batsanov<span class="classifier">van der Waals radii by Batsanov</span></dt><dd><p>Units: angstrom</p>
-</dd>
-<dt>dreiding<span class="classifier">van der Waals radii from the DREIDING FF</span></dt><dd><p>Units: 2angstrom</p>
-</dd>
-<dt>uff<span class="classifier">van der Waals radii from UFF</span></dt><dd><p>Units: 2angstrom</p>
-</dd>
-<dt>mm3<span class="classifier">van der Waals radii from MM3</span></dt><dd><p>Units: angstrom</p>
-</dd>
-</dl>
-</dd>
-<dt>at_radius<span class="classifier">dict</span></dt><dd><p>Dictionary with the atomic radius of the element.
-wc : Waber-Cromer atomic radius</p>
-<blockquote>
-<div><p>Units: angstrom</p>
-</div></blockquote>
-<dl class="simple">
-<dt>cr<span class="classifier">Clementi-Raimondi atomic radius</span></dt><dd><p>Units: angstrom</p>
-</dd>
-</dl>
-</dd>
-<dt>eneg<span class="classifier">float</span></dt><dd><p>Electronegativity of the element.
-Pauling electronegativity
-A. L. Allred, J. Inorg. Nuc. Chem. 17, 215 (1961)
-<a class="reference external" href="http://dx.doi.org/10.1016/0022-1902(61)80142-5">http://dx.doi.org/10.1016/0022-1902(61)80142-5</a></p>
-</dd>
-<dt>pold<span class="classifier">dict</span></dt><dd><p>Dictionary with the Isolated atom dipole polarizability of the element.
-crc : Isolated atom dipole polarizability</p>
-<blockquote>
-<div><p>Units: angstrom**3</p>
-</div></blockquote>
-<dl class="simple">
-<dt>chu<span class="classifier">Isolated atom dipole polarizability</span></dt><dd><p>Units: au</p>
-</dd>
-</dl>
-</dd>
-<dt>c6<span class="classifier">float</span></dt><dd><p>Isolated atom C6 dispersion coefficients of the element.
-Isolated atom C6 dispersion coefficients
-Units: au
-X. Chu &amp; A. Dalgarno, J. Chem. Phys., 121(9), 4083–4088 (2004)
-<a class="reference external" href="http://dx.doi.org/10.1063/1.1779576">http://dx.doi.org/10.1063/1.1779576</a>
-Notes:
-Theoretical value for hydrogen from this paper:
-K. T. Tang, J. M. Norbeck and P. R. Certain, J. Chem. Phys. 64, 3063 (1976)
-<a class="reference external" href="http://dx.doi.org/10.1063/1.432569">http://dx.doi.org/10.1063/1.432569</a></p>
-</dd>
-<dt>mass<span class="classifier">float</span></dt><dd><p>Atomic mass of the element.
-IUPAC atomic mass (or weight for the chemists)
-Units: amu
-Thomas Prohaska et. al. Pure Appl. Chem. 2022, 94
-<a class="reference external" href="https://doi.org/10.1515/pac-2019-0603">https://doi.org/10.1515/pac-2019-0603</a></p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="atomdb.periodic.Atom.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.periodic.Atom.__init__" title="Permalink to this definition"></a></dt>
-<dd><p>Create an Atom object.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>id</strong> (<em>str</em><em> or </em><em>int</em>) – The atomic number, symbol, or name of the element.</p></li>
-<li><p><strong>charge</strong> (<em>int</em><em>, </em><em>optional</em>) – The charge of the atom, by default 0.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+  <div class="section" id="atomdb-periodic-module">
+<h1>atomdb.periodic module<a class="headerlink" href="#atomdb-periodic-module" title="Permalink to this heading"></a></h1>
 </div>
 
 
