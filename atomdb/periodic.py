@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 
-from importlib.resources import files
+from importlib_resources import files
 
 __all__ = ["sym2num", "name2num", "num2sym", "num2name", "Atom"]
 
