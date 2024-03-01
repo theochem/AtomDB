@@ -15,8 +15,6 @@
 
 r"""NIST compile function."""
 
-from tempfile import NamedTemporaryFile
-
 import os
 
 import numpy as np
@@ -27,6 +25,7 @@ import csv
 
 import atomdb
 
+from atomdb.periodic import Atom
 
 __all__ = [
     "run",
@@ -41,10 +40,53 @@ The following neutral and ionic species are available
 `cations` H to Lr
 `anions` H to Lr (up to charge -2)
 
-The values were obtained from the paper, `Phys. Chem. Chem. Phys., 2016,18, 25721-25734 <https://doi.org/10.1039/C6CP04533B>`_.
+
+The dataset contains the following properties:
+dataset : str
+    Name of the dataset.
+elem : str
+    Chemical symbol of the element.
+natom : int
+    Atomic number.
+nelec : int
+    Number of electrons.
+nspin : int
+    Spin number.
+nexc : int
+    Excited state index.
+cov_radii : dict
+    Various definitions of covalent radius.
+vdw_radii : dict
+    Various definitions of van der Waals radius.
+mass : float
+    Atomic mass.
+energy : float
+    Electronic energy associated with the atom.
+ip : float
+    Lowest ionization potential. Units eV.
+mu : float
+    Chemical potential. Units eV.
+eta : float
+    Eta value of the atom. Units eV.
+
+The `ip`, `mu` and `eta` values were obtained from the paper: 
+`Phys. Chem. Chem. Phys., 2016,18, 25721-25734 <https://doi.org/10.1039/C6CP04533B>`_.
 For each element/charge pair the values correspond to the most stable electronic configuration.
 
 """
+
+
+def _read_hdf5(z, ne):
+    with h5.File(
+        os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
+    ) as f:
+        mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
+        energy = f[z][ne]["Energy"][...]
+    # sort based on energy
+    index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
+    _mults = list(mults[index_sorting])
+    _energy = list(energy[index_sorting])
+    return _mults, _energy
 
 
 def run(elem, charge, mult, nexc, dataset, datapath):
@@ -60,10 +102,19 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     nspin = mult - 1
     basis = None
 
+    # Check that the input charge is valid
+    if charge < -2 or charge > natom:
+        raise ValueError(f"{elem} with {charge} not available.")
+
     #
     # Element properties
     #
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    # cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    atom = Atom(elem)
+    cov_radii = atom.cov_radius
+    vdw_radii = atom.vdw_radius
+    mass = atom.mass["stb"]
+
     if charge != 0:
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
 
@@ -75,41 +126,24 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         # Neutral and cations
         z = str(natom).zfill(3)
         ne = str(nelec).zfill(3)
-        with h5.File(
-            os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
-        ) as f:
-            mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
-            energy = f[z][ne]["Energy"][...]
-        # sort based on energy
-        index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
-        mults = list(mults[index_sorting])
-        energy = list(energy[index_sorting])
+        mults, energy = _read_hdf5(z, ne)
 
         if not mult == mults[0]:
-            raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
+            raise ValueError(f"{elem} with charge {charge} and multiplicity {mult} not available.")
         energy = energy[0]
     elif -2 <= charge < 0:
         # Anions
         # Get the multiplicity (the one with lowest energy) from the corresponding neutral
         # isoelectronic species
-        z = str(natom - charge).zfill(3)
-        ne = str(nelec).zfill(3)
-        with h5.File(
-            os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
-        ) as f:
-            mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
-            energy = f[z][ne]["Energy"][...]
-        # sort based on energy
-        index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
-        mults = list(mults[index_sorting])
-        energy = list(energy[index_sorting])
-
-        if not mult == mults[0]:
-            raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
         # There is no data for anions in database_beta_1.3.0.h5, therefore:
         energy = None
-    else:
-        raise ValueError(f"{elem} with {charge} not available.")
+        z = str(natom - charge).zfill(3)
+        ne = str(nelec).zfill(3)
+        mults, _ = _read_hdf5(z, ne)
+    
+    if not mult == mults[0]:
+        raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
+        
 
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
