@@ -148,6 +148,7 @@ class SpeciesData:
     _orb_dens_up: ndarray = field(default=None)
     _orb_dens_dn: ndarray = field(default=None)
     dens_tot: ndarray = field(default=None)
+    d_dens_tot: ndarray = field(default=None)
     #
     # Kinetic energy density
     #

@@ -22,7 +22,7 @@ import numpy as np
 from gbasis.wrappers import from_iodata
 
 from gbasis.evals.density import evaluate_density as eval_dens
-from gbasis.evals.density import evaluate_deriv_density as eval_d_dens
+from gbasis.evals.density import evaluate_density_gradient as eval_grad
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
 from gbasis.evals.density import evaluate_basis
 from gbasis.evals.eval_deriv import evaluate_deriv_basis
@@ -34,6 +34,7 @@ from grid.atomgrid import AtomGrid
 from iodata import load_one
 
 import atomdb
+from atomdb.utils import grad2ddens
 
 
 __all__ = [
@@ -178,6 +179,12 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     orb_ked_avg_up = np.array([spline(rs) for spline in ked_splines_up])
     orb_ked_avg_dn = np.array([spline(rs) for spline in ked_splines_dn])
 
+    # Copute spherically averaged gradient of the density 
+    gradient = eval_grad(dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=None)
+    ddens_rad = grad2ddens(gradient, atgrid.points) # ddens/dr
+    spline_ddens_spherical_avg = atgrid.spherical_average(ddens_rad)
+    d_dens_tot = spline_ddens_spherical_avg(rs) # Evaluate interpolated gradient in uniform radial grid
+
     # Get information about the element
     cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
     if charge != 0:
@@ -216,6 +223,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         _orb_dens_up=orb_dens_avg_up.flatten(),
         _orb_dens_dn=orb_dens_avg_dn.flatten(),
         dens_tot=dens_avg_tot,
+        d_dens_tot=d_dens_tot,
         _orb_ked_up=orb_ked_avg_up.flatten(),
         _orb_ked_dn=orb_ked_avg_dn.flatten(),
         ked_tot=ked_avg_tot,

@@ -94,23 +94,32 @@ def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
     spline_dens = sp.interpolate_dens(spin="ab", log=True)
     assert_almost_equal(spline_dens(grid), sp.dens_tot, decimal=6)
 
-@pytest.mark.xfail
+# @pytest.mark.xfail
 @pytest.mark.parametrize(
     "atom, mult",
     [
+        ("He", 1),
         ("Be", 1),
-        ("B", 2),
+        # ("B", 2),
     ],
 )
-def test_gaussian_hf_gradient_be(atom, mult):
-    # Get Be atomic data, make density spline and evalaute 1st derivative of density
-    sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
+def test_gaussian_hf_gradient(atom, mult):
+    # Get atomic data, make density spline and evalaute 1st derivative of density
+    charge = 0
+    sp = load(atom, charge, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
-    spline_dens = sp.interpolate_dens(spin="ab", log=True)
-    gradient = spline_dens(grid, deriv=1)
-    np_gradient = np.gradient(sp.dens_tot, grid)
-    # assert_almost_equal(gradient, np_gradient, decimal=3)
-    assert np.allclose(gradient, np_gradient, rtol=1e-3)
+    gradient = sp.d_dens_tot
+    # spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    # gradient = spline_dens(grid, deriv=1)
+    # np_gradient = np.gradient(sp.dens_tot, grid)
+    # # assert_almost_equal(gradient, np_gradient, decimal=3)
+
+    # get reference values generated with Gbasis' evaluate_deriv_density using a grid changing
+    # only on the x-axis
+    id = f"{str(sp.natom).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
+    fname = f"{id}_gaussian_gradient.npy"
+    reference = np.load(f"{TEST_DATAPATH}/gaussian/db/{fname}")
+    assert np.allclose(gradient, reference, rtol=1e-3)
 
 
 @pytest.mark.xfail
@@ -133,7 +142,7 @@ def test_gaussian_hf_laplacian_be(atom, mult):
     np_d2dens = np.gradient(np_gradient, grid)
     # Check array elements
     # assert_almost_equal(d2dens, np_d2dens, decimal=3)
-    assert np.allclose(d2dens, np_d2dens, rtol=1e-3)
+    assert np.allclose(d2dens, np_d2dens, rtol=1e-4)
 
 
 @pytest.mark.parametrize(
