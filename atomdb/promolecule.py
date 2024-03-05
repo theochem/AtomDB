@@ -16,22 +16,15 @@
 r"""AtomDB promolecule submodule."""
 
 from copy import deepcopy
-
 from itertools import chain, combinations
-
 from numbers import Integral
-
 from operator import itemgetter
-
 from warnings import warn
 
 import numpy as np
-
 from scipy.optimize import linprog
 
-from .api import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES
-from .api import load, load_all, element_number, element_symbol
-
+from .api import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES, element_symbol, load, load_all
 
 __all__ = [
     "Promolecule",
@@ -59,7 +52,7 @@ class Promolecule:
     .. math::
 
         \text{prop.}_{\text{mol;intensive}}
-            = {\left\langle \left\{ \text{prop.}_A \right\}_{A=1}^{N_{\text{atoms}}} \right\rangle}_p
+          = {\left\langle \left\{ \text{prop.}_A \right\}_{A=1}^{N_{\text{atoms}}} \right\rangle}_p
 
     where the parameter ``p`` defines the type of mean used (1 = linear, 2 = geometric, etc.).
 
@@ -145,14 +138,18 @@ class Promolecule:
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
         spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
-            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+            Type of density to compute; either total, alpha-spin, beta-spin,
+            or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
 
         """
+
         # Define the property as a function, and call `_extensive_local_property` on it
-        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
+        def f(atom):
+            return atom.interpolate_dens(spin=spin, log=log)
+
         return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
 
     def ked(self, points, spin="ab", log=False):
@@ -162,23 +159,62 @@ class Promolecule:
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
         spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
-            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+            Type of density to compute; either total, alpha-spin, beta-spin,
+            or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
 
         """
-        f = lambda atom: atom.interpolate_ked(spin=spin, log=log)
+
+        def f(atom):
+            return atom.interpolate_ked(spin=spin, log=log)
+
         return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
+
+    def nelec(self):
+        r"""Compute the electron number of the promolecule."""
+
+        def f(atom):
+            return atom.nelec
+
+        return _extensive_global_property(self.atoms, self.coeffs, f)
+
+    def charge(self):
+        r"""Compute the charge of the promolecule."""
+
+        # return sum(atom.natom for atom in self.atoms) - self.nelec()
+        def f(atom):
+            return atom.charge
+
+        return _extensive_global_property(self.atoms, self.coeffs, f)
+
+    def nspin(self):
+        r"""Compute the spin number of the promolecule."""
+
+        def f(atom):
+            return atom.nspin * atom.spinpol
+
+        return _extensive_global_property(self.atoms, self.coeffs, f)
+
+    def mult(self):
+        r"""Compute the multiplicity of the promolecule."""
+        return abs(self.nspin()) + 1
 
     def energy(self):
         r"""Compute the energy of the promolecule."""
-        f = lambda atom: atom.energy
+
+        def f(atom):
+            return atom.energy
+
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
     def mass(self):
         r"""Compute the mass of the promolecule."""
-        f = lambda atom: atom.mass
+
+        def f(atom):
+            return atom.mass
+
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
     def ip(self, p=1):
@@ -191,8 +227,11 @@ class Promolecule:
             Value of ``p`` for the p-mean computation of this intensive property.
 
         """
+
         # Define the property as a function, and call `_intensive_property` on it
-        f = lambda atom: atom.ip
+        def f(atom):
+            return atom.ip
+
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
     def mu(self, p=1):
@@ -205,8 +244,11 @@ class Promolecule:
             Value of ``p`` for the p-mean computation of this intensive property.
 
         """
+
         # Define the property as a function, and call `_intensive_property` on it
-        f = lambda atom: atom.mu
+        def f(atom):
+            return atom.mu
+
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
     def eta(self, p=1):
@@ -219,8 +261,11 @@ class Promolecule:
             Value of ``p`` for the p-mean computation of this intensive property.
 
         """
+
         # Define the property as a function, and call `_intensive_property` on it
-        f = lambda atom: atom.eta
+        def f(atom):
+            return atom.eta
+
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
     def gradient(self, points, spin="ab", log=False):
@@ -229,7 +274,8 @@ class Promolecule:
 
         Promolecular gradient:
         .. math::
-            \nabla \rho_{\text{mol}}^{(0)} (\mathbf{R}) = \sum_{A=1}^{N_{\text{atoms}}} c_A \nabla \rho_A^{(0)}(\mathbf{R})
+            \nabla \rho_{\text{mol}}^{(0)} (\mathbf{R})
+                = \sum_{A=1}^{N_{\text{atoms}}} c_A \nabla \rho_A^{(0)}(\mathbf{R})
 
         where,
             :math:`N_{\text{atoms}}` is the number of atoms in the molecule.
@@ -242,7 +288,8 @@ class Promolecule:
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
         spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
-            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+            Type of density to compute; either total, alpha-spin, beta-spin,
+            or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
@@ -252,8 +299,11 @@ class Promolecule:
         gradient: np.ndarray((N, 3), dtype=float)
 
         """
+
         # Define the property as a function, and call `_extensive_local_property` on it
-        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
+        def f(atom):
+            return atom.interpolate_dens(spin=spin, log=log)
+
         atoms_ddens = _extensive_local_property(
             self.atoms, self.coords, self.coeffs, points, f, deriv=1
         )
@@ -265,7 +315,9 @@ class Promolecule:
         # dr/dx = (x - x_A) / |r-R_A|
         #
         # Define a unit vector function
-        unit_v = lambda vector: [dr / np.linalg.norm(dr) for dr in vector]
+        def unit_v(vector):
+            return [dr / np.linalg.norm(dr) for dr in vector]
+
         gradients_atoms = [
             ddens[:, None] * unit_v(points - coord)
             for (ddens, coord) in zip(atoms_ddens, self.coords)
@@ -281,14 +333,18 @@ class Promolecule:
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
         spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
-            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+            Type of density to compute; either total, alpha-spin, beta-spin,
+            or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
 
         """
+
         # Define the property as a function, and call `_extensive_local_property` on it
-        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
+        def f(atom):
+            return atom.interpolate_dens(spin=spin, log=log)
+
         atoms_ddens = _extensive_local_property(
             self.atoms, self.coords, self.coeffs, points, f, deriv=1
         )
@@ -335,14 +391,20 @@ class Promolecule:
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
         spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
-            Type of density to compute; either total, alpha-spin, beta-spin, or magnetization density.
+            Type of density to compute; either total, alpha-spin, beta-spin,
+            or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density itself.
             May be slightly more accurate.
 
         """
-        f = lambda atom: atom.interpolate_dens(spin=spin, log=log)
-        shift = lambda dens, radii: 3 * dens / np.linalg.norm(radii)
+
+        def f(atom):
+            return atom.interpolate_dens(spin=spin, log=log)
+
+        def shift(dens, radii):
+            return 3 * dens / np.linalg.norm(radii)
+
         # Radial derivatives of the density
         atoms_ddens = _extensive_local_property(
             self.atoms, self.coords, self.coeffs, points, f, deriv=1
@@ -362,7 +424,7 @@ def make_promolecule(
     coords,
     charges=None,
     mults=None,
-    units="bohr",
+    units=None,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
 ):
@@ -381,7 +443,7 @@ def make_promolecule(
     mults: list of (int), default=[1, ..., 1]
         List of multiplicities for each atom.
     units: ('bohr' | 'angstrom')
-        Units of ``coords`` values.
+        Units of ``coords`` values. Default is Bohr.
     dataset: str, default=DEFAULT_DATASET
         Data set from which to load atomic species.
     datapath: str, default=DEFAULT_DATAPATH
@@ -389,10 +451,9 @@ def make_promolecule(
 
     """
     # Check coordinate units
-    units = units.lower()
-    if units == "bohr":
+    if units is None or units.lower() == "bohr":
         coords = [coord / 1 for coord in coords]
-    elif units == "angstrom":
+    elif units.lower() == "angstrom":
         coords = [coord / 0.52917721092 for coord in coords]
     else:
         raise ValueError("Invalid `units` parameter; must be 'bohr' or 'angstrom'")
@@ -429,7 +490,8 @@ def make_promolecule(
             except FileNotFoundError:
                 warn(
                     "Unable to load species corresponding to `charge, mult`; "
-                    "generating species via linear combination of other species'"
+                    "generating species via linear combination of other species'",
+                    stacklevel=1,
                 )
 
         # Non-integer charge and multiplicity
@@ -501,8 +563,11 @@ def _intensive_property(atoms, coeffs, f, p=1):
 
 def _radial_vector_outer_triu(radii):
     r"""Evaluate the outer products of a set of radial unit vectors."""
+
     # Define a unit vector function
-    unit_v = lambda vector: vector / np.linalg.norm(vector)
+    def unit_v(vector):
+        return vector / np.linalg.norm(vector)
+
     # Store only upper triangular elements of the matrix.
     indices = [0, 1, 2, 4, 5, 8]  # row-major order (ij = 3 * i + j)
     radv_outer = np.empty((len(radii), len(indices)))

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # AtomDB is an extended periodic table database containing experimental
 # and/or computational information on stable ground state
 # and/or excited states of neutral and charged atomic species.
@@ -22,15 +21,11 @@
 #
 # --
 
-import pytest
-
 import numpy as np
 import numpy.testing as npt
+import pytest
 
-from atomdb.api import load
-
-from atomdb.promolecule import Promolecule, make_promolecule
-
+from atomdb.promolecule import make_promolecule
 
 TEST_CASES_MAKE_PROMOLECULE = [
     pytest.param(
@@ -147,5 +142,31 @@ def test_make_promolecule(case):
     Test ``make_promolecule()`` function.
 
     """
-    promol = make_promolecule(**case)
-    npt.assert_allclose(sum(promol.coeffs), len(case["atnums"]))
+    atnums = case.get("atnums")
+    coords = case.get("coords")
+    charges = case.get("charges", None)
+    mults = case.get("mults", None)
+    units = case.get("units", None)
+    dataset = case.get("dataset", None)
+
+    promol = make_promolecule(
+        atnums,
+        coords,
+        charges=charges,
+        mults=mults,
+        units=units,
+        dataset=dataset,
+    )
+
+    # Check that coefficients add up to (# centers)
+    npt.assert_allclose(sum(promol.coeffs), len(atnums))
+
+    # Check that electron number and charge are recovered
+    if charges is not None:
+        npt.assert_allclose(sum(atnums) - sum(charges), promol.nelec())
+        npt.assert_allclose(sum(charges), promol.charge())
+
+    # Check that spin number and multiplicity are recovered
+    if mults is not None:
+        npt.assert_allclose(sum(np.sign(m) * (abs(m) - 1) for m in mults), promol.nspin())
+        npt.assert_allclose(abs(sum(np.sign(m) * (abs(m) - 1) for m in mults)) + 1, promol.mult())
