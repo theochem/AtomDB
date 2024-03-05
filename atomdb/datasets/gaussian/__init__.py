@@ -44,7 +44,7 @@ __all__ = [
 # Parameters to generate an atomic grid from uniform radial grid
 # Use 170 points, lmax = 21 for the Lebedev grid since our basis
 # don't go beyond l=10 in the spherical harmonics.
-BOUND = (1e-5, 2e1)  # (r_min, r_max)
+BOUND = (1e-30, 2e1)  # (r_min, r_max)
 
 NPOINTS = 1000
 
