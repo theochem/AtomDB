@@ -94,9 +94,11 @@ def test_slater_atomic_density(atom, mult, num_elect):
     spline = sp.interpolate_dens(spin="ab", log=True)
 
     # check shape of density and radial grid
-    assert_equal(dens.shape, grid.shape)
+    assert dens.shape == grid.shape
+
     # check density integrates to the number of electrons
     assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), num_elect, decimal=3)
+
     # check interpolated density values compared to reference values
     assert np.allclose(spline(grid), dens, atol=1e-6)
 
@@ -114,9 +116,11 @@ def test_slater_atomic_density_ions(atom, charge, mult, num_elect):
     spline = sp.interpolate_dens(spin="ab", log=True)
 
     # check shape of density and radial grid
-    assert_equal(dens.shape, grid.shape)
+    assert dens.shape == grid.shape
+
     # check density integrates to the number of electrons
     assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), num_elect, decimal=3)
+
     # check interpolated density values compared to reference values
     assert np.allclose(spline(grid), dens, atol=1e-6)
 
@@ -130,12 +134,15 @@ def test_slater_atomic_density_gradient(atom, charge, mult):
     grid = sp.rs
     spline = sp.interpolate_dens(spin="ab", log=True)
     gradient = spline(grid, deriv=1)
+
     # get reference values from Slater wfn raw files
     id = f"{str(sp.natom).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
     fname = f"{id}_slater_gradient.npy"
     answer = np.load(f"{TEST_DATAPATH}/slater/db/{fname}")
+
     # check shape of arrays and array elements
-    assert_equal(gradient.shape, grid.shape)
+    assert gradient.shape == answer.shape
+
     # check interpolated density gradient values compared to reference values
     assert np.allclose(gradient, answer, rtol=1e-3)
 
