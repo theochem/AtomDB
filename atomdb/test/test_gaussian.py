@@ -35,24 +35,28 @@ TEST_DATAPATH = "atomdb/test/data/"
 def test_compiled_gaussian_hf_data():
     ### Use Be atomic data as a test case
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
+
     # check values of energy components
     answer = -14.55433897481303
     assert_almost_equal(sp.energy, answer, decimal=10)
-    # get radial grid, total density, alpha and beta (radial) orbital densities, orbital energies
+
+    # load radial grid, total density, alpha and beta (radial) orbital densities, orbital energies
     grid = sp.rs
     dens = sp.dens_tot
     orb_dens_a = sp._orb_dens_up
     energy_a = sp.ao.energy_a
+
     # check array shapes
-    assert_equal(energy_a.shape, (12,))
-    assert_equal(grid.shape, (1000,))
-    assert_equal(dens.shape, grid.shape)
-    assert_equal(orb_dens_a.shape, (12, 1000))
+    assert energy_a.shape == (12,)
+    assert grid.shape == (1000,)
+    assert dens.shape == grid.shape
+    assert orb_dens_a.shape == (12, 1000)
 
     # check array elements
     # all R and density values are positive
-    assert all(x >= 0.0 for x in grid)
-    assert all(x >= 0.0 for x in dens)
+    assert all(grid >= 0.0)
+    assert all(dens >= 0.0)
+
     # check alpha and beta energies are the same (closed shell) and have correct values
     energy = np.array(
         [
@@ -76,7 +80,7 @@ def test_compiled_gaussian_hf_data():
 
 @pytest.mark.parametrize("atom, mult, nelec, nalpha", [("Be", 1, 4, 2), ("B", 2, 5, 3)])
 def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
-    # Get Be atomic data and make density spline
+    # load Be atomic data and make density spline
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
     orb_dens_a = sp._orb_dens_up
@@ -86,8 +90,10 @@ def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
     # check density values
     # check the total density integrates to the number of electrons
     assert np.allclose(4 * np.pi * np.trapz(grid**2 * sp.dens_tot, grid), nelec, rtol=1e-3)
+
     # check the alpha density integrates to the number of alpha electrons
     assert np.allclose(4 * np.pi * np.trapz(grid**2 * dens_a, grid), nalpha, rtol=1e-3)
+
     # check interpolated densities
     assert np.allclose(spline_dens(grid), sp.dens_tot, atol=1e-6)
 
@@ -95,38 +101,41 @@ def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
 @pytest.mark.xfail
 @pytest.mark.parametrize("atom, mult", [("Be", 1), ("B", 2)])
 def test_gaussian_hf_gradient_be(atom, mult):
-    # Get Be atomic data, make density spline and evalaute 1st derivative of density
+    # load Be atomic data, make density spline and evalaute 1st derivative of density
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
     spline_dens = sp.interpolate_dens(spin="ab", log=True)
     gradient = spline_dens(grid, deriv=1)
     np_gradient = np.gradient(sp.dens_tot, grid)
-    # assert_almost_equal(gradient, np_gradient, decimal=3)
+
+    # check spline gradient against numpy gradient
     assert np.allclose(gradient, np_gradient, rtol=1e-3)
 
 
 @pytest.mark.xfail
 @pytest.mark.parametrize("atom, mult", [("Be", 1), ("B", 2)])
 def test_gaussian_hf_laplacian_be(atom, mult):
-    # Get the atomic data, make a spline of the density and evaluate the second derivative
+    # load the atomic data, make a spline of the density and evaluate the second derivative
     # of the density from it. Compare with gradient from numpy.
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
     spline_dens = sp.interpolate_dens(spin="ab", log=True)
     d2dens = spline_dens(grid, deriv=2)
-    # Get reference values
+
+    # load reference values
     np_gradient = np.gradient(sp.dens_tot, grid)
     np_d2dens = np.gradient(np_gradient, grid)
-    # Check array elements
-    # assert_almost_equal(d2dens, np_d2dens, decimal=3)
+
+    # check interpolated laplacian values against reference
     assert np.allclose(d2dens, np_d2dens, rtol=1e-3)
 
 
 @pytest.mark.parametrize("atom, mult", [("Be", 1), ("B", 2)])
 def test_gaussian_hf_ked_be(atom, mult):
-    # Get the atomic data and make a spline of the kinetic energy density.
+    # load the atomic data and make a spline of the kinetic energy density.
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
     spline_kdens = sp.interpolate_ked(spin="ab", log=True)
+
     # check interpolated densities
     assert np.allclose(spline_kdens(grid), sp.ked_tot, atol=1e-6)
