@@ -517,7 +517,7 @@ def make_promolecule(
                 bounds=(0, 1),
             )
             if result.success:
-                good_combs.append((np.dot(energies, result.x), ts, [coords for t in ts], result.x))
+                good_combs.append((np.dot(energies, result.x), ts, [coord for t in ts], result.x))
         if len(good_combs) > 0:
             promol._extend(*(min(good_combs, key=itemgetter(0))[1:]))
         else:

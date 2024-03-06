@@ -96,22 +96,16 @@ def _gendoc(info_file):
             if list(_prop2desc[i].values())[0] != "":
                 docstring += _indent_lines(f"{list(_prop2desc[i].values())[0]}", 4) + "\n"
             if list(_prop2unit[i].values())[0] != "":
-                docstring += (
-                    _indent_lines(f"Units: {list(_prop2unit[i].values())[0]}", 4) + "\n"
-                )
+                docstring += _indent_lines(f"Units: {list(_prop2unit[i].values())[0]}", 4) + "\n"
             if list(_prop2source[i].values())[0] != "":
                 docstring += _indent_lines(f"{list(_prop2source[i].values())[0]}", 4) + "\n"
             if list(_prop2url[i].values())[0] != "":
                 docstring += _indent_lines(f"{list(_prop2url[i].values())[0]}", 4) + "\n"
             if list(_prop2notes[i].values())[0] != "":
-                docstring += (
-                    _indent_lines(f"Notes:\n{list(_prop2notes[i].values())[0]}", 4) + "\n"
-                )
+                docstring += _indent_lines(f"Notes:\n{list(_prop2notes[i].values())[0]}", 4) + "\n"
         # if multiple sources are available
         else:
-            docstring += (
-                f"{i} : dict\n    Dictionary with the {_prop2name[i]} of the element.\n"
-            )
+            docstring += f"{i} : dict\n    Dictionary with the {_prop2name[i]} of the element.\n"
             # add a line docstring with the description, source, and url for each source
             for j in _prop2col[i]:
                 if _prop2desc[i][j] != "":
@@ -217,9 +211,7 @@ class Atom:
             elif len(tmp_dict[i]) == 1 and "" in tmp_dict[i]:
                 tmp_dict[i] = data[self.atnum - 1][tmp_dict[i][""]["ncol"]]
             else:
-                tmp_dict[i] = {
-                    j: data[self.atnum - 1][tmp_dict[i][j]["ncol"]] for j in tmp_dict[i]
-                }
+                tmp_dict[i] = {j: data[self.atnum - 1][tmp_dict[i][j]["ncol"]] for j in tmp_dict[i]}
         # set the class attributes to the properties of the element
         self.__dict__.update(tmp_dict)
 
