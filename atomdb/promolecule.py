@@ -24,7 +24,15 @@ from warnings import warn
 import numpy as np
 from scipy.optimize import linprog
 
-from .api import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES, element_symbol, load, load_all
+from .api import (
+    DEFAULT_DATAPATH,
+    DEFAULT_DATASET,
+    MULTIPLICITIES,
+    element_number,
+    element_symbol,
+    load,
+    load_all,
+)
 
 __all__ = [
     "Promolecule",
@@ -93,27 +101,9 @@ class Promolecule:
         self.coords = []
         self.coeffs = []
 
-    def append(self, atom, coord, coeff):
+    def _extend(self, atoms, coords, coeffs):
         r"""
-        Add a species to a Promolecule instance.
-
-        Parameters
-        ----------
-        atom: Species
-            Species instance.
-        coord: np.ndarray(3, dtype=float)
-            Coordinates of species.
-        coeff: float
-            Coefficient of species.
-
-        """
-        self.atoms.append(atom)
-        self.coords.append(np.asarray(coord, dtype=float))
-        self.coeffs.append(coeff)
-
-    def extend(self, atoms, coords, coeffs):
-        r"""
-        Add several species to a Promolecule instance.
+        Add species to a Promolecule instance.
 
         Parameters
         ----------
@@ -123,6 +113,8 @@ class Promolecule:
             Coordinates of each species component of the promolecule.
         coeffs: np.ndarray((N,), dtype=float)
             Coefficients of each species component of the promolecule.
+        mult: (int|float)
+            Multiplicity on the center.
 
         """
         self.atoms.extend(atoms)
@@ -189,18 +181,6 @@ class Promolecule:
 
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
-    def nspin(self):
-        r"""Compute the spin number of the promolecule."""
-
-        def f(atom):
-            return atom.nspin * atom.spinpol
-
-        return _extensive_global_property(self.atoms, self.coeffs, f)
-
-    def mult(self):
-        r"""Compute the multiplicity of the promolecule."""
-        return abs(self.nspin()) + 1
-
     def energy(self):
         r"""Compute the energy of the promolecule."""
 
@@ -216,6 +196,18 @@ class Promolecule:
             return atom.mass
 
         return _extensive_global_property(self.atoms, self.coeffs, f)
+
+    def nspin(self, p=1):
+        r"""Compute the spin number of the promolecule."""
+
+        def f(atom):
+            return atom.nspin * atom.spinpol
+
+        return _intensive_property(self.atoms, self.coeffs, f, p=1)
+
+    def mult(self, p=1):
+        r"""Compute the multiplicity of the promolecule."""
+        return abs(self.nspin(p=1)) + 1
 
     def ip(self, p=1):
         r"""
@@ -434,7 +426,7 @@ def make_promolecule(
 
     Parameters
     ----------
-    atnums: list of int
+    atnums: list of (str|int)
         List of element number for each atom.
     coords: list of np.ndarray((3,), dtype=float)
         List of coordinates for each atom.
@@ -458,8 +450,9 @@ def make_promolecule(
     else:
         raise ValueError("Invalid `units` parameter; must be 'bohr' or 'angstrom'")
 
-    # Get atomic symbols from inputs
+    # Get atomic symbols/numbers from inputs
     atoms = [element_symbol(atom) for atom in atnums]
+    atnums = [element_number(atom) for atom in atnums]
 
     # Handle default charge parameters
     if charges is None:
@@ -469,7 +462,7 @@ def make_promolecule(
     if mults is None:
         # Force non-int charge to be integer here; it will be overwritten below.
         mults = [
-            MULTIPLICITIES[int(np.round(atnum - charge))]
+            MULTIPLICITIES[max(1, int(np.round(atnum - charge)))]
             for (atnum, charge) in zip(atnums, charges)
         ]
 
@@ -485,7 +478,7 @@ def make_promolecule(
                 specie = load(atom, charge, abs(mult), dataset=dataset, datapath=datapath)
                 if mult < 0:
                     specie.spinpol = -1
-                promol.append(specie, coord, 1.0)
+                promol._extend((specie,), (coord,), (1.0,))
                 continue
             except FileNotFoundError:
                 warn(
@@ -526,7 +519,7 @@ def make_promolecule(
             if result.success:
                 good_combs.append((np.dot(energies, result.x), ts, [coords for t in ts], result.x))
         if len(good_combs) > 0:
-            promol.extend(*(min(good_combs, key=itemgetter(0))[1:]))
+            promol._extend(*(min(good_combs, key=itemgetter(0))[1:]))
         else:
             raise ValueError(
                 "Unable to construct species with non-integer charge/spin from database entries"
