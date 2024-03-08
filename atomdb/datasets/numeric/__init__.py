@@ -122,26 +122,27 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
     basis = None
-    
+
     if charge >= 0:
         z = str(natom).zfill(3)
         ne = str(nelec).zfill(3)
         with h5.File(
-          os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
+            os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
         ) as f:
-          mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
-          energy = f[z][ne]["Energy"][...]
+            mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
+            energy = f[z][ne]["Energy"][...]
         index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
         mults = list(mults[index_sorting])
         energy = list(energy[index_sorting])
 
         if not mult == mults[0]:
-          raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
+            raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
         energy = energy[0]
     else:  # For anions
         if mult != MULTIPLICITIES[nelec]:
-          raise ValueError(f"Multiplicity {mult} not available for {elem} with charge = {charge}.")
-
+            raise ValueError(
+                f"Multiplicity {mult} not available for {elem} with charge = {charge}."
+            )
 
     species_table = load_numerical_hf_data()
     data = species_table[(natom, nelec)]
