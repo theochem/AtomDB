@@ -33,7 +33,9 @@ TEST_DATAPATH = "atomdb/test/data/"
 
 
 @pytest.mark.dev
-@pytest.mark.parametrize("atom", ["atom_018_Ar_N18_M1_uhf_def2svpd_g09.fchk", "atom_001_H_N02_M1_uhf_def2svpd_g09.fchk"])
+@pytest.mark.parametrize(
+    "atom", ["atom_018_Ar_N18_M1_uhf_def2svpd_g09.fchk", "atom_001_H_N02_M1_uhf_def2svpd_g09.fchk"]
+)
 def test_eval_radial_d_density(atom):
     # conditional import of dev modules needed for this test
     try:
@@ -53,7 +55,7 @@ def test_eval_radial_d_density(atom):
     atgrid = AtomGrid(rgrid, degrees=[10])
 
     # load the fchk file
-    mol_data = load_one(TEST_DATAPATH + 'gaussian/' + atom)
+    mol_data = load_one(TEST_DATAPATH + "gaussian/" + atom)
     ao_basis = from_iodata(mol_data)
 
     # one electron RDM from fchk file
