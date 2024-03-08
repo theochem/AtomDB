@@ -22,9 +22,9 @@ import numpy as np
 from gbasis.wrappers import from_iodata
 
 from gbasis.evals.density import evaluate_density as eval_dens
-from gbasis.evals.density import evaluate_deriv_density as eval_d_dens
+from gbasis.evals.density import evaluate_density_gradient
+from gbasis.evals.density import evaluate_density_hessian
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
-from gbasis.evals.density import evaluate_basis
 from gbasis.evals.eval_deriv import evaluate_deriv_basis
 
 from grid.onedgrid import UniformInteger
@@ -61,6 +61,31 @@ Electronic structure and density properties evaluated with def2-svpd basis set
 
 
 def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
+    r"""Load Gaussian fchk file and return the iodata object
+
+    This function finds the fchk file in the data directory corresponding to the given parameters,
+    loads it and returns the iodata object.
+
+    Parameters
+    ----------
+    n_atom : int
+        Atomic number
+    element : str
+        Chemical symbol of the species
+    n_elec : int
+        Number of electrons
+    multi : int
+        Multiplicity
+    basis_name : str
+        Basis set name
+    data_path : str
+        Path to the data directory
+
+    Returns
+    -------
+    iodata : iodata.IOData
+        Iodata object containing the data from the fchk file
+    """
     bname = basis_name.lower().replace("-", "").replace("*", "p").replace("+", "d")
     prefix = f"atom_{str(n_atom).zfill(3)}_{element}"
     tag = f"N{str(n_elec).zfill(2)}_M{multi}"
