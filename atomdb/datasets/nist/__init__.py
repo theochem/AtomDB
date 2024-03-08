@@ -15,11 +15,11 @@
 
 r"""NIST compile function."""
 
-from tempfile import NamedTemporaryFile
-
 import os
 
 import numpy as np
+
+from scipy import constants
 
 import h5py as h5
 
@@ -88,6 +88,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         if not mult == mults[0]:
             raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
         energy = energy[0]
+        # Convert energy to Hartree from cm^{-1}
+        energy *= 2 * constants.centi * constants.Rydberg
     elif -2 <= charge < 0:
         # Anions
         # Get the multiplicity (the one with lowest energy) from the corresponding neutral
@@ -125,13 +127,16 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     table_mus = [row for row in table_mus if len(row[1]) > 0]
     table_etas = data[tabid[2] :]
     table_etas = [row for row in table_etas if len(row[1]) > 0]
-    # Get property at table(natom, charge)
+    # Get property at table(natom, charge); convert to Hartree
     colid = table_ips[0].index(str(charge))
     ip = float(table_ips[natom][colid]) if len(table_ips[natom][colid]) > 1 else None
+    ip *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
     colid = table_mus[0].index(str(charge))
     mu = float(table_mus[natom][colid]) if len(table_mus[natom][colid]) > 1 else None
+    mu *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
     colid = table_etas[0].index(str(charge))
     eta = float(table_etas[natom][colid]) if len(table_etas[natom][colid]) > 1 else None
+    eta *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
 
     # Return Species instance
     return atomdb.Species(
