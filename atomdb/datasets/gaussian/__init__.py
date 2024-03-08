@@ -121,6 +121,60 @@ def eval_orbs_density(one_density_matrix, orb_eval):
     return density
 
 
+def eval_radial_d_density(one_density_matrix, basis, points):
+    """Compute the radial derivative of the density.
+
+    For a set of points, compute the radial derivative of the density
+    given the one-electron density matrix and the basis set.
+
+    Parameters
+    ----------
+    one_density_matrix : np.ndarray(K_orb, K_orb)
+        One-electron density matrix (1DM) from K orbitals
+    basis : gbasis.basis.Basis
+        Basis set used to evaluate the radial derivative of the density
+    points : np.ndarray(N, 3)
+        Set of points where the radial derivative of the density is evaluated
+
+    Returns
+    -------
+    radial_d_density : np.ndarray(N)
+        Radial derivative of the density at the set of points
+    """
+    rho_grad = evaluate_density_gradient(one_density_matrix, basis, points)
+    # compute unitary vectors for the directions of the points
+    unitvect_pts = points / np.linalg.norm(points, axis=1)[:, None]
+    # compute the radial derivative of the density
+    return np.einsum("ij,ij->i", unitvect_pts, rho_grad)
+
+
+def eval_radial_dd_density(one_density_matrix, basis, points):
+    """Compute the radial derivative of the density.
+
+    For a set of points, compute the radial derivative of the density
+    given the one-electron density matrix and the basis set.
+
+    Parameters
+    ----------
+    one_density_matrix : np.ndarray(K_orb, K_orb)
+        One-electron density matrix (1DM) from K orbitals
+    basis : gbasis.basis.Basis
+        Basis set used to evaluate the radial derivative of the density
+    points : np.ndarray(N, 3)
+        Set of points where the radial derivative of the density is evaluated
+
+    Returns
+    -------
+    radial_dd_density : np.ndarray(N)
+        Radial derivative of the density at the set of points
+    """
+    rho_hess = evaluate_density_hessian(one_density_matrix, basis, points)
+    # compute unitary vectors for the directions of the points
+    unitvect_pts = points / np.linalg.norm(points, axis=1)[:, None]
+    # compute the radial second derivative of the density
+    return np.einsum("ij,ijk,ik->i", unitvect_pts, rho_hess, unitvect_pts)
+
+
 def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type="spherical"):
     "Adapted from Gbasis"
     orbt_ked = 0
@@ -181,6 +235,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     orb_dens_up = eval_orbs_density(dm1_up, orb_eval)
     orb_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
     dens_tot = eval_dens(dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=None)
+
+    # compute radial derivatives of the density
 
     # Compute kinetic energy density
     orb_ked_up = eval_orb_ked(dm1_up, obasis, atgrid.points, transform=None, coord_type=coord_types)
