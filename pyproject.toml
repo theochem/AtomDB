@@ -92,3 +92,6 @@ extend-exclude = ["doc/*", "doc/*/*"]
 minversion = "7.0"
 testpaths = ["tests"]
 addopts = "-v"
+markers = [
+    "dev: mark a developer test, needs extra dependencies.",
+]
