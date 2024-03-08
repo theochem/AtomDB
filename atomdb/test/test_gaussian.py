@@ -32,6 +32,46 @@ from atomdb.api import load
 TEST_DATAPATH = "atomdb/test/data/"
 
 
+@pytest.mark.dev
+@pytest.mark.parametrize("atom", ["atom_018_Ar_N18_M1_uhf_def2svpd_g09.fchk", "atom_001_H_N02_M1_uhf_def2svpd_g09.fchk"])
+def test_eval_radial_d_density(atom):
+    # conditional import of dev modules needed for this test
+    try:
+        from gbasis.wrappers import from_iodata
+        from gbasis.evals.density import evaluate_density_gradient
+        from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
+        from iodata import load_one
+        from atomdb.datasets.gaussian import eval_radial_d_density
+
+        assert True
+    except ImportError:
+        pytest.skip("Gbasis or IOData modules not available, skipping test")
+
+    # create atomic grid from 0 to 20 bohr
+    oned = UniformInteger(npoints=100)
+    rgrid = LinearInfiniteRTransform(1e-4, 20).transform_1d_grid(oned)
+    atgrid = AtomGrid(rgrid, degrees=[10])
+
+    # load the fchk file
+    mol_data = load_one(TEST_DATAPATH + 'gaussian/' + atom)
+    ao_basis = from_iodata(mol_data)
+
+    # one electron RDM from fchk file
+    rdm = mol_data.one_rdms["scf"]
+
+    # evaluate gradient of the electron density on the grid
+    rho_grad = evaluate_density_gradient(rdm, ao_basis, atgrid.points)
+    # evaluate derivative of rho vs r on the grid
+    radial_d_rho = eval_radial_d_density(rdm, ao_basis, atgrid.points)
+    # compute unitary projection of r in x,y,z
+    unitvects = atgrid.points / np.linalg.norm(atgrid.points, axis=1)[:, None]
+
+    # recover cartesian gradient from radial derivative (for spheric atoms) and compare
+    rho_grad_cart = radial_d_rho[:, None] * unitvects
+
+    assert np.allclose(rho_grad, rho_grad_cart, rtol=1e-6)
+
+
 def test_compiled_gaussian_hf_data():
     ### Use Be atomic data as a test case
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
