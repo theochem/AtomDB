@@ -32,11 +32,10 @@ from msgpack import Packer, Unpacker
 
 from numpy import ndarray, frombuffer, exp, log, sum
 
+from scipy import constants
 from scipy.interpolate import CubicSpline
 
 from csv import reader
-
-from .units import angstrom, amu
 
 
 __all__ = [
@@ -504,6 +503,9 @@ def get_element_data(elem):
         Journal of Molecular Structure: THEOCHEM 312, 69 (1994),
         http://dx.doi.org/10.1016/s0166-1280(09)80008-0
     """
+
+    angstrom = 100 * constants.pico * constants.m_e * constants.c * constants.alpha / constants.hbar
+    amu = constants.gram / (constants.Avogadro * constants.m_e)
 
     z = element_number(elem)
     convertor_types = {
