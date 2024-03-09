@@ -10,7 +10,6 @@ Submodules
    atomdb.api
    atomdb.periodic
    atomdb.promolecule
-   atomdb.units
    atomdb.version
 
 Module contents
