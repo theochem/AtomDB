@@ -18,8 +18,6 @@ r"""AtomDB, a database of atomic and ionic properties."""
 
 from atomdb.version import *
 
-from atomdb.units import *
-
 from atomdb.api import *
 
 from atomdb.promolecule import *
