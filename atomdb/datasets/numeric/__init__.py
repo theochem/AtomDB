@@ -33,6 +33,8 @@ import atomdb
 
 from atomdb.data.utils import _multiplicity
 
+from atomdb.periodic import Atom
+
 
 def load_numerical_hf_data():
     """Load data from desnity.out file into a `SpeciesTable`."""
@@ -135,8 +137,14 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     species_table = load_numerical_hf_data()
     data = species_table[(natom, nelec)]
 
-    # Get information about the element
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    #
+    # Element periodic properties
+    #
+    # cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    atom = Atom(elem)
+    cov_radii = atom.cov_radius
+    vdw_radii = atom.vdw_radius
+    mass = atom.mass["stb"]
     if charge != 0:
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
 
