@@ -74,7 +74,6 @@ def test_eval_radial_d_density(atom):
     assert np.allclose(rho_grad, rho_grad_cart, rtol=1e-6)
 
 
-
 @pytest.mark.dev
 @pytest.mark.parametrize(
     "atom", ["atom_018_Ar_N18_M1_uhf_def2svpd_g09.fchk", "atom_001_H_N02_M1_uhf_def2svpd_g09.fchk"]
@@ -116,8 +115,6 @@ def test_eval_radial_dd_density(atom):
     # compute laplacian from first and second radial derivatives (for spheric atoms) and compare
     rho_lapl_rec = radial_dd_rho + 2 * radial_d_rho / np.linalg.norm(atgrid.points, axis=1)
     assert np.allclose(rho_lapl, rho_lapl_rec, rtol=1e-6)
-
-
 
 
 def test_compiled_gaussian_hf_data():
