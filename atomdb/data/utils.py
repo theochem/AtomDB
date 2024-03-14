@@ -160,26 +160,34 @@ def _write_mults_table_to_csv(mults_table):
         writer.writerows(mult_table_with_atnum)
 
 
-def _multiplicity(atnum, charge):
-    """Get the multiplicity for a given atomic number and charge."""
+class MultsTable:
+    """Table of multiplicities
 
-    # File name for the table of multiplicities in atomdb/data
-    filename = f"{data_path}/multiplicities_table.csv"
+    The values were obtained from the database_beta_1.3.0.h5 file. The maximum atomic number
+    that can be considered is 100, as the database only contains data up to Fermium (Z=100). 
+    The considered charges for a given atom range from -2 to Z-1. 
+    The multiplicities are taken as zero for cases where the atomic numbers and charges were
+    not present in the database. For the anions, the multiplicity was taken from the neutral
+    isoelectronic species.
+    """
+    def __init__(self):
+        # Load the csv file with the table of multiplicities in atomdb/data
+        filename = f"{data_path}/multiplicities_table.csv"
+        with open(filename, "r") as file:
+            reader = csv.reader(file)
+            # When created using the function _write_mults_table_to_csv, the table has
+            # exactly two header lines that are skipped here.
+            for i in range(2):
+                next(reader, None)
+            self._table = list(reader)
 
-    # Load the table of multiplicities and get the one for the given atomic number and charge.
-    # Determine the column index for the given charge. It will be shifted by 2 because the charge
-    # range starts at -2 and by 1 because the first column is the atomic number.
-    col_indx = charge + 2 + 1
-    with open(filename, "r") as file:
-        reader = csv.reader(file)
-        # As created using the function _write_mults_table_to_csv, the multiplicities table has
-        # exactly two header lines that are skipped here.
-        for i in range(2):
-            next(reader, None)
-
-        element_row = list(reader)[atnum - 1]
-        mult = element_row[col_indx]
-    return int(mult)
+    def __call__(self, atnum, charge):
+        # Determine the column index for the given charge.
+        # It will be shifted by 2 because the charge range starts at -2 and by 1 because the
+        # first column is the atomic number.
+        col_indx = charge + 2 + 1
+        mult = self._table[atnum - 1][col_indx]
+        return int(mult)
 
 
 def _test_mults_table():
@@ -196,6 +204,6 @@ def _test_mults_table():
         [30, 1, 2],  # Zn+
         [30, -1, 2],  # Zn-
     ]
+    multiplicities = MultsTable()
     for atnum, charge, mult in species:
-        print(f"Testing {atnum}, {charge}, {mult}, {_multiplicity(atnum, charge)}")
-        assert _multiplicity(atnum, charge) == mult
+        assert multiplicities(atnum, charge) == mult
