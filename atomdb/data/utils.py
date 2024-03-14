@@ -164,12 +164,13 @@ class MultsTable:
     """Table of multiplicities
 
     The values were obtained from the database_beta_1.3.0.h5 file. The maximum atomic number
-    that can be considered is 100, as the database only contains data up to Fermium (Z=100). 
-    The considered charges for a given atom range from -2 to Z-1. 
+    that can be considered is 100, as the database only contains data up to Fermium (Z=100).
+    The considered charges for a given atom range from -2 to Z-1.
     The multiplicities are taken as zero for cases where the atomic numbers and charges were
     not present in the database. For the anions, the multiplicity was taken from the neutral
     isoelectronic species.
     """
+
     def __init__(self):
         # Load the csv file with the table of multiplicities in atomdb/data
         filename = f"{data_path}/multiplicities_table.csv"
