@@ -26,7 +26,7 @@ data_path = os.path.dirname(__file__)
 
 
 def _get_moststable_species(atnum, nelec):
-    """Get the multiplicity and energy for the most stable electronic configuration 
+    """Get the multiplicity and energy for the most stable electronic configuration
     of a given atomic species.
 
     Parameters
@@ -71,7 +71,7 @@ def _make_mults_table(max_atnum=100):
 
     The values are obtained from the database_beta_1.3.0.h5 file and are stored as a table with
     rows corresponding to the atomic number and columns to the charge. The maximum atomic number
-    (`max_atnum`) that can be considered is 100, as the database only contains data up to Fermium (Z=100). 
+    (`max_atnum`) that can be considered is 100, as the database only contains data up to Fermium (Z=100).
     The charge range goes from -2 to `max_atnum`-1. The multiplicities are initialized to zero for
     cases where the atomic numbers and charges are not present in the database.
 
