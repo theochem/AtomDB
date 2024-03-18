@@ -294,13 +294,11 @@ def eval_radial_dd_density(one_density_matrix, basis, points):
     return np.einsum("ij,ijk,ik->i", unitvect_pts, rho_hess, unitvect_pts)
 
 
-def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type="spherical"):
+def eval_orb_ked(one_density_matrix, basis, points, transform=None):
     "Adapted from Gbasis"
     orbt_ked = 0
     for orders in np.identity(3, dtype=int):
-        deriv_orb_eval_one = evaluate_deriv_basis(
-            basis, points, orders, transform=transform, coord_type=coord_type
-        )
+        deriv_orb_eval_one = evaluate_deriv_basis(basis, points, orders, transform=transform)
         deriv_orb_eval_two = deriv_orb_eval_one  # if orders_one == orders_two
         density = one_density_matrix.dot(deriv_orb_eval_two)
         density *= deriv_orb_eval_one
@@ -337,43 +335,86 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     coeffs_a = mo_coeffs[:, :norba]
     coeffs_b = mo_coeffs[:, norba:]
 
+    # check for inconsistencies in filenames
+    if not np.allclose(np.array([mo_e_up, mo_e_dn]), np.array(sum(occs_up), sum(occs_dn))):
+        raise ValueError(f"Inconsistent data in fchk file for N: {natom}, M: {mult} CH: {charge}")
+
     # Prepare data for computing Species properties
     # density matrix in AO basis
     dm1_up = np.dot(coeffs_a * occs_up, coeffs_a.T)
     dm1_dn = np.dot(coeffs_b * occs_dn, coeffs_b.T)
-    dm1_tot = dm1_up + dm1_dn
+    dm1_tot = data.one_rdms["scf"]
 
     # Make grid
     onedg = UniformInteger(NPOINTS)  # number of uniform grid points.
     rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg)  # radial grid
     atgrid = AtomGrid(rgrid, degrees=[DEGREE], sizes=[SIZE], center=np.array([0.0, 0.0, 0.0]))
 
-    # Compute densities
-    obasis, coord_types = from_iodata(data)
-    orb_eval = evaluate_basis(obasis, atgrid.points, coord_type=coord_types, transform=None)
+    # Evaluate properties on the grid:
+    # --------------------------------
+    # total and spin-up orbital, and spin-down orbital densities
+    obasis = from_iodata(data)
+    orb_eval = evaluate_basis(obasis, atgrid.points, transform=None)
     orb_dens_up = eval_orbs_density(dm1_up, orb_eval)
     orb_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
-    dens_tot = eval_dens(dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=None)
+    dens_tot = eval_dens(dm1_tot, obasis, atgrid.points, transform=None)
 
-    # compute radial derivatives of the density
+    # total, spin-up orbital, and spin-down orbital first (radial) derivatives of the density
+    d_dens_tot = eval_radial_d_density(dm1_tot, obasis, atgrid.points)
+    orb_d_dens_up = eval_orbs_radial_d_density(dm1_up, obasis, atgrid.points, transform=None)
+    orb_d_dens_dn = eval_orbs_radial_d_density(dm1_dn, obasis, atgrid.points, transform=None)
 
-    # Compute kinetic energy density
-    orb_ked_up = eval_orb_ked(dm1_up, obasis, atgrid.points, transform=None, coord_type=coord_types)
-    orb_ked_dn = eval_orb_ked(dm1_dn, obasis, atgrid.points, transform=None, coord_type=coord_types)
-    ked_tot = eval_pd_ked(dm1_tot, obasis, atgrid.points, coord_type=coord_types, transform=None)
+    # total, spin-up orbital, and spin-down orbital second (radial) derivatives of the density
+    dd_dens_tot = eval_radial_dd_density(dm1_tot, obasis, atgrid.points)
+    orb_dd_dens_up = eval_orbs_radial_dd_density(dm1_up, obasis, atgrid.points, transform=None)
+    orb_dd_dens_dn = eval_orbs_radial_dd_density(dm1_dn, obasis, atgrid.points, transform=None)
 
-    # Spherically average densities and orbital densities
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
+    ked_tot = eval_pd_ked(dm1_tot, obasis, atgrid.points, transform=None)
+    orb_ked_up = eval_orb_ked(dm1_up, obasis, atgrid.points, transform=None)
+    orb_ked_dn = eval_orb_ked(dm1_dn, obasis, atgrid.points, transform=None)
+
+    # Spherically average properties:
+    # --------------------------------
+    # total, spin-up orbital, and spin-down orbital densities
     dens_spherical_avg = atgrid.spherical_average(dens_tot)
     dens_splines_up = [atgrid.spherical_average(dens) for dens in orb_dens_up]
     dens_splines_dn = [atgrid.spherical_average(dens) for dens in orb_dens_dn]
+
+    # total, spin-up orbital, and spin-down orbital radial derivatives of the density
+    d_dens_spherical_avg = atgrid.spherical_average(d_dens_tot)
+    d_dens_splines_up = [atgrid.spherical_average(d_dens) for d_dens in orb_d_dens_up]
+    d_dens_splines_dn = [atgrid.spherical_average(d_dens) for d_dens in orb_d_dens_dn]
+
+    # total, spin-up orbital, and spin-down orbital radial second derivatives of the density
+    dd_dens_spherical_avg = atgrid.spherical_average(dd_dens_tot)
+    dd_dens_splines_up = [atgrid.spherical_average(dd_dens) for dd_dens in orb_dd_dens_up]
+    dd_dens_splines_dn = [atgrid.spherical_average(dd_dens) for dd_dens in orb_dd_dens_dn]
+
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
     ked_spherical_avg = atgrid.spherical_average(ked_tot)
     ked_splines_up = [atgrid.spherical_average(dens) for dens in orb_ked_up]
     ked_splines_dn = [atgrid.spherical_average(dens) for dens in orb_ked_dn]
-    # Evaluate interpolated densities in uniform radial grid
+
+    # Evaluate interpolated densities in uniform radial grid:
+    # -------------------------------------------------------
     rs = rgrid.points
+    # total, spin-up orbital, and spin-down orbital densities
     dens_avg_tot = dens_spherical_avg(rs)
     orb_dens_avg_up = np.array([spline(rs) for spline in dens_splines_up])
     orb_dens_avg_dn = np.array([spline(rs) for spline in dens_splines_dn])
+
+    # total, spin-up orbital, and spin-down orbital radial derivatives of the density
+    d_dens_avg_tot = d_dens_spherical_avg(rs)
+    orb_d_dens_avg_up = np.array([spline(rs) for spline in d_dens_splines_up])
+    orb_d_dens_avg_dn = np.array([spline(rs) for spline in d_dens_splines_dn])
+
+    # total, spin-up orbital, and spin-down orbital radial second derivatives of the density
+    dd_dens_avg_tot = dd_dens_spherical_avg(rs)
+    orb_dd_dens_avg_up = np.array([spline(rs) for spline in dd_dens_splines_up])
+    orb_dd_dens_avg_dn = np.array([spline(rs) for spline in dd_dens_splines_dn])
+
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
     ked_avg_tot = ked_spherical_avg(rs)
     orb_ked_avg_up = np.array([spline(rs) for spline in ked_splines_up])
     orb_ked_avg_dn = np.array([spline(rs) for spline in ked_splines_dn])
