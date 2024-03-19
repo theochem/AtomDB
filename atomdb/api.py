@@ -178,8 +178,13 @@ class Species(SpeciesData):
         self.ao = _AtomicOrbitals(
             self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b
         )
+        # Reshape the orbital densities and kinetic energy densities as 2D arrays
         self._orb_dens_up = self._to_ndarray(self._orb_dens_up, self.ao.norba)
         self._orb_dens_dn = self._to_ndarray(self._orb_dens_dn, self.ao.norba)
+        self._orb_d_dens_up = self._to_ndarray(self._orb_d_dens_up, self.ao.norba)
+        self._orb_d_dens_dn = self._to_ndarray(self._orb_d_dens_dn, self.ao.norba)
+        self._orb_dd_dens_up = self._to_ndarray(self._orb_dd_dens_up, self.ao.norba)
+        self._orb_dd_dens_dn = self._to_ndarray(self._orb_dd_dens_dn, self.ao.norba)
         self._orb_ked_up = self._to_ndarray(self._orb_ked_up, self.ao.norba)
         self._orb_ked_dn = self._to_ndarray(self._orb_ked_dn, self.ao.norba)
         #
@@ -260,6 +265,152 @@ class Species(SpeciesData):
                 orbs_dens = self._orb_dens_up + self._orb_dens_dn
             orbs_dens = orbs_dens[index]  # M(K_orb,N)
             value_array = sum(orbs_dens, axis=0)  # (N,)
+
+        return cubic_interp(self.rs, value_array, log=log)
+    
+    def gradient_func(self, spin="ab", index=None, log=False):
+        """Density gradient function for an atomic species.
+
+        The gradient of the density, as a function of the radius, is modeled by a cubic spline.
+        Values of the gradient at a set of points (along a 1-D grid) can be evaluated using the
+        returned function. The property can be computed for the alpha, beta, alpha + beta, and
+        alpha - beta components of the electron density.
+
+        Parameters
+        ----------
+        spin : str, optional
+            Type of occupied spin orbitals which can be either "a" (for alpha), "b" (for
+            beta), "ab" (for alpha + beta), and, "m" (for alpha - beta), by default 'ab'
+        index : sequence of int, optional
+            Sequence of integers representing the spin orbitals which are indexed
+            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included
+        log : bool, optional
+            Whether the logarithm of the density property is used for interpolation
+
+        Returns
+        -------
+        Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
+            a callable function evaluating the gradient of the density given a set of radial
+            points (1-D array).
+
+        Example
+        -------
+        # Generate the interpolator for the (radial) gradient of the density
+        >>> d_dens_spline = gradient_func()
+        # Define a 1-D set of points to be interpolated
+        >>> x = np.arange(0, 5)
+        >>> d_dens = d_dens_spline(x)  # interpolated density gradient
+        """
+        if spin not in ["a", "b", "ab", "m"]:
+            raise ValueError(
+                f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
+            )
+        if spin in ["a", "b", "m"] and (self._orb_d_dens_up is None):
+            raise ValueError(f"Density property values for `{spin}` spin-orbitals unavailable.")
+        if index is not None and (self._orb_d_dens_up is None):
+            raise ValueError(
+                "Can not perform indexing since densities per orbital are missing in this dataset."
+            )
+        if log:
+            raise ValueError("Logarithmic interpolation is not supported for gradients.")
+
+        # Assign cases that require spin-densitiy data. Since these are always
+        # stored as density per orbital they work for any `index` parameter case.
+        if spin == "a":
+            orbs_d_dens = self._orb_d_dens_up
+        elif spin == "b":
+            orbs_d_dens = self._orb_d_dens_dn
+        elif spin == "m":
+            orbs_d_dens = self._orb_d_dens_up - self._orb_d_dens_dn
+
+        # Get the property values for interpolation.
+        # 1) If index is not provided, the gradient is summed along the axis of the molecular
+        # orbital components to give the total, alpha, beta or magnetic values of the property.
+        # 2) When indexing is required, the property is evaluated for the specified spin-orbitals
+        # for the alpha, beta, alpha + beta, and alpha - beta components of the density gradient.
+        if index is None:
+            if spin == "ab":
+                value_array = self.d_dens_tot
+            else:
+                value_array = sum(orbs_d_dens, axis=0)
+        else:
+            if spin == "ab":
+                orbs_d_dens = self._orb_d_dens_up + self._orb_d_dens_dn
+            orbs_d_dens = orbs_d_dens[index]  # M(K_orb,N)
+            value_array = sum(orbs_d_dens, axis=0)  # (N,)
+
+        return cubic_interp(self.rs, value_array, log=log)
+    
+    def laplacian_func(self, spin="ab", index=None, log=False):
+        """Function to evaluate the Laplacian of the electron density for an atomic species.
+
+        The Laplacian of the density is modeled by a cubic spline. The property can be interpolated
+        at a set of points (along a 1-D grid) using the returned function. 
+        The alpha, beta, alpha + beta, and alpha - beta components of the property can be obtained
+        by specifying the `spin` parameter.
+
+        Parameters
+        ----------
+        spin : str, optional
+            Type of occupied spin orbitals which can be either "a" (for alpha), "b" (for
+            beta), "ab" (for alpha + beta), and, "m" (for alpha - beta), by default 'ab'
+        index : sequence of int, optional
+            Sequence of integers representing the spin orbitals which are indexed
+            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included
+        log : bool, optional
+            Whether the logarithm of the density property is used for interpolation
+
+        Returns
+        -------
+        Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
+            a callable function evaluating the Laplacian of the electron density given a set of radial
+            points (1-D array).
+
+        Example
+        -------
+        # Generate the interpolator for the laplacian of the density
+        >>> dd_dens_spline = laplacian_func()
+        # Define a 1-D set of points to be interpolated
+        >>> x = np.arange(0, 5)
+        >>> dd_dens = dd_dens_spline(x)  # interpolated density Laplacian
+        """
+        if spin not in ["a", "b", "ab", "m"]:
+            raise ValueError(
+                f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
+            )
+        if spin in ["a", "b", "m"] and (self._orb_d_dens_up is None):
+            raise ValueError(f"Density property values for `{spin}` spin-orbitals unavailable.")
+        if index is not None and (self._orb_d_dens_up is None):
+            raise ValueError(
+                "Can not perform indexing since densities per orbital are missing in this dataset."
+            )
+        if log:
+            raise ValueError("Logarithmic interpolation is not supported for the Laplacian.")
+
+        # Assign cases that require spin-densitiy data. Since these are always
+        # stored as density per orbital they work for any `index` parameter case.
+        if spin == "a":
+            orbs_dd_dens = self._orb_dd_dens_up
+        elif spin == "b":
+            orbs_dd_dens = self._orb_dd_dens_dn
+        elif spin == "m":
+            orbs_dd_dens = self._orb_dd_dens_up - self._orb_dd_dens_dn
+
+        # Get the property values for interpolation.
+        # 1) If index is not provided, the gradient is summed along the axis of the molecular
+        # orbital components to give the total, alpha, beta or magnetic values of the property.
+        # 2) When indexing is required, the property is evaluated for the specified spin-orbitals
+        # for the alpha, beta, alpha + beta, and alpha - beta components of the density gradient.
+        if index is None:
+            if spin == "ab":
+                value_array = self.dd_dens_tot
+            else:
+                value_array = sum(orbs_dd_dens, axis=0)
+        else:
+            if spin == "ab":
+                orbs_dd_dens = self._orb_dd_dens_up + self._orb_dd_dens_dn
+            orbs_dd_dens = orbs_dd_dens[index]  # M(K_orb,N)
+            value_array = sum(orbs_dd_dens, axis=0)  # (N,)
 
         return cubic_interp(self.rs, value_array, log=log)
 
