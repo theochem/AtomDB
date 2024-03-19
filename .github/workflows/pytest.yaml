@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies for testing
         run: |
           pip install --upgrade pip
-          pip install pytest pytest-md pytest-emoji pytest-cov
+          pip install pytest pytest-md pytest-emoji pytest-cov pyscf
           pip install git+https://github.com/theochem/gbasis.git@master
           pip install git+https://github.com/theochem/grid.git@master
           pip install git+https://github.com/theochem/iodata.git@master
