@@ -15,17 +15,13 @@ properties.
     :maxdepth: 2
     :caption: Introduction
 
-    intro/about
-    intro/license
-    intro/citing
-    intro/conduct
+    intro
 
 .. toctree::
     :maxdepth: 2
     :caption: User Documentation
 
-    user/install
-    user/tutorial
+    user
 
 .. toctree::
     :maxdepth: 3
