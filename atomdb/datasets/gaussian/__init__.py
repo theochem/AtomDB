@@ -36,6 +36,8 @@ from iodata import load_one
 
 import atomdb
 
+from atomdb.periodic import Atom
+
 
 __all__ = [
     "run",
@@ -336,7 +338,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     coeffs_b = mo_coeffs[:, norba:]
 
     # check for inconsistencies in filenames
-    if not np.allclose(np.array([mo_e_up, mo_e_dn]), np.array(sum(occs_up), sum(occs_dn))):
+    if not np.allclose(np.array([n_up, n_dn]), np.array([sum(occs_up), sum(occs_dn)])):
         raise ValueError(f"Inconsistent data in fchk file for N: {natom}, M: {mult} CH: {charge}")
 
     # Prepare data for computing Species properties
@@ -420,7 +422,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     orb_ked_avg_dn = np.array([spline(rs) for spline in ked_splines_dn])
 
     # Get information about the element
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    atom = Atom(elem)
+    cov_radii = atom.cov_radius
+    vdw_radii = atom.vdw_radius
+    mass = atom.mass["stb"]
     if charge != 0:
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
 
@@ -454,9 +459,19 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         mu,
         eta,
         rs=rs,
+        # Density
         _orb_dens_up=orb_dens_avg_up.flatten(),
         _orb_dens_dn=orb_dens_avg_dn.flatten(),
         dens_tot=dens_avg_tot,
+        # Density gradient
+        _orb_d_dens_up=orb_d_dens_avg_up.flatten(),
+        _orb_d_dens_dn=orb_d_dens_avg_dn.flatten(),
+        d_dens_tot=d_dens_avg_tot,
+        # Density laplacian
+        _orb_dd_dens_up=orb_dd_dens_avg_up.flatten(),
+        _orb_dd_dens_dn=orb_dd_dens_avg_dn.flatten(),
+        dd_dens_tot=dd_dens_avg_tot,
+        # KED
         _orb_ked_up=orb_ked_avg_up.flatten(),
         _orb_ked_dn=orb_ked_avg_dn.flatten(),
         ked_tot=ked_avg_tot,

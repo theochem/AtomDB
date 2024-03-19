@@ -149,6 +149,18 @@ class SpeciesData:
     _orb_dens_dn: ndarray = field(default=None)
     dens_tot: ndarray = field(default=None)
     #
+    # Density gradient
+    #
+    _orb_d_dens_up: ndarray = field(default=None)
+    _orb_d_dens_dn: ndarray = field(default=None)
+    d_dens_tot: ndarray = field(default=None)
+    #
+    # Density laplacian
+    #
+    _orb_dd_dens_up: ndarray = field(default=None)
+    _orb_dd_dens_dn: ndarray = field(default=None)
+    dd_dens_tot: ndarray = field(default=None)
+    #
     # Kinetic energy density
     #
     _orb_ked_up: ndarray = field(default=None)
