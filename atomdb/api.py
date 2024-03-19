@@ -18,6 +18,8 @@ r"""AtomDB, a database of atomic and ionic properties."""
 
 from dataclasses import dataclass, field, asdict
 
+from glob import glob
+
 from importlib import import_module
 
 from json import JSONEncoder, dumps
@@ -29,6 +31,8 @@ from os.path import dirname, join
 from sys import platform
 
 from msgpack import Packer, Unpacker
+
+from numbers import Integral
 
 from numpy import ndarray, frombuffer, exp, log, sum
 
@@ -43,6 +47,7 @@ __all__ = [
     "DEFAULT_DATAPATH",
     "Species",
     "load",
+    "load_all",
     "compile",
     "datafile",
     "element_number",
@@ -177,7 +182,25 @@ class Species(SpeciesData):
         #
         self.charge = self.natom - self.nelec
         self.mult = self.nspin + 1
+        self.spinpol = int(kwargs.get("spinpol", 1))
         self.doc = get_docstring(self.dataset)
+
+    @property
+    def spinpol(self):
+        r"""
+        The spin polarization direction (±1).
+
+        """
+        return self._spinpol
+
+    @spinpol.setter
+    def spinpol(self, p):
+        if not isinstance(p, Integral):
+            raise TypeError("`spinpol` attribute must be an integral type")
+        p = int(p)
+        if p not in (+1, -1):
+            raise ValueError("`spinpol` must be +1 or -1")
+        self._spinpol = p
 
     def _to_ndarray(self, array1d, n):
         return array1d.reshape(n, -1) if array1d is not None else None
@@ -195,7 +218,8 @@ class Species(SpeciesData):
             beta), "ab" (for alpha + beta), and, "m" (for alpha - beta), by default 'ab'
         index : sequence of int, optional
             Sequence of integers representing the spin orbitals which are indexed
-            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included, by default None
+            from 1 to the number basis functions. If ``None``, all orbitals of the given
+            spin(s) are included, by default None.
         log : bool, optional
             Whether the logarithm of the density is used for interpolation, by default False
 
@@ -229,11 +253,11 @@ class Species(SpeciesData):
         # Assign cases that require spin-densitiy data. Since these are always
         # stored as density per orbital they work for any `index` parameter case.
         if spin == "a":
-            orbs_dens = self._orb_dens_up
+            orbs_dens = self._orb_dens_up if self.spinpol == 1 else self._orb_dens_dn
         elif spin == "b":
-            orbs_dens = self._orb_dens_dn
+            orbs_dens = self._orb_dens_dn if self.spinpol == 1 else self._orb_dens_up
         elif spin == "m":
-            orbs_dens = self._orb_dens_up - self._orb_dens_dn
+            orbs_dens = self.spinpol * (self._orb_dens_up - self._orb_dens_dn)
 
         # Evaluate property values for interpolation.
         # Total density (ab) is evaluated from spin components when indexing is required
@@ -266,11 +290,11 @@ class Species(SpeciesData):
         # Assign cases that require spin-densitiy data. Since these are stored as density
         # per orbital they work for any `index` parameter case.
         if spin == "a":
-            orbs_ked = self._orb_ked_up
+            orbs_ked = self._orb_ked_up if self.spinpol == 1 else self._orb_ked_dn
         elif spin == "b":
-            orbs_ked = self._orb_ked_dn
+            orbs_ked = self._orb_ked_dn if self.spinpol == 1 else self._orb_ked_up
         elif spin == "m":
-            orbs_ked = self._orb_ked_up - self._orb_ked_dn
+            orbs_ked = self.spinpol * (self._orb_ked_up - self._orb_ked_dn)
 
         # Evaluate property values for interpolation.
         # Total density (ab) is evaluated from spin components when indexing is required
@@ -329,6 +353,21 @@ def load(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_D
     return Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
 
 
+def load_all(elem, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
+    r"""Load an atomic or ionic species from the AtomDB database."""
+    species = []
+    # Find all matching msgpack entries
+    for file in glob(join(datapath, f"{dataset.lower()}/db/{element_symbol(elem)}_*_{nexc}.msg")):
+        # Load database msgpack entry
+        with open(file, "rb") as f:
+            msg = unpack_msg(f)
+        # Convert raw bytes back to numpy arrays, initialize the Species instance, store it
+        species.append(
+            Species(**{k: frombuffer(v) if isinstance(v, bytes) else v for k, v in msg.items()})
+        )
+    return species
+
+
 def compile(elem, charge, mult, nexc=0, dataset=DEFAULT_DATASET, datapath=DEFAULT_DATAPATH):
     r"""Compile an atomic or ionic species into the AtomDB database."""
     # Ensure directories exist
@@ -348,6 +387,9 @@ def datafile(suffix, elem, charge, mult, nexc=0, dataset=None, datapath=DEFAULT_
     # Format the filename specified and return it
     suffix = f"{'' if suffix.startswith('.') else '_'}{suffix.lower()}"
     if dataset.split("_")[0] == "hci":
+        prefix = f"{str(element_number(elem)).zfill(3)}"
+        tag = f"q{str(charge).zfill(3)}_m{mult:02d}_k{nexc:02}_sp_{dataset}"
+    else:
         prefix = f"{str(element_number(elem)).zfill(3)}"
         tag = f"q{str(charge).zfill(3)}_m{mult:02d}_k{nexc:02}_sp_{dataset}"
     return join(datapath, f"{dataset.lower()}/raw/{prefix}_{tag}{suffix}")
