@@ -1,52 +1,79 @@
 name: build_website
 
 on:
+
   push:
+
     branches:
       - master
 
 permissions:
+
   contents: write
   deployments: write
   pages: write
 
 jobs:
+
   build:
+
     runs-on: ubuntu-latest
 
     permissions:
+
       contents: write
       deployments: write
       pages: write
 
     steps:
-    - uses: actions/checkout@v3
 
-    - name: Install development and distributions version
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
       run: |
         pip install --upgrade pip
-        pip install .[doc]
         pip install pypandoc_binary
+        pip install .[doc]
 
     - name: Setup pandoc
       uses: siacodelabs/setup-pandoc@v1
       with:
-        xelatex: true.
+        xelatex: true
 
-    # didn't need to change anything here, but had to add sphinx.ext.githubpages
-    # to my conf.py extensions list. that fixes the broken uploads
-    - name: Building documentation
+    - name: Build documentation
       run: |
-        sphinx-apidoc -a -o ./docs/source/pyapi/ ./atomdb/ ./atomdb/test/ ./atomdb/data/ ./atomdb/datasets/ --separate
-        sphinx-build -M html docs/source _build 
+        sphinx-apidoc -a -e -o docs/source/api atomdb
+        sphinx-build -M html docs/source build
+        touch build/html/.nojekyll
 
-    # still need to build and set the PAT to get a rebuild on the pages job,
-    # apart from that quite clean and nice
-    - name: GitHub Pages Action
-      #if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-      uses: peaceiris/actions-gh-pages@v3
+    - name: Fix documentation permissions
+      run: |
+        chmod -c -R +rX "build/html/" | while read line; do
+          echo "::warning title=Invalid file permissions automatically fixed::$line"
+        done
+
+    - name: Upload Pages artifact
+      uses: actions/upload-pages-artifact@v3
       with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        publish_dir: _build/html
-        publish_branch: gh-pages
-        cname: atomdb.qcdevs.org
+        path: build/html/
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    needs: build
+
+    permissions:
+      pages: write
+      id-token: write
+
+    environment:
+      name: github-pages
+      url: ${{steps.deployment.outputs.page_url}}
+
+    steps:
+
+      - name: Deploy artifact to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
