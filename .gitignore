@@ -146,3 +146,6 @@ cython_debug/
 
 # Raw data files
 atomdb/datasets/*/raw/
+
+# Generated documentation
+docs/source/api/
