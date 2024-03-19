@@ -38,7 +38,7 @@ jobs:
         run: |
           pip install -v .
 
-      - name: Run pytest
+      - name: Run pytest default tests
         uses: pavelzw/pytest-action@v2
         with:
           verbose: true
@@ -46,3 +46,13 @@ jobs:
           job-summary: true
           click-to-expand: true
           report-title: 'Test Report'
+
+      - name: Run pytest Dev Tests
+        uses: pavelzw/pytest-action@v2
+        with:
+          verbose: true
+          emoji: true
+          job-summary: true
+          click-to-expand: true
+          report-title: 'Dev Test Report'
+          pytest-args: '-m dev'
