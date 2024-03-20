@@ -267,7 +267,7 @@ class Species(SpeciesData):
             value_array = sum(orbs_dens, axis=0)  # (N,)
 
         return cubic_interp(self.rs, value_array, log=log)
-    
+
     def gradient_func(self, spin="ab", index=None, log=False):
         """Density gradient function for an atomic species.
 
@@ -340,12 +340,12 @@ class Species(SpeciesData):
             value_array = sum(orbs_d_dens, axis=0)  # (N,)
 
         return cubic_interp(self.rs, value_array, log=log)
-    
+
     def laplacian_func(self, spin="ab", index=None, log=False):
         """Function to evaluate the Laplacian of the electron density for an atomic species.
 
         The Laplacian of the density is modeled by a cubic spline. The property can be interpolated
-        at a set of points (along a 1-D grid) using the returned function. 
+        at a set of points (along a 1-D grid) using the returned function.
         The alpha, beta, alpha + beta, and alpha - beta components of the property can be obtained
         by specifying the `spin` parameter.
 
