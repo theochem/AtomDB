@@ -4,30 +4,22 @@ import numpy as np
 from importlib_resources import files
 
 
-__all__ = ["sym2num", "name2num", "num2sym", "num2name", "Atom"]
+__all__ = ["sym2num", "name2num", "num2sym", "num2name", "Element"]
 
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")
-    print("Use 'from atomdb.periodic import Atom' instead.")
+    print("Use 'from atomdb.periodic import Element' instead.")
     raise SystemExit
 
 
-ATOM_DOCSTRING_BASE = """Class to store the properties of the elements.
-
-Attributes
-----------
-atnum : int
-    Atomic number of the element.
-symbol : str
-    Chemical symbol of the element.
-name : str
-    Name of the element.
-charge : int
-    Charge of the atom.
-multiplicity : int
-    Multiplicity of the atom.
-"""
+ATOM_DOCSTRING_BASE = (
+    "Class to store the properties of the elements.\n\n"
+    + "Attributes\n----------\n"
+    + "atnum : int\n    Atomic number of the element.\n"
+    + "symbol : str\n    Chemical symbol of the element.\n"
+    + "name : str\n    Name of the element.\n"
+)
 
 
 # auxiliary functions
@@ -155,16 +147,14 @@ for column, (prop, key) in enumerate(zip(properties, key_sources)):
     _prop2col.setdefault(prop, {})[key] = {"ncol": column}
 
 
-class Atom:
-    def __init__(self, id, charge=0):
-        """Create an Atom object.
+class Element:
+    def __init__(self, id):
+        """Create an Element object.
 
         Parameters
         ----------
         id : str or int
             The atomic number, symbol, or name of the element.
-        charge : int, optional
-            The charge of the atom, by default 0.
         """
         # check if the input is a valid element identifier and get the atomic number
         if isinstance(id, str):
@@ -184,31 +174,11 @@ class Atom:
         self.atsym = num2sym[self.atnum]
         self.atname = num2name[self.atnum].capitalize()
 
-        # check if the charge is valid and set the charge
-        if not isinstance(charge, int):
-            raise ValueError("Charge must be an integer")
-        if self.atnum - charge < 0:
-            raise ValueError(
-                f"Charge cannot be greater than atomic number. Z = {self.atnum}, charge = {charge}"
-            )
-        if self.atnum - charge > max(atnums):
-            raise ValueError(
-                f"Number of electrons {self.atnum - charge} outside of range of known elements"
-            )
-
-        self.charge = charge
-
         # create a dictionary to store the properties of the element
         tmp_dict = _prop2col.copy()
         for i in tmp_dict:
             # select the multiplicity of isoelectronic element
-            if i == "multiplicity":
-                nelectrons = self.atnum - charge
-                # if the number of electrons is 0 get the multiplicity of He (singlet)
-                if nelectrons == 0:
-                    nelectrons = 2
-                tmp_dict[i] = int(data[nelectrons - 1][tmp_dict[i][""]["ncol"]])
-            elif len(tmp_dict[i]) == 1 and "" in tmp_dict[i]:
+            if len(tmp_dict[i]) == 1 and "" in tmp_dict[i]:
                 tmp_dict[i] = data[self.atnum - 1][tmp_dict[i][""]["ncol"]]
             else:
                 tmp_dict[i] = {j: data[self.atnum - 1][tmp_dict[i][j]["ncol"]] for j in tmp_dict[i]}
@@ -216,5 +186,5 @@ class Atom:
         self.__dict__.update(tmp_dict)
 
 
-# set the docstring of the Atom class
-Atom.__doc__ = _gendoc(info_file)
+# set the docstring of the Element class
+Element.__doc__ = _gendoc(info_file)
