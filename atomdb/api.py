@@ -203,7 +203,7 @@ class Species(SpeciesData):
     #
     # Density splines
     #
-    def interpolate_dens(self, spin="ab", index=None, log=False):
+    def density_func(self, spin="ab", index=None, log=False):
         """Compute electron density
 
         Parameters
@@ -220,18 +220,15 @@ class Species(SpeciesData):
         Returns
         -------
         Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
-            a callable function evaluating the density and its derivatives up to order 2 given
-            a set of radial points (1-D array).
+            a callable function evaluating the density given a set of radial points (1-D array).
 
         Examples
         --------
-        # Generate the interpolator for the atomic density and its derivatives
+        # Generate the interpolator for the atomic density
         >>> dens_spline = interpolate_dens(log=True)
         # Define a radial set of points to be interpolated
         >>> x = np.arange(0, 5)
         >>> dens = dens_spline(x)            # interpolated density
-        >>> d_dens = dens_spline(x, deriv=1) # interpolated derivative of density
-        >>> d2_dens = dens_spline(x, deriv=2) # interpolated second derivative of density
         """
         if spin not in ["a", "b", "ab", "m"]:
             raise ValueError(
@@ -413,8 +410,26 @@ class Species(SpeciesData):
 
         return cubic_interp(self.rs, value_array, log=log)
 
-    def interpolate_ked(self, spin="ab", index=None, log=True):
-        r"""Compute positive definite kinetic energy density."""
+    def ked_func(self, spin="ab", index=None, log=False):
+        r"""Compute the positive definite kinetic energy density (KED).
+
+        Parameters
+        ----------
+        spin : str, optional
+            Type of occupied spin orbitals which can be either "a" (for alpha), "b" (for
+            beta), "ab" (for alpha + beta), and, "m" (for alpha - beta)
+        index : sequence of int, optional
+            Sequence of integers representing the spin orbitals which are indexed
+            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included
+        log : bool, optional
+            Whether the logarithm of the KED is used for interpolation
+
+        Returns
+        -------
+        Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
+            a callable function evaluating the KED given a set of radial points (1-D array).
+        
+        """
         if spin not in ["a", "b", "ab", "m"]:
             raise ValueError(
                 f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
