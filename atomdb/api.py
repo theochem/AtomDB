@@ -274,7 +274,7 @@ class Species(SpeciesData):
         The derivarive of the density as a function of the distance to the atomic center
         (a set of points along a 1-D grid) is modeled by a cubic spline. The property can
         be computed for the alpha, beta, alpha + beta, and alpha - beta components of the
-        electron density.         
+        electron density.
 
         Parameters
         ----------
@@ -675,7 +675,7 @@ def get_element_data(elem):
         "str": (lambda s: s.strip()),
         "angstrom": (lambda s: float(s) * angstrom),
         "2angstrom": (lambda s: float(s) * angstrom / 2),
-        "angstrom**3": (lambda s: float(s) * angstrom ** 3),
+        "angstrom**3": (lambda s: float(s) * angstrom**3),
         "amu": (lambda s: float(s) * amu),
     }
 
