@@ -24,6 +24,8 @@
 
 import pytest
 
+from scipy.interpolate import CubicSpline
+
 import numpy as np
 from atomdb.api import load
 
@@ -36,45 +38,69 @@ TEST_DATAPATH = "atomdb/test/data/"
     [
         ("gaussian", "alpha", None, False, ValueError),  # wrong spin value
         ("gaussian", "ab", None, True, ValueError),  # no log of gradient
-        ("gaussian", "ab", 1, True, TypeError),  # wrong index value
         ("numeric", "a", None, False, ValueError),  # no property per alpha orbital
         ("numeric", "ab", [0, 1], False, ValueError),  # no property per orbital
     ],
 )
-def test_gradient_func_raised_errors(dataset, spin, index, log, error):
+def test_ddens_func_raised_errors(dataset, spin, index, log, error):
     # load Be atomic data and try to calculate the gradient of the density
     sp = load("Be", 0, 1, dataset=dataset, datapath=TEST_DATAPATH)
 
     with pytest.raises(error):
-        sp.gradient_func(spin=spin, index=index, log=log)
+        sp.ddens_func(spin=spin, index=index, log=log)
 
 
-def ddens_cases():
-    # load the atomic data and return the density derivatives from all,
-    # all alpha, 2nd and 3rd alpha, and 2nd and 3rd  alpha + beta spin orbitals.
+def test_ddens_func():
+    # Make a spline of the density derivative and evaluate it at the grid points.
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
-    ddens_a_12 = np.sum(sp._orb_d_dens_up[[1, 2]], axis=0)
-    ddens_ab_12 = np.sum(sp._orb_d_dens_up[[1, 2]], axis=0) + np.sum(
+    points = np.linspace(0, 5, 20)
+
+    # A) Check that the sum of the interpolated density derivatives for the alpha and
+    # beta spin orbitals is consistent with the total density derivative.
+    spline_d_dens_ab = sp.ddens_func(spin="ab")
+    spline_d_dens_up = sp.ddens_func(spin="a")
+    spline_d_dens_dn = sp.ddens_func(spin="b")
+
+    expected_ddens = spline_d_dens_ab(points)
+    test_ddens = spline_d_dens_up(points) + spline_d_dens_dn(points)
+    assert np.allclose(test_ddens, expected_ddens, rtol=1e-6)
+
+    # B) Check the interpolated derivative of the spin density from the 2nd and 3rd
+    # molecular orbitals.
+    d_dens_m_12 = np.sum(sp._orb_d_dens_up[[1, 2]], axis=0) - np.sum(
         sp._orb_d_dens_dn[[1, 2]], axis=0
     )
+    spline_ddens_m = CubicSpline(sp.rs, d_dens_m_12)
+    spline_d_dens_m = sp.ddens_func(spin="m", index=[1, 2])
 
-    for case in [
-        ("ab", None, sp.d_dens_tot),
-        ("a", None, np.sum(sp._orb_d_dens_up, axis=0)),
-        ("a", [1, 2], ddens_a_12),
-        ("ab", [1, 2], ddens_ab_12),
-    ]:
-        yield case
+    expected_ddens = spline_ddens_m(points)
+    test_ddens = spline_d_dens_m(points)
+    assert np.allclose(test_ddens, expected_ddens, rtol=1e-6)
 
 
-@pytest.mark.parametrize(
-    "spin, index, expected_ddens",
-    ddens_cases(),
-)
-def test_gradient_func(spin, index, expected_ddens):
-    # Make a spline of the density derivative and evaluate it at the grid points.
-    # Compare with the stored data for the gradient.
+def test_d2dens_func():
+    # Make a spline of the second derivative of density and evaluate it at the grid points.
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
-    spline_d_dens = sp.gradient_func(spin=spin, index=index)
-    d_dens = spline_d_dens(sp.rs)
-    assert np.allclose(d_dens, expected_ddens, rtol=1e-6)
+    points = np.linspace(0, 5, 20)
+
+    # A) Check that the sum of the interpolated order 2 density derivatives for the alpha and
+    # beta spin orbitals is consistent with the total second derivative of density.
+    spline_dd_dens_ab = sp.d2dens_func(spin="ab")
+    spline_dd_dens_up = sp.d2dens_func(spin="a")
+    spline_dd_dens_dn = sp.d2dens_func(spin="b")
+
+    expected_d2dens = spline_dd_dens_ab(points)
+    test_d2dens = spline_dd_dens_up(points) + spline_dd_dens_dn(points)
+    assert np.allclose(test_d2dens, expected_d2dens, rtol=1e-6)
+
+    # B) Check the interpolated order 2 derivative of the spin density from the 2nd and 3rd
+    # molecular orbitals.
+    d2dens_m_12 = np.sum(sp._orb_d_dens_up[[1, 2]], axis=0) - np.sum(
+        sp._orb_d_dens_dn[[1, 2]], axis=0
+    )
+    spline_d2dens_m = CubicSpline(sp.rs, d2dens_m_12)
+    spline_dd_dens_m = sp.d2dens_func(spin="m", index=[1, 2])
+
+    expected_d2dens = spline_d2dens_m(points)
+    test_d2dens = spline_dd_dens_m(points)
+    assert np.allclose(test_d2dens, expected_d2dens, rtol=1e-6)

@@ -268,13 +268,13 @@ class Species(SpeciesData):
 
         return cubic_interp(self.rs, value_array, log=log)
 
-    def gradient_func(self, spin="ab", index=None, log=False):
-        """Density gradient function for an atomic species.
+    def ddens_func(self, spin="ab", index=None, log=False):
+        """Compute the first derivative of the atomic density along a 1-D grid.
 
-        The gradient of the density, as a function of the radius, is modeled by a cubic spline.
-        Values of the gradient at a set of points (along a 1-D grid) can be evaluated using the
-        returned function. The property can be computed for the alpha, beta, alpha + beta, and
-        alpha - beta components of the electron density.
+        The derivarive of the density as a function of the distance to the atomic center
+        (a set of points along a 1-D grid) is modeled by a cubic spline. The property can
+        be computed for the alpha, beta, alpha + beta, and alpha - beta components of the
+        electron density.         
 
         Parameters
         ----------
@@ -290,16 +290,16 @@ class Species(SpeciesData):
         Returns
         -------
         Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
-            a callable function evaluating the gradient of the density given a set of radial
+            a callable function evaluating the derivative of the density given a set of radial
             points (1-D array).
 
         Example
         -------
-        # Generate the interpolator for the (radial) gradient of the density
-        >>> d_dens_spline = gradient_func()
+        # Generate the interpolator for the derivative of the density
+        >>> d_dens_spline = ddens_func()
         # Define a 1-D set of points to be interpolated
         >>> x = np.arange(0, 5)
-        >>> d_dens = d_dens_spline(x)  # interpolated density gradient
+        >>> d_dens = d_dens_spline(x)  # interpolated derivative of the density
         """
         if spin not in ["a", "b", "ab", "m"]:
             raise ValueError(
@@ -307,15 +307,10 @@ class Species(SpeciesData):
             )
         if spin in ["a", "b", "m"] and (self._orb_d_dens_up is None):
             raise ValueError(f"Density property values for `{spin}` spin-orbitals unavailable.")
-        if index is not None:
-            if not isinstance(index, (list, tuple)):
-                raise TypeError("Index must be a list or tuple.")
-            if not all(isinstance(i, int) for i in index):
-                raise TypeError("Index must be a list or tuple of integers.")
-            if self._orb_d_dens_up is None:
-                raise ValueError(
-                    "Can not perform indexing since densities per orbital are missing in this dataset."
-                )
+        if index is not None and (self._orb_dens_up is None):
+            raise ValueError(
+                "Can not perform indexing since densities per orbital is missing in this dataset."
+            )
         if log:
             raise ValueError("Logarithmic interpolation is not supported for gradients.")
 
@@ -332,7 +327,7 @@ class Species(SpeciesData):
         # 1) If index is not provided, the gradient is summed along the axis of the molecular
         # orbital components to give the total, alpha, beta or magnetic values of the property.
         # 2) When indexing is required, the property is evaluated for the specified spin-orbitals
-        # for the alpha, beta, alpha + beta, and alpha - beta components of the density gradient.
+        # for the alpha, beta, alpha + beta, and alpha - beta components of the density.
         if index is None:
             if spin == "ab":
                 value_array = self.d_dens_tot
@@ -346,13 +341,12 @@ class Species(SpeciesData):
 
         return cubic_interp(self.rs, value_array, log=log)
 
-    def laplacian_func(self, spin="ab", index=None, log=False):
-        """Function to evaluate the Laplacian of the electron density for an atomic species.
+    def d2dens_func(self, spin="ab", index=None, log=False):
+        """Compute the second derivative of the atomic density along a 1-D grid.
 
-        The Laplacian of the density is modeled by a cubic spline. The property can be interpolated
-        at a set of points (along a 1-D grid) using the returned function.
-        The alpha, beta, alpha + beta, and alpha - beta components of the property can be obtained
-        by specifying the `spin` parameter.
+        The second derivarive of the density is modeled by a cubic spline. Using this function,
+        the property can be interpolated at a set of points (along a 1-D grid). It can be evaluated
+        for the alpha, beta, alpha + beta, and alpha - beta components of the electron density.
 
         Parameters
         ----------
@@ -368,16 +362,16 @@ class Species(SpeciesData):
         Returns
         -------
         Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
-            a callable function evaluating the Laplacian of the electron density given a set of radial
-            points (1-D array).
+            a callable function evaluating the second derivative of the density given
+            a set of radial points (1-D array).
 
         Example
         -------
-        # Generate the interpolator for the laplacian of the density
-        >>> dd_dens_spline = laplacian_func()
+        # Generate the interpolator for the derivative of the density of order 2
+        >>> dd_dens_spline = d2dens_func()
         # Define a 1-D set of points to be interpolated
         >>> x = np.arange(0, 5)
-        >>> dd_dens = dd_dens_spline(x)  # interpolated density Laplacian
+        >>> dd_dens = dd_dens_spline(x)  # interpolated second derivative of density
         """
         if spin not in ["a", "b", "ab", "m"]:
             raise ValueError(
@@ -405,7 +399,7 @@ class Species(SpeciesData):
         # 1) If index is not provided, the gradient is summed along the axis of the molecular
         # orbital components to give the total, alpha, beta or magnetic values of the property.
         # 2) When indexing is required, the property is evaluated for the specified spin-orbitals
-        # for the alpha, beta, alpha + beta, and alpha - beta components of the density gradient.
+        # for the alpha, beta, alpha + beta, and alpha - beta components of the density.
         if index is None:
             if spin == "ab":
                 value_array = self.dd_dens_tot
@@ -681,7 +675,7 @@ def get_element_data(elem):
         "str": (lambda s: s.strip()),
         "angstrom": (lambda s: float(s) * angstrom),
         "2angstrom": (lambda s: float(s) * angstrom / 2),
-        "angstrom**3": (lambda s: float(s) * angstrom**3),
+        "angstrom**3": (lambda s: float(s) * angstrom ** 3),
         "amu": (lambda s: float(s) * amu),
     }
 
