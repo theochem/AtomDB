@@ -307,10 +307,15 @@ class Species(SpeciesData):
             )
         if spin in ["a", "b", "m"] and (self._orb_d_dens_up is None):
             raise ValueError(f"Density property values for `{spin}` spin-orbitals unavailable.")
-        if index is not None and (self._orb_d_dens_up is None):
-            raise ValueError(
-                "Can not perform indexing since densities per orbital are missing in this dataset."
-            )
+        if index is not None:
+            if not isinstance(index, (list, tuple)):
+                raise TypeError("Index must be a list or tuple.")
+            if not all(isinstance(i, int) for i in index):
+                raise TypeError("Index must be a list or tuple of integers.")
+            if self._orb_d_dens_up is None:
+                raise ValueError(
+                    "Can not perform indexing since densities per orbital are missing in this dataset."
+                )
         if log:
             raise ValueError("Logarithmic interpolation is not supported for gradients.")
 
