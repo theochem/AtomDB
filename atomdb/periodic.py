@@ -4,12 +4,12 @@ import numpy as np
 from importlib_resources import files
 
 
-__all__ = ["sym2num", "name2num", "num2sym", "num2name", "Atom"]
+__all__ = ["sym2num", "name2num", "num2sym", "num2name", "Element"]
 
 
 if __name__ == "__main__":
     print("This module is not meant to be run directly.")
-    print("Use 'from atomdb.periodic import Atom' instead.")
+    print("Use 'from atomdb.periodic import Element' instead.")
     raise SystemExit
 
 
@@ -147,9 +147,9 @@ for column, (prop, key) in enumerate(zip(properties, key_sources)):
     _prop2col.setdefault(prop, {})[key] = {"ncol": column}
 
 
-class Atom:
+class Element:
     def __init__(self, id):
-        """Create an Atom object.
+        """Create an Element object.
 
         Parameters
         ----------
@@ -186,5 +186,5 @@ class Atom:
         self.__dict__.update(tmp_dict)
 
 
-# set the docstring of the Atom class
-Atom.__doc__ = _gendoc(info_file)
+# set the docstring of the Element class
+Element.__doc__ = _gendoc(info_file)
