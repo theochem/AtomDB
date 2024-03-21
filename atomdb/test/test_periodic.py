@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from atomdb.periodic import num2sym, sym2num, name2num, num2name, Atom
+from atomdb.periodic import num2sym, sym2num, name2num, num2name, Element
 
 
 def test_num2sym():
@@ -31,47 +31,35 @@ def num2name():
     assert sym2num[26] == "Iron"
 
 
-def test_atom_invalid_element():
+def test_element_invalid_element():
     with pytest.raises(Exception):
-        Atom("InvalidElement")
+        Element("InvalidElement")
 
 
-def test_atom_invalid_symbol():
+def test_element_invalid_symbol():
     with pytest.raises(Exception):
-        Atom("AA")
+        Element("AA")
 
 
-def test_atom_invalid_atnum():
+def test_element_invalid_atnum():
     with pytest.raises(Exception):
-        Atom(-2)
-
-
-def test_atom_invalid_charge():
-    with pytest.raises(Exception):
-        Atom(1, charge=2)
-    with pytest.raises(Exception):
-        Atom(1, charge=1.5)
-    with pytest.raises(Exception):
-        Atom(112, charge=-10)
+        Element(-2)
 
 
 def test_get_attributes():
     # will test getting the attributes of the atom for Hydrogen and Carbon
 
-    atom = Atom(1)
+    atom = Element(1)
     assert atom.atnum == 1
     assert atom.atsym == "H"
     assert atom.atname == "Hydrogen"
-    assert atom.charge == 0
 
     h_data = {
         "atnum": 1,
         "atsym": "H",
         "atname": "Hydrogen",
-        "charge": 0,
         "group": 1,
         "period": 1,
-        "multiplicity": 2,
         "cov_radius": {"cordero": 0.31, "bragg": np.nan, "slater": 0.25},
         "vdw_radius": {
             "bondi": 1.2,
@@ -91,15 +79,13 @@ def test_get_attributes():
     for i in h_data:
         assert getattr(atom, i) == h_data[i]
 
-    atom = Atom(6)
+    atom = Element(6)
     c_data = {
         "atnum": 6,
         "atsym": "C",
         "atname": "Carbon",
-        "charge": 0,
         "group": 14,
         "period": 2,
-        "multiplicity": 3,
         "cov_radius": {"cordero": 0.7445337366, "bragg": 0.77, "slater": 0.7},
         "vdw_radius": {
             "bondi": 1.7,
