@@ -428,7 +428,7 @@ class Species(SpeciesData):
         -------
         Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
             a callable function evaluating the KED given a set of radial points (1-D array).
-        
+
         """
         if spin not in ["a", "b", "ab", "m"]:
             raise ValueError(
