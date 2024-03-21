@@ -111,6 +111,7 @@ class SpeciesData:
     #
     # Species info
     #
+    _doc: str = field()
     dataset: str = field()
     elem: str = field()
     natom: int = field()
@@ -195,7 +196,7 @@ class Species(SpeciesData):
         #
         self.charge = self.natom - self.nelec
         self.mult = self.nspin + 1
-        self.doc = get_docstring(self.dataset)
+        # self.doc = get_docstring(self.dataset)
 
     def _to_ndarray(self, array1d, n):
         return array1d.reshape(n, -1) if array1d is not None else None

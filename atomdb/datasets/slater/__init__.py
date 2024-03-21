@@ -924,6 +924,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Return Species instance
     return atomdb.Species(
+        DOCSTRING,
         dataset,
         elem,
         natom,
