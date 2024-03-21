@@ -39,11 +39,11 @@ TEST_DATAPATH = "atomdb/test/data/"
 def test_eval_radial_d_density(atom):
     # conditional import of dev modules needed for this test
     try:
+        from atomdb.datasets.gaussian import eval_radial_d_density
         from gbasis.wrappers import from_iodata
         from gbasis.evals.density import evaluate_density_gradient
         from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
         from iodata import load_one
-        from atomdb.datasets.gaussian import eval_radial_d_density
 
         assert True
     except ImportError:
@@ -81,13 +81,11 @@ def test_eval_radial_d_density(atom):
 def test_eval_radial_dd_density(atom):
     # conditional import of dev modules needed for this test
     try:
+        from atomdb.datasets.gaussian import eval_radial_d_density, eval_radial_dd_density
         from gbasis.wrappers import from_iodata
-        from gbasis.evals.density import evaluate_density_gradient, evaluate_density_hessian
         from gbasis.evals.density import evaluate_density_laplacian
-
         from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
         from iodata import load_one
-        from atomdb.datasets.gaussian import eval_radial_d_density, eval_radial_dd_density
 
         assert True
     except ImportError:
@@ -116,6 +114,83 @@ def test_eval_radial_dd_density(atom):
     rho_lapl_rec = radial_dd_rho + 2 * radial_d_rho / np.linalg.norm(atgrid.points, axis=1)
     assert np.allclose(rho_lapl, rho_lapl_rec, rtol=1e-6)
 
+
+@pytest.mark.dev
+@pytest.mark.parametrize(
+    "atom", ["atom_018_Ar_N18_M1_uhf_def2svpd_g09.fchk", "atom_001_H_N02_M1_uhf_def2svpd_g09.fchk"]
+)
+def test_eval_orbs_radial_d_density(atom):
+    # conditional import of dev modules needed for this test
+    try:
+
+        from atomdb.datasets.gaussian import eval_radial_d_density, eval_orbs_radial_d_density
+        from gbasis.wrappers import from_iodata
+        from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
+        from iodata import load_one
+
+        assert True
+    except ImportError:
+        pytest.skip("Gbasis or IOData modules not available, skipping test")
+
+    # create atomic grid from 0 to 20 bohr
+    oned = UniformInteger(npoints=100)
+    rgrid = LinearInfiniteRTransform(1e-4, 20).transform_1d_grid(oned)
+    atgrid = AtomGrid(rgrid, degrees=[10])
+
+    # load the fchk file
+    mol_data = load_one(TEST_DATAPATH + "gaussian/" + atom)
+    ao_basis = from_iodata(mol_data)
+
+    # one electron RDM and MO coefficients from fchk file
+    rdm = mol_data.one_rdms["scf"]
+
+    # evaluate derivative of rho vs r on the grid
+    radial_d_rho = eval_radial_d_density(rdm, ao_basis, atgrid.points)
+
+    # evaluate radial derivative of the orbital densities on the grid
+    radial_d_rho_orbs = eval_orbs_radial_d_density(rdm, ao_basis, atgrid.points)
+    # compute total density from orbital densities
+    radial_d_rho_from_orbs = np.einsum("ij->j", radial_d_rho_orbs)
+
+    assert np.allclose(radial_d_rho_from_orbs, radial_d_rho, rtol=1e-6)
+
+
+@pytest.mark.dev
+@pytest.mark.parametrize(
+    "atom", ["atom_018_Ar_N18_M1_uhf_def2svpd_g09.fchk", "atom_001_H_N02_M1_uhf_def2svpd_g09.fchk"]
+)
+def test_eval_orbs_radial_dd_density(atom):
+    # conditional import of dev modules needed for this test
+    try:
+        from atomdb.datasets.gaussian import eval_radial_dd_density, eval_orbs_radial_dd_density
+        from gbasis.wrappers import from_iodata
+        from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
+        from iodata import load_one
+
+        assert True
+    except ImportError:
+        pytest.skip("Gbasis or IOData modules not available, skipping test")
+
+    # create atomic grid from 0 to 20 bohr
+    oned = UniformInteger(npoints=100)
+    rgrid = LinearInfiniteRTransform(1e-4, 20).transform_1d_grid(oned)
+    atgrid = AtomGrid(rgrid, degrees=[10])
+
+    # load the fchk file
+    mol_data = load_one(TEST_DATAPATH + "gaussian/" + atom)
+    ao_basis = from_iodata(mol_data)
+
+    # one electron RDM from fchk file
+    rdm = mol_data.one_rdms["scf"]
+
+    # evaluate second derivatives of rho vs r on the grid
+    radial_dd_rho = eval_radial_dd_density(rdm, ao_basis, atgrid.points)
+    # evaluate second derivatives of the orbital densities on the grid
+    radial_dd_rho_orbs = eval_orbs_radial_dd_density(rdm, ao_basis, atgrid.points)
+    # compute total second derivative of the density
+    recov_radial_dd_rho = np.sum(radial_dd_rho_orbs, axis=0)
+    # compare with the total second derivative of the density
+    assert np.allclose(recov_radial_dd_rho, radial_dd_rho, rtol=1e-6)
 
 def test_compiled_gaussian_hf_data():
     ### Use Be atomic data as a test case
