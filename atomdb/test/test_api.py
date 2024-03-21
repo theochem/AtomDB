@@ -68,7 +68,8 @@ def ddens_cases():
 
 
 @pytest.mark.parametrize(
-    "spin, index, expected_ddens", ddens_cases(),
+    "spin, index, expected_ddens",
+    ddens_cases(),
 )
 def test_gradient_func(spin, index, expected_ddens):
     # Make a spline of the density derivative and evaluate it at the grid points.
