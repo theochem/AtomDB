@@ -192,6 +192,7 @@ def test_eval_orbs_radial_dd_density(atom):
     # compare with the total second derivative of the density
     assert np.allclose(recov_radial_dd_rho, radial_dd_rho, rtol=1e-6)
 
+
 def test_compiled_gaussian_hf_data():
     ### Use Be atomic data as a test case
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
