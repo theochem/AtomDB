@@ -225,7 +225,7 @@ class Species(SpeciesData):
         Examples
         --------
         # Generate the interpolator for the atomic density
-        >>> dens_spline = interpolate_dens(log=True)
+        >>> dens_spline = density_func(log=True)
         # Define a radial set of points to be interpolated
         >>> x = np.arange(0, 5)
         >>> dens = dens_spline(x)            # interpolated density
