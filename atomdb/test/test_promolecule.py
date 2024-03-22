@@ -169,4 +169,6 @@ def test_make_promolecule(case):
     # Check that spin number and multiplicity are recovered
     if mults is not None:
         assert np.allclose(sum(np.sign(m) * (abs(m) - 1) for m in mults), promol.nspin(), rtol=1e-7)
-        assert np.allclose(abs(sum(np.sign(m) * (abs(m) - 1) for m in mults)) + 1, promol.mult(), rtol=1e-7)
+        assert np.allclose(
+            abs(sum(np.sign(m) * (abs(m) - 1) for m in mults)) + 1, promol.mult(), rtol=1e-7
+        )
