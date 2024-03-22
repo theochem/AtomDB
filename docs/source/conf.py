@@ -38,6 +38,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx_autodoc_typehints",
     "sphinx_rtd_theme",
+    "nbsphinx",
 ]
 
 templates_path = [
@@ -84,3 +85,43 @@ html_theme_options = {
 html_static_path = [
     "_static",
 ]
+
+#
+# Nbsphinx configuration
+#
+
+nbsphinx_execute_arguments = [
+    "--InlineBackend.figure_formats={'svg', 'pdf'}",
+    "--InlineBackend.rc=figure.dpi=200",
+]
+
+nbsphinx_execute = "never"
+
+binder_url = (
+    "https://mybinder.org/v2/gh/theochem/atomdb/master"
+    "?filepath=docs%2Fnotebooks%2F{{ docname }}.ipynb"
+)
+
+binder_badge = "https://mybinder.org/badge_logo.svg"
+
+binder_badge_sty = "vertical-align:text-bottom"
+
+binder_html = (
+    f"<a href=\"{binder_url}\">"
+    f"<img alt=\"Binder\" src=\"{binder_badge}\" style=\"{binder_badge_sty}\">"
+    f"</a>"
+)
+
+nbsphinx_prolog = f"""
+{{% set docname = env.docname.split("/")[-1] %}}
+
+.. raw:: html
+
+.. role:: raw-html(raw)
+  :format: html
+.. nbinfo::
+    The corresponding file can be obtained from:
+
+    - Jupyter Notebook: :download:`{{{{docname+".ipynb"}}}}`
+    - Interactive Jupyter Notebook: :raw-html:`{binder_html}`
+"""
