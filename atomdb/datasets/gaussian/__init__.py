@@ -36,7 +36,7 @@ from iodata import load_one
 
 import atomdb
 
-from atomdb.periodic import Atom
+from atomdb.periodic import Element
 
 
 __all__ = [
@@ -422,7 +422,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     orb_ked_avg_dn = np.array([spline(rs) for spline in ked_splines_dn])
 
     # Get information about the element
-    atom = Atom(elem)
+    atom = Element(elem)
     cov_radii = atom.cov_radius
     vdw_radii = atom.vdw_radius
     mass = atom.mass["stb"]
