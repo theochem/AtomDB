@@ -33,7 +33,7 @@ import atomdb
 
 from atomdb.data.utils import multiplicities
 
-from atomdb.periodic import Atom
+from atomdb.periodic import Element
 
 
 def load_numerical_hf_data():
@@ -141,7 +141,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Element periodic properties
     #
     # cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
-    atom = Atom(elem)
+    atom = Element(elem)
     cov_radii = atom.cov_radius
     vdw_radii = atom.vdw_radius
     mass = atom.mass["stb"]
