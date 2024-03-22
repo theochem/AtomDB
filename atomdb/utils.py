@@ -75,18 +75,18 @@ def _gs_mult_energy(atnum, nelec, datafile):
     return mult, energy
 
 
-def _make_mults_table(max_atnum=100):
-    """Create a table of multiplicities for neutral and charged atomic species with atomic
-     numbers up to `max_atnum`.
+def _make_mults_table(datafile, max_atnum=100):
+    """Creates Multiplicity Table for Neutral and Charged Species up to Atomic Number `max_atnum`
 
-    The values are obtained from the database_beta_1.3.0.h5 file and are stored as a table with
-    rows corresponding to the atomic number and columns to the charge. The maximum atomic number
-    (`max_atnum`) that can be considered is 100, as the database only contains data up to Fermium (Z=100).
-    The charge range goes from -2 to `max_atnum`-1. The multiplicities are initialized to zero for
-    cases where the atomic numbers and charges are not present in the database.
+    Values retrieved from 'database_beta_1.3.0.h5' are organized into a table, with rows
+    corresponding to atomic numbers and columns to charges. The maximum atomic number (`max_atnum`)
+    must not exceed 100, the database's limit. The charge range spans from -2 to `max_atnum`-1.
+    Missing combinations have multiplicities set to zero.
 
     Parameters
     ----------
+    datafile : str
+        Path to the HDF5 file containing the data
     max_atnum : int, optional
         Highest atomic number of the elements to be added to the table.
 
@@ -100,40 +100,39 @@ def _make_mults_table(max_atnum=100):
     ValueError
         If the maximum allowed atomic number is greater than 100.
     """
-    # Define the dimensions of the table by specifying the range of atomic numbers
-    # and charges to consider
-    # Here we only consider charges from -2 to Z-1
-    neg_charge = -2
-    pos_charge = max_atnum
+    # set maximum limits for charge, get possible charges and count them
+    neg_charge, pos_charge = -2, max_atnum
     charge_range = range(neg_charge, pos_charge)
     num_species = len(charge_range)
-    element_range = range(1, max_atnum + 1)
+
+    # create multiplicity table (number of elements x number of charged species) with zeros
     mult_table = np.zeros((max_atnum, num_species), dtype=int)
 
-    # Avoid accessing the database for atomic numbers greater than 100 since the database
-    # only contains data up to Fermium (Z=100)
+    # check if the maximum atomic number is within the database's limit
     if max_atnum > 100:
         raise ValueError("The maximum allowed atomic number is 100.")
 
-    for atnum in element_range:
+    # for each atomic number between 1 and the maximum atomic number
+    for atnum in range(1, max_atnum + 1):
+        # for each charge in the charge range
         for charge in charge_range:
             nelec = atnum - charge
-            if nelec <= 0:  # skip if the number of electrons is negative
+            # if number of electrons is non-positive, go to the next atomic number
+            if nelec <= 0:
                 break
-            # Multiplicity for neutral and cations
-            # when asigning the multiplicity to the table, the column/charge value is shifted by 2
-            # because the charge range starts at -2
+
+            # case 1: neutral or cationic species
             if charge >= 0:
-                mult, _ = _get_moststable_species(atnum, nelec)
-                mult_table[atnum - 1, charge + 2] = mult
+                mult, _ = _gs_mult_energy(atnum, nelec, datafile)
+            # case 2: anionic species, read multiplicity from neutral isoelectronic species
             else:
-                # For anions, the multiplicity is taken from the neutral isoelectronic species.
-                # However, database_beta_1.3.0.h5 only has data up to Fermium (Z=100), so this
-                # `else`` statement only works for anions up to 100 electrons
+                # check if the neutral isoelectronic species is in the database, if not, skip case
                 if nelec >= 100:
                     continue
-                mult, _ = _get_moststable_species(nelec, nelec)
-                mult_table[atnum - 1, charge + 2] = mult
+                mult, _ = _gs_mult_energy(nelec, nelec, datafile)
+
+            # column 0 corresponds to charge -2, column 1 to charge -1, and so on
+            mult_table[atnum - 1, charge + 2] = mult
     return mult_table
 
 
