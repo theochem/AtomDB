@@ -136,7 +136,7 @@ def _make_mults_table(datafile, max_atnum=100):
     return mult_table
 
 
-def _write_mults_table_to_csv(mults_table):
+def _write_mults_table_to_csv(mults_table, csv_file):
     """Write the table of multiplicities to a csv file.
 
     Parameters
@@ -144,28 +144,32 @@ def _write_mults_table_to_csv(mults_table):
     mults_table : np.ndarray
         Table of multiplicities with dimension of number of elements and
         number of charged species (Z x Q).
+    csv_file : str
+        Path to the csv file to save the table.
     """
-    # File with the table of multiplicities to be created in atomdb/data
-    filename = f"{data_path}/multiplicities_table.csv"
 
-    # Get the number of rows and columns of the table which correspond to the maximum atomic
-    # number and the number of charged species, respectively.
+    # get the maximum atomic number and maximum number of charged species
     max_atnum, num_species = mults_table.shape
     element_range = range(1, max_atnum + 1)
     charge_range = range(-2, max_atnum)
-    # Add a column specifiying the atomic numbers to the table
+
+    # first column is for atomic numbers, the other columns are for charges
     mult_table_with_atnum = np.zeros((max_atnum, num_species + 1), dtype=int)
     mult_table_with_atnum[:, 0] = list(element_range)
     mult_table_with_atnum[:, 1:] = mults_table
 
     # Write the table to a csv file
-    # Add labeles to the columns for atomic number and charge values
-    charge_label = [f"Charge" if i == 3 else "" for i in range(num_species + 1)]
-    colums_label = ["atnum"] + [f"{charge}" for charge in charge_range]
-    with open(filename, "w", newline="") as file:
+    with open(csv_file, "w", newline="") as file:
         writer = csv.writer(file)
+        # write the header
+        charge_label = [f"Charge" if i == 3 else "" for i in range(num_species + 1)]
         writer.writerow(charge_label)
+
+        # write column labels
+        colums_label = ["atnum"] + [f"{charge}" for charge in charge_range]
         writer.writerow(colums_label)
+
+        # write table data
         writer.writerows(mult_table_with_atnum)
 
 
