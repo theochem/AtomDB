@@ -29,7 +29,7 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal, assert_raises
 
 from atomdb.api import load
-from importlib.resources import files
+from importlib_resources import files
 import os
 
 # get test data path
