@@ -28,7 +28,6 @@ load_slater_wfn : Function for reading and returning information from '.slater' 
 """
 
 
-from audioop import mul
 import numpy as np
 import os
 import re
