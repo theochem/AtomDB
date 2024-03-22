@@ -28,9 +28,13 @@ from scipy.interpolate import CubicSpline
 
 import numpy as np
 from atomdb.api import load
+from importlib_resources import files
+import os
 
 
-TEST_DATAPATH = "atomdb/test/data/"
+# get test data path
+TEST_DATAPATH = files("atomdb.test.data")
+TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 
 @pytest.mark.parametrize(
