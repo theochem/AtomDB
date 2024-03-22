@@ -31,7 +31,9 @@ import numpy as np
 
 import atomdb
 
-from atomdb.api import MULTIPLICITIES
+from atomdb.utils import multiplicities
+
+from atomdb.periodic import Element
 
 
 def load_numerical_hf_data():
@@ -125,14 +127,24 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Check that the input multiplicity corresponds to the most stable electronic configuration.
     # For charged species take the multiplicity from the neutral isoelectronic species.
-    if mult != MULTIPLICITIES[nelec]:
-        raise ValueError(f"Multiplicity {mult} not available for {elem} with charge = {charge}.")
+    expected_mult = multiplicities[(natom, charge)]
+    if mult != expected_mult:
+        raise ValueError(
+            f"Multiplicity {mult} not available for {elem} with charge = {charge}. "
+            f"Expected multiplicity is {expected_mult}."
+        )
 
     species_table = load_numerical_hf_data()
     data = species_table[(natom, nelec)]
 
-    # Get information about the element
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    #
+    # Element periodic properties
+    #
+    # cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    atom = Element(elem)
+    cov_radii = atom.cov_radius
+    vdw_radii = atom.vdw_radius
+    mass = atom.mass["stb"]
     if charge != 0:
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
 
