@@ -33,6 +33,7 @@ import os
 import re
 from scipy.special import factorial
 import atomdb
+from atomdb.periodic import Element
 
 
 __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
@@ -874,14 +875,12 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     if charge != 0 and abs(charge) > 1:
         raise ValueError(f"`charge` must be one of -1, 0 or 1")
 
-    # Get information about the element and label as neutral or charged specie
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
-    if charge == 0:
-        an, cat = [False, False]
-    else:
-        # Flip Boolean list to assging cation/anion: https://stackoverflow.com/a/16726462
-        sign = lambda x: (1, -1)[x < 0]
-        an, cat = [False, True][:: sign(charge)]
+    # Get information about the element
+    atom = Element(elem)
+    cov_radii = atom.cov_radius
+    vdw_radii = atom.vdw_radius
+    mass = atom.mass["stb"]
+    if charge != 0:
         cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
 
     # Set up internal variables
@@ -889,12 +888,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     natom = atomdb.element_number(elem)
     nelec = natom - charge
     nspin = mult - 1
-    # n_up = (nelec + nspin) // 2
-    # n_dn = (nelec - nspin) // 2
     basis = None
 
     # Retrieve Slater data
-    specie = AtomicDensity(elem, anion=an, cation=cat)
+    if charge == 0:
+        specie = AtomicDensity(elem, anion=False, cation=False)
+    elif charge > 0:
+        specie = AtomicDensity(elem, anion=False, cation=True)
+    else:
+        specie = AtomicDensity(elem, anion=True, cation=False)
 
     # Check multiplicity value
     mo_occ = specie.orbitals_occupation.ravel()  # these are configurations not occupations
@@ -915,7 +917,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     dens_tot = specie.atomic_density(points, "total")
     # dens_core = specie.atomic_density(points, "core")
     # dens_valence = specie.atomic_density(points, "valence")
-    # d_dens_tot = specie.derivative_density(points)
+    d_dens_tot = specie.derivative_density(points)
 
     # Compute laplacian and kinetic energy density
     # lapl_tot = None
@@ -940,5 +942,6 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         _mo_occs_b=mo_occ_b,
         rs=points,
         dens_tot=dens_tot,
+        d_dens_tot=d_dens_tot,
         ked_tot=ked_tot,
     )
