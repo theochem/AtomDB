@@ -31,7 +31,7 @@ import numpy as np
 
 import atomdb
 
-from atomdb.data.utils import MultsTable
+from atomdb.data.utils import multiplicities
 
 from atomdb.periodic import Atom
 
@@ -127,8 +127,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Check that the input multiplicity corresponds to the most stable electronic configuration.
     # For charged species take the multiplicity from the neutral isoelectronic species.
-    multiplicities = MultsTable()
-    expected_mult = multiplicities(natom, charge)
+    expected_mult = multiplicities[(natom, charge)]
     if mult != expected_mult:
         raise ValueError(
             f"Multiplicity {mult} not available for {elem} with charge = {charge}. "

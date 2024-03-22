@@ -25,6 +25,11 @@ import csv
 data_path = os.path.dirname(__file__)
 
 
+__all__ = [
+    "multiplicities",
+]
+
+
 def _get_moststable_species(atnum, nelec):
     """Get the multiplicity and energy for the most stable electronic configuration
     of a given atomic species.
@@ -160,8 +165,8 @@ def _write_mults_table_to_csv(mults_table):
         writer.writerows(mult_table_with_atnum)
 
 
-class MultsTable:
-    """Table of multiplicities
+def _make_mults_dict(max_atnum=100):
+    """Create a dictionary from a table of multiplicities for neutral and charged atomic species.
 
     The values were obtained from the database_beta_1.3.0.h5 file. The maximum atomic number
     that can be considered is 100, as the database only contains data up to Fermium (Z=100).
@@ -169,26 +174,54 @@ class MultsTable:
     The multiplicities are taken as zero for cases where the atomic numbers and charges were
     not present in the database. For the anions, the multiplicity was taken from the neutral
     isoelectronic species.
+
+    Parameters
+    ----------
+    max_atnum : int, optional
+        Highest atomic number of the elements in the multiplicities table.
+
+    Returns
+    -------
+    mults_dict : dict
+        Dictionary with the multiplicities for each atomic species.
+        The keys are tuples of the form (atomic number, charge) and the values are the multiplicities.
+    
+    Examples
+    --------
+    To get the multiplicity of the neutral Hidrogen atom (atomic number 1, charge 0) do:
+    >>> mults_dict = _make_mults_dict()
+    >>> mults_dict[(1, 0)]
+    2
     """
+    mults_dict = {}
+    filename = f"{data_path}/multiplicities_table.csv"
 
-    def __init__(self):
-        # Load the csv file with the table of multiplicities in atomdb/data
-        filename = f"{data_path}/multiplicities_table.csv"
-        with open(filename, "r") as file:
-            reader = csv.reader(file)
-            # When created using the function _write_mults_table_to_csv, the table has
-            # exactly two header lines that are skipped here.
-            for i in range(2):
-                next(reader, None)
-            self._table = list(reader)
+    with open(filename, "r") as file:
+        reader = csv.reader(file)
+        # When created using the function _write_mults_table_to_csv, the table has
+        # exactly two header lines that have to be skipped. The second header line
+        # labels the atomic number column and the charge values.
+        next(reader)
+        header = next(reader)
+        table = list(reader)
+    # Check the table's format
+    if "atnum" not in header:
+        raise ValueError("The provided multiplicities table does not have the expected format")
+    if len(table) != max_atnum:
+        raise ValueError(
+            f"Wrong multiplicities table, {max_atnum} elements expected, {len(table)} found"
+        )
+    # Get the charges from the header
+    charges = header[1:]  # skip the first column which is for atomic numbers
 
-    def __call__(self, atnum, charge):
-        # Determine the column index for the given charge.
-        # It will be shifted by 2 because the charge range starts at -2 and by 1 because the
-        # first column is the atomic number.
-        col_indx = charge + 2 + 1
-        mult = self._table[atnum - 1][col_indx]
-        return int(mult)
+    # Each row in the table corresponds to an atomic number and the multiplicities for the
+    # different charged species
+    for row in table:
+        atnum = int(row[0])
+        mults = row[1:]
+        for (charge, mult) in zip(charges, mults):
+            mults_dict[(atnum, int(charge))] = int(mult)
+    return mults_dict
 
 
 def _test_mults_table():
@@ -205,6 +238,9 @@ def _test_mults_table():
         [30, 1, 2],  # Zn+
         [30, -1, 2],  # Zn-
     ]
-    multiplicities = MultsTable()
+    _multiplicities = _make_mults_dict()
     for atnum, charge, mult in species:
-        assert multiplicities(atnum, charge) == mult
+        assert _multiplicities[(atnum, charge)] == mult
+
+
+multiplicities = _make_mults_dict()
