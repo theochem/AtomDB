@@ -29,9 +29,12 @@ import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal, assert_raises
 
 from atomdb.api import load
+from importlib_resources import files
+import os
 
-
-TEST_DATAPATH = "atomdb/test/data/"
+# get test data path
+TEST_DATAPATH = files("atomdb.test.data")
+TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 
 # FIXME:sign error in parsed energy value (looks like T value instead of E was parsed from raw file).

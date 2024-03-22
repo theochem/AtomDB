@@ -28,9 +28,11 @@ from atomdb.api import load
 from importlib_resources import files
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal
+import os
 
-
-TEST_DATAPATH = files("atomdb.test.data.gaussian")
+# get test data path
+TEST_DATAPATH = files("atomdb.test.data")
+TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 
 @pytest.mark.dev
@@ -56,7 +58,7 @@ def test_eval_radial_d_density(atom):
     atgrid = AtomGrid(rgrid, degrees=[10])
 
     # load the fchk file
-    mol_data = load_one(TEST_DATAPATH.joinpath(atom))
+    mol_data = load_one(os.path.join(TEST_DATAPATH, "gaussian", atom))
     ao_basis = from_iodata(mol_data)
 
     # one electron RDM from fchk file
@@ -98,7 +100,7 @@ def test_eval_radial_dd_density(atom):
     atgrid = AtomGrid(rgrid, degrees=[10])
 
     # load the fchk file
-    mol_data = load_one(TEST_DATAPATH.joinpath(atom))
+    mol_data = load_one(os.path.join(TEST_DATAPATH, "gaussian", atom))
     ao_basis = from_iodata(mol_data)
 
     # one electron RDM from fchk file
@@ -139,7 +141,7 @@ def test_eval_orbs_radial_d_density(atom):
     atgrid = AtomGrid(rgrid, degrees=[10])
 
     # load the fchk file
-    mol_data = load_one(TEST_DATAPATH.joinpath(atom))
+    mol_data = load_one(os.path.join(TEST_DATAPATH, "gaussian", atom))
     ao_basis = from_iodata(mol_data)
 
     # one electron RDM and MO coefficients from fchk file
@@ -178,7 +180,7 @@ def test_eval_orbs_radial_dd_density(atom):
     atgrid = AtomGrid(rgrid, degrees=[10])
 
     # load the fchk file
-    mol_data = load_one(TEST_DATAPATH.joinpath(atom))
+    mol_data = load_one(os.path.join(TEST_DATAPATH, "gaussian", atom))
     ao_basis = from_iodata(mol_data)
 
     # one electron RDM from fchk file
