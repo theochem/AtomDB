@@ -31,7 +31,7 @@ import numpy as np
 
 import atomdb
 
-from atomdb.data.utils import multiplicities
+from atomdb.utils import multiplicities
 
 from atomdb.periodic import Element
 
