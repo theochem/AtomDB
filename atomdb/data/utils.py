@@ -185,7 +185,7 @@ def _make_mults_dict(max_atnum=100):
     mults_dict : dict
         Dictionary with the multiplicities for each atomic species.
         The keys are tuples of the form (atomic number, charge) and the values are the multiplicities.
-    
+
     Examples
     --------
     To get the multiplicity of the neutral Hidrogen atom (atomic number 1, charge 0) do:
@@ -219,7 +219,7 @@ def _make_mults_dict(max_atnum=100):
     for row in table:
         atnum = int(row[0])
         mults = row[1:]
-        for (charge, mult) in zip(charges, mults):
+        for charge, mult in zip(charges, mults):
             mults_dict[(atnum, int(charge))] = int(mult)
     return mults_dict
 
