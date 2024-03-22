@@ -21,18 +21,18 @@ import os
 import h5py as h5
 import csv
 
+from importlib_resources import files
 
-data_path = os.path.dirname(__file__)
-
-
-__all__ = [
-    "multiplicities",
-]
+# get data path
+TEST_DATAPATH = files("atomdb.data")
+TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 
-def _get_moststable_species(atnum, nelec):
-    """Get the multiplicity and energy for the most stable electronic configuration
-    of a given atomic species.
+__all__ = ["multiplicities"]
+
+
+def _gs_mult_energy(atnum, nelec, datafile):
+    """Retrieve multiplicity and energy for the most stable electronic configuration of a species.
 
     Parameters
     ----------
@@ -40,6 +40,8 @@ def _get_moststable_species(atnum, nelec):
         Atomic number of the element
     nelec : int
         Number of electrons of the species
+    datafile : str
+        Path to the HDF5 file containing the data
 
     Returns
     -------
@@ -48,23 +50,26 @@ def _get_moststable_species(atnum, nelec):
     energy : float
         Energy of the most stable electronic configuration
     """
-    default_mult = 0  # initialize the multiplicity to zero
-    default_energy = 1e6  # initialize the energy to a large value
+    # initialize multiplicity to zero and energy to a large value
+    default_mult = 0
+    default_energy = 1e6
 
-    # Load the contents of the database_beta_1.3.0.h5 file for a given atomic number and number of
-    # electrons. Get the list of energies and multiplicities for stable electronic configurations
-    # and sort them based on energy.
+    # set keys for the atomic number and number of electrons
     z = str(atnum).zfill(3)
     ne = str(nelec).zfill(3)
-    with h5.File(os.path.join(f"{data_path}/database_beta_1.3.0.h5"), "r") as f:
+
+    # in database_beta_1.3.0.h5
+    with h5.File(datafile, "r") as f:
+        # for specie with atomic number z and ne electrons retrieve all multiplicities and energies
         mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
         energy = f[z][ne]["Energy"][...]
+
+    # sort the multiplicities and energies in ascending of energy
     index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
     mults = list(mults[index_sorting])
     energy = list(energy[index_sorting])
 
-    # Return the value of the multiplicity for the lowest energy
-    # Handle missing data cases
+    # return multiplicity and energy of the most stable species or default values for missing data
     mult = mults[0] if len(mults) != 0 else default_mult
     energy = energy[0] if len(energy) != 0 else default_energy
     return mult, energy
