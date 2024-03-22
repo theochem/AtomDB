@@ -245,7 +245,7 @@ def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
     orb_dens_a = sp._orb_dens_up
-    spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    spline_dens = sp.density_func(spin="ab", log=True)
     dens_a = np.sum(orb_dens_a, axis=0)
 
     # check density values
@@ -265,7 +265,7 @@ def test_gaussian_hf_gradient_be(atom, mult):
     # load Be atomic data, make density spline and evalaute 1st derivative of density
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
-    spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    spline_dens = sp.density_func(spin="ab", log=True)
     gradient = spline_dens(grid, deriv=1)
     np_gradient = np.gradient(sp.dens_tot, grid)
 
@@ -280,7 +280,7 @@ def test_gaussian_hf_laplacian_be(atom, mult):
     # of the density from it. Compare with gradient from numpy.
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
-    spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    spline_dens = sp.density_func(spin="ab", log=True)
     d2dens = spline_dens(grid, deriv=2)
 
     # load reference values
@@ -296,7 +296,7 @@ def test_gaussian_hf_ked_be(atom, mult):
     # load the atomic data and make a spline of the kinetic energy density.
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
-    spline_kdens = sp.interpolate_ked(spin="ab", log=True)
+    spline_kdens = sp.ked_func(spin="ab", log=True)
 
     # check interpolated densities
     assert np.allclose(spline_kdens(grid), sp.ked_tot, atol=1e-6)
