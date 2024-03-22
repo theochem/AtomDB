@@ -53,7 +53,7 @@ def test_numerical_hf_data_h():
     assert np.allclose(sp.dens_tot[-2:], [0.0, 0.0], atol=1e-10)
 
     # evaluate radial density gradient (first derivative of density spline)
-    dens = sp.interpolate_dens(spin="ab", log=True)
+    dens = sp.density_func(spin="ab", log=True)
     gradient = dens(sp.rs, deriv=1)
 
     # load gradient reference values from numerical HF raw files
@@ -105,7 +105,7 @@ def test_numerical_hf_data_h_anion():
     assert np.allclose(sp.dens_tot[-20:], 0.0, atol=1e-10)
 
     # evaluate radial density gradient (first derivative of density spline)
-    dens = sp.interpolate_dens(spin="ab", log=True)
+    dens = sp.density_func(spin="ab", log=True)
     gradient = dens(sp.rs, deriv=1)
 
     # load gradient reference values from numerical HF raw files
@@ -155,7 +155,7 @@ def test_numerical_hf_atomic_density(atom, mult, npoints, nelec):
     assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), nelec, decimal=2)
 
     # get density spline and check its values
-    spline = sp.interpolate_dens(spin="ab", log=True)
+    spline = sp.density_func(spin="ab", log=True)
     assert np.allclose(spline(grid), dens, atol=1e-6)
 
 
@@ -165,7 +165,7 @@ def test_numerical_hf_atomic_density(atom, mult, npoints, nelec):
 def test_numerical_hf_density_gradient(atom, charge, mult):
     # load density and radial gradient (spline derivative) evaluated the radial grid
     sp = load(atom, charge, mult, dataset="numeric", datapath=TEST_DATAPATH)
-    grid, spline = sp.rs, sp.interpolate_dens(spin="ab", log=True)
+    grid, spline = sp.rs, sp.density_func(spin="ab", log=True)
     gradient = spline(grid, deriv=1)
 
     # check shape of arrays
@@ -194,7 +194,7 @@ def test_numerical_hf_density_laplacian(atom, charge, mult):
 
     # evaluate density and laplacian (second derivative of density spline) on the radial grid
     grid = sp.rs
-    spline = sp.interpolate_dens(spin="ab", log=False)
+    spline = sp.density_func(spin="ab", log=False)
     lapl = spline(grid, deriv=2)
 
     # check shape of arrays

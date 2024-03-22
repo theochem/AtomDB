@@ -77,7 +77,7 @@ def test_slater_positive_definite_kinetic_energy(atom, charge, mult, tol):
     # assert np.all(np.abs(integral - answer) < tol)
     assert_almost_equal(integral, answer, decimal=tol)
     # check interpolated density
-    spline = sp.interpolate_ked(spin="ab", log=False)
+    spline = sp.ked_func(spin="ab", log=False)
     assert np.allclose(spline(grid), energ, atol=1e-6)
 
 
@@ -91,7 +91,7 @@ def test_slater_atomic_density(atom, mult, num_elect):
     # get radial grid points, total density, and its spline interpolation
     grid = sp.rs
     dens = sp.dens_tot
-    spline = sp.interpolate_dens(spin="ab", log=True)
+    spline = sp.density_func(spin="ab", log=True)
 
     # check shape of density and radial grid
     assert dens.shape == grid.shape
@@ -113,7 +113,7 @@ def test_slater_atomic_density_ions(atom, charge, mult, num_elect):
     # get radial grid points, total density, and its spline interpolation
     grid = sp.rs
     dens = sp.dens_tot
-    spline = sp.interpolate_dens(spin="ab", log=True)
+    spline = sp.density_func(spin="ab", log=True)
 
     # check shape of density and radial grid
     assert dens.shape == grid.shape
@@ -132,7 +132,7 @@ def test_slater_atomic_density_gradient(atom, charge, mult):
     # load atomic and density data and get density derivative evaluated on a radial grid
     sp = load(atom, charge, mult, dataset="slater", datapath=TEST_DATAPATH)
     grid = sp.rs
-    spline = sp.interpolate_dens(spin="ab", log=True)
+    spline = sp.density_func(spin="ab", log=True)
     gradient = spline(grid, deriv=1)
 
     # get reference values from Slater wfn raw files
@@ -156,10 +156,10 @@ def test_slater_h_anion_density_splines():
     grid = sp.rs
     dens = sp.dens_tot
     # check interpolated densities
-    spline_dens = sp.interpolate_dens(spin="ab", log=True)
+    spline_dens = sp.density_func(spin="ab", log=True)
     assert np.allclose(spline_dens(grid), dens, atol=1e-6)
     # check interpolated kinetic energy density
-    spline = sp.interpolate_ked(spin="ab", log=False)
+    spline = sp.ked_func(spin="ab", log=False)
     assert np.allclose(spline(grid), sp.ked_tot, atol=1e-6)
 
     # load reference values for gradient
