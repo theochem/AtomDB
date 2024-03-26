@@ -2,9 +2,9 @@ import csv
 import numpy as np
 
 from importlib_resources import files
+from atomdb.utils import convertor_types
 
-
-__all__ = ["sym2num", "name2num", "num2sym", "num2name", "Element"]
+__all__ = ["_sym2num", "_name2num", "_num2sym", "_num2name", "Element"]
 
 
 if __name__ == "__main__":
@@ -20,6 +20,40 @@ ATOM_DOCSTRING_BASE = (
     + "symbol : str\n    Chemical symbol of the element.\n"
     + "name : str\n    Name of the element.\n"
 )
+
+
+# auxiliary functions
+def _read_data_csv(file):
+    """Reads a csv file and returns a list of lists with the data.
+
+    The data is read from the file and stored in a list of lists. The first two rows are the column
+    headers and the key sources, respectively. From the third row onwards are the data values.
+
+
+    Parameters
+    ----------
+    file : file
+        The file to read.
+
+    Returns
+    -------
+    list of lists
+        The data in the file.
+    """
+    data = []
+    for row in csv.reader(file):
+        # ignore comments and empty lines
+        if row and not row[0].startswith("#") and not all(c in ", \n" for c in row):
+            # Replace \n with new line in each element
+            data.append([element.replace("\\n", "\n") for element in row])
+
+    # pop units from data (third row)
+    units = data.pop(2)
+
+    # convert data to the appropriate type (int, float, str, or amu)
+    for row in data[2:]:
+        row[:] = [convertor_types[unit](i) if i else np.nan for unit, i in zip(units, row)]
+    return data
 
 
 # auxiliary functions
@@ -41,7 +75,7 @@ def _read_csv(file):
         # ignore comments and empty lines
         if row and not row[0].startswith("#") and not all(c in ", \n" for c in row):
             # Replace \n with new line in each element
-            data.append([element.replace("\\n", "\n") for element in row])
+            data.append([cell.replace("\\n", "\n") for cell in row])
     return data
 
 
@@ -64,14 +98,12 @@ def _gendoc(info_file):
     _data_src = _read_csv(open(info_file))
     _prop2name = {}
     _prop2desc = {}
-    _prop2unit = {}
     _prop2source = {}
     _prop2url = {}
     _prop2notes = {}
-    for prop, prop_name, key, unit, description, source, url, notes in _data_src:
+    for prop, prop_name, key, description, source, url, notes in _data_src:
         _prop2name[prop] = prop_name
         _prop2desc.setdefault(prop, {})[key] = description
-        _prop2unit.setdefault(prop, {})[key] = unit
         _prop2source.setdefault(prop, {})[key] = source
         _prop2url.setdefault(prop, {})[key] = url
         _prop2notes.setdefault(prop, {})[key] = notes
@@ -87,8 +119,6 @@ def _gendoc(info_file):
             docstring += f"{i} : float\n    {_prop2name[i]} of the element.\n"
             if list(_prop2desc[i].values())[0] != "":
                 docstring += _indent_lines(f"{list(_prop2desc[i].values())[0]}", 4) + "\n"
-            if list(_prop2unit[i].values())[0] != "":
-                docstring += _indent_lines(f"Units: {list(_prop2unit[i].values())[0]}", 4) + "\n"
             if list(_prop2source[i].values())[0] != "":
                 docstring += _indent_lines(f"{list(_prop2source[i].values())[0]}", 4) + "\n"
             if list(_prop2url[i].values())[0] != "":
@@ -102,8 +132,6 @@ def _gendoc(info_file):
             for j in _prop2col[i]:
                 if _prop2desc[i][j] != "":
                     docstring += _indent_lines(f"{j} : {_prop2desc[i][j]}", 4) + "\n"
-                if _prop2unit[i][j] != "":
-                    docstring += _indent_lines(f"Units: {_prop2unit[i][j]}", 8) + "\n"
     return docstring
 
 
@@ -113,38 +141,30 @@ info_file = files("atomdb.data").joinpath("data_info.csv")
 
 
 # work with data from "elements_data.csv"
-data = _read_csv(open(data_file))
-
+data = _read_data_csv(open(data_file))
 
 # get properties and key sources
 properties = data.pop(0)[3:]
 key_sources = data.pop(0)[3:]
-units = data.pop(0)[3:]
 
-
-# separate atnums, symbols, and names from the rest of the data
+# convert data to the appropriate type
 atnums, symbols, names = [], [], []
-for row in data:
-    atnums.append(int(row[0]))
-    symbols.append(row[1])
-    names.append(row[2].lower())
-    # convert the rest of the data to numbers
-    row[:] = [int(i) if i else np.nan for i in row[3:5]] + [
-        float(i) if i else np.nan for i in row[5:]
-    ]
 
+# set the atomic numbers, symbols, and names of the elements from the data
+atnums = [row[0] for row in data]
+symbols = [row[1] for row in data]
+names = [row[2] for row in data]
 
 # create utility dictionaries to convert between different element identifiers
-sym2num = dict(zip(symbols, atnums))
-name2num = dict(zip(names, atnums))
-num2sym = dict(zip(atnums, symbols))
-num2name = dict(zip(atnums, names))
-
+_sym2num = dict(zip(symbols, atnums))
+_name2num = dict(zip(names, atnums))
+_num2sym = dict(zip(atnums, symbols))
+_num2name = dict(zip(atnums, names))
 
 # create utility dictionary to locate the columns of the properties
 _prop2col = {}
 for column, (prop, key) in enumerate(zip(properties, key_sources)):
-    _prop2col.setdefault(prop, {})[key] = {"ncol": column}
+    _prop2col.setdefault(prop, {})[key] = {"ncol": column + 3}
 
 
 class Element:
@@ -160,19 +180,19 @@ class Element:
         if isinstance(id, str):
             # if it is a is a name
             if len(id) > 3:
-                self.atnum = name2num[id.lower()]
+                self.atnum = _name2num[id.lower()]
             # if it is a symbol
             else:
-                self.atnum = sym2num[id]
-        elif isinstance(id, int) and id in sym2num.values():
+                self.atnum = _sym2num[id]
+        elif isinstance(id, int) and id in _sym2num.values():
             self.atnum = id
         else:
             raise ValueError(
                 "Invalid input for element identifier, must be Z, symbol, or name of element"
             )
         # set the symbol and name of the element
-        self.atsym = num2sym[self.atnum]
-        self.atname = num2name[self.atnum].capitalize()
+        self.atsym = _num2sym[self.atnum]
+        self.atname = _num2name[self.atnum].capitalize()
 
         # create a dictionary to store the properties of the element
         tmp_dict = _prop2col.copy()
