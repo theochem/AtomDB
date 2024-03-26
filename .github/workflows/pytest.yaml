@@ -33,6 +33,8 @@ jobs:
           pip install git+https://github.com/theochem/gbasis.git@master
           pip install git+https://github.com/theochem/grid.git@master
           pip install git+https://github.com/theochem/iodata.git@master
+          pip install pytest-md
+          pip install pytest-emoji
 
       - name: Install development version
         run: |
