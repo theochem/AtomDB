@@ -175,14 +175,14 @@ def test_numerical_hf_density_gradient(atom, charge, mult):
     assert gradient.shape == grid.shape
 
     # load reference values from numerical HF raw file
-    id = f"{str(sp.natom).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
+    id = f"{str(sp.atnum).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
     fname = f"{id}_numeric_gradient.npy"
     ref_grad = np.load(f"{TEST_DATAPATH}/numeric/db/{fname}")
 
     # the change in the density is very steep close to the nuclei and the derivative of the
     # density is not well described by the spline interpolation. Therefore, here we only compare
     # the gradient at distances larger than half the covalent radius.
-    radii_cutoff = sp.cov_radii["cordero"] / 2
+    radii_cutoff = sp.cov_radius["cordero"] / 2
     indx_radii = np.where(grid > radii_cutoff)
     assert np.allclose(gradient[indx_radii], ref_grad[indx_radii], atol=1e-3)
 
@@ -204,7 +204,7 @@ def test_numerical_hf_density_laplacian(atom, charge, mult):
     assert lapl.shape == grid.shape
 
     # load reference values from numerical HF raw files
-    id = f"{str(sp.natom).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
+    id = f"{str(sp.atnum).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
     fname = f"{id}_numeric_laplacian.npy"
     ref_lapl = np.load(f"{TEST_DATAPATH}/numeric/db/{fname}")
 
