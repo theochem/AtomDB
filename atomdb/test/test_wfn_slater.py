@@ -71,7 +71,7 @@ def test_slater_positive_definite_kinetic_energy(atom, charge, mult, tol):
     grid = sp.rs
     energ = sp.ked_tot
     integral = np.trapz(energ, grid)
-    answer = - sp.energy # KED is negative of total energy
+    answer = -sp.energy  # KED is negative of total energy
     # assert np.all(np.abs(integral - answer) < tol)
     assert_almost_equal(integral, answer, decimal=tol)
     # check interpolated density

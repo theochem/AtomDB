@@ -66,13 +66,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Check that the input charge is valid
     if charge < -2 or charge > atnum:
         raise ValueError(f"{elem} with {charge} not available.")
-    
+
     #
     # Element properties
     #
     atom = Element(elem)
     atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [None,]*5
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
     if charge == 0:
         # overwrite values for neutral atomic species
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
@@ -92,16 +94,14 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         expected_mult, energy = _gs_mult_energy(nelec, nelec, datapath)
         # There is no data for anions in database_beta_1.3.0.h5, therefore:
         energy = None
-    
+
     if not mult == expected_mult:
-            raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
-    
+        raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
+
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
     datapath = f"{DEFAULT_DATAPATH}/{dataset.lower()}/raw/c6cp04533b1.csv"
-    data = list(
-        csv.reader(open(datapath, "r"))
-    )
+    data = list(csv.reader(open(datapath, "r")))
     tabid = [i for i, row in enumerate(data) if "Element" in row]
     # Assign each conceptual-DFT data table to a variable.
     # Remove empty and header rows
