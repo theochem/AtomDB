@@ -33,6 +33,7 @@ import os
 import re
 from scipy.special import factorial
 import atomdb
+from atomdb.periodic import Element
 
 
 __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
@@ -874,71 +875,80 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     if charge != 0 and abs(charge) > 1:
         raise ValueError(f"`charge` must be one of -1, 0 or 1")
 
-    # Get information about the element and label as neutral or charged specie
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
+    # Get information about the element
+    atom = Element(elem)
+    atmass = atom.mass["stb"]
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [None,]*5
     if charge == 0:
-        an, cat = [False, False]
-    else:
-        # Flip Boolean list to assging cation/anion: https://stackoverflow.com/a/16726462
-        sign = lambda x: (1, -1)[x < 0]
-        an, cat = [False, True][:: sign(charge)]
-        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
-
+        # overwrite values for neutral atomic species
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion_c6 = atom.c6
+    
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    natom = atomdb.element_number(elem)
-    nelec = natom - charge
+    atnum = atomdb.element_number(elem)
+    nelec = atnum - charge
     nspin = mult - 1
-    # n_up = (nelec + nspin) // 2
-    # n_dn = (nelec - nspin) // 2
-    basis = None
+    obasis_name = None
 
     # Retrieve Slater data
-    specie = AtomicDensity(elem, anion=an, cation=cat)
+    if charge == 0:
+        species = AtomicDensity(elem, anion=False, cation=False)
+    elif charge > 0:
+        species = AtomicDensity(elem, anion=False, cation=True)
+    else:
+        species = AtomicDensity(elem, anion=True, cation=False)
 
     # Check multiplicity value
-    mo_occ = specie.orbitals_occupation.ravel()  # these are configurations not occupations
-    multiplicity = eval_multiplicity(specie.orbitals, mo_occ)
+    mo_occ = species.orbitals_occupation.ravel()  # these are configurations not occupations
+    multiplicity = eval_multiplicity(species.orbitals, mo_occ)
     if mult != multiplicity:
         raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
 
     # Get electronic structure data
-    energy = specie.energy[0]
-    mo_energies_a = specie.orbitals_energy.ravel()  # assuming same alpha and beta energies
-    mo_occ_a, mo_occ_b = split_configuration(specie.orbitals, mo_occ)
+    # FIXME:sign error in parsed energy value (looks like T value instead of E was parsed from raw file).
+    # This is a temporal fix until the parsing code for Slater's data gets updated from BFit.
+    energy = - species.energy[0]
+    mo_energies_a = species.orbitals_energy.ravel()  # assuming same alpha and beta energies
+    mo_occ_a, mo_occ_b = split_configuration(species.orbitals, mo_occ)
 
     # Make grid
     points = np.linspace(*BOUND, NPOINTS)
 
     # Compute densities and derivatives
-    dens_orbs = specie.phi_matrix(points) ** 2 / (4 * np.pi)
-    dens_tot = specie.atomic_density(points, "total")
-    # dens_core = specie.atomic_density(points, "core")
-    # dens_valence = specie.atomic_density(points, "valence")
-    # d_dens_tot = specie.derivative_density(points)
+    dens_orbs = species.phi_matrix(points) ** 2 / (4 * np.pi)
+    dens_tot = species.atomic_density(points, "total")
+    # dens_core = species.atomic_density(points, "core")
+    # dens_valence = species.atomic_density(points, "valence")
+    d_dens_tot = species.derivative_density(points)
 
     # Compute laplacian and kinetic energy density
     # lapl_tot = None
-    ked_tot = specie.lagrangian_kinetic_energy(points)
+    ked_tot = species.lagrangian_kinetic_energy(points)
 
     # Return Species instance
     return atomdb.Species(
         dataset,
         elem,
-        natom,
-        basis,
+        atnum,
+        obasis_name,
         nelec,
         nspin,
         nexc,
-        cov_radii,
-        vdw_radii,
-        mass,
+        atmass,
+        cov_radius,
+        vdw_radius,
+        at_radius,
+        polarizability,
+        dispersion_c6,
         energy,
-        _mo_energy_a=mo_energies_a,
-        _mo_energy_b=mo_energies_a,
-        _mo_occs_a=mo_occ_a,
-        _mo_occs_b=mo_occ_b,
+        mo_energy_a=mo_energies_a,
+        mo_energy_b=mo_energies_a,
+        mo_occs_a=mo_occ_a,
+        mo_occs_b=mo_occ_b,
         rs=points,
         dens_tot=dens_tot,
+        d_dens_tot=d_dens_tot,
         ked_tot=ked_tot,
     )
