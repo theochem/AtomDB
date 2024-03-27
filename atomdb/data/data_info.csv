@@ -1,3 +1,4 @@
+
 # PropertyKey,PropertyName,SourceKey,Units,PropertyDescription,Reference,DOI,Notes
 group,Group,,int,Element group on the periodic table,,,
 period,Period,,int,Element period on the periodic table,,,

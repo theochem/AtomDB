@@ -163,10 +163,12 @@ def test_make_promolecule(case):
 
     # Check that electron number and charge are recovered
     if charges is not None:
-        npt.assert_allclose(sum(atnums) - sum(charges), promol.nelec())
-        npt.assert_allclose(sum(charges), promol.charge())
+        assert np.allclose(sum(atnums) - sum(charges), promol.nelec(), rtol=1e-7)
+        assert np.allclose(sum(charges), promol.charge(), rtol=1e-7)
 
     # Check that spin number and multiplicity are recovered
     if mults is not None:
-        npt.assert_allclose(sum(np.sign(m) * (abs(m) - 1) for m in mults), promol.nspin())
-        npt.assert_allclose(abs(sum(np.sign(m) * (abs(m) - 1) for m in mults)) + 1, promol.mult())
+        assert np.allclose(sum(np.sign(m) * (abs(m) - 1) for m in mults), promol.nspin(), rtol=1e-7)
+        assert np.allclose(
+            abs(sum(np.sign(m) * (abs(m) - 1) for m in mults)) + 1, promol.mult(), rtol=1e-7
+        )

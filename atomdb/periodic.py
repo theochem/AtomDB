@@ -1,3 +1,4 @@
+
 from csv import reader
 
 from importlib.resources import files
@@ -236,5 +237,7 @@ def make_property(data, prop, prop2col):
     return property(f)
 
 
+
 # Generate class and functions to export
 Element, element_number, element_symbol, element_name = setup_element()
+
