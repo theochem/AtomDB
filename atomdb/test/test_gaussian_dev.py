@@ -31,8 +31,9 @@ from importlib_resources import files
 # try importing development dependencies and skip tests if not available
 try:
     from atomdb.datasets.gaussian import eval_radial_d_density, eval_radial_dd_density
+    from atomdb.datasets.gaussian import eval_orbs_radial_d_density, eval_orbs_radial_dd_density
     from gbasis.wrappers import from_iodata
-    from gbasis.evals.density import evaluate_density_laplacian
+    from gbasis.evals.density import evaluate_density_gradient, evaluate_density_laplacian
     from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
     from iodata import load_one
 
