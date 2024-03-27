@@ -878,13 +878,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Get information about the element
     atom = Element(elem)
     atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [None,]*5
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
     if charge == 0:
         # overwrite values for neutral atomic species
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
         polarizability = atom.pold
         dispersion_c6 = atom.c6
-    
+
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
     atnum = atomdb.element_number(elem)
@@ -909,7 +911,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Get electronic structure data
     # FIXME:sign error in parsed energy value (looks like T value instead of E was parsed from raw file).
     # This is a temporal fix until the parsing code for Slater's data gets updated from BFit.
-    energy = - species.energy[0]
+    energy = -species.energy[0]
     mo_energies_a = species.orbitals_energy.ravel()  # assuming same alpha and beta energies
     mo_occ_a, mo_occ_b = split_configuration(species.orbitals, mo_occ)
 

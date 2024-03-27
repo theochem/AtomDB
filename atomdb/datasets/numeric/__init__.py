@@ -142,7 +142,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     #
     atom = Element(elem)
     atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [None,]*5
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
     if charge == 0:
         # overwrite values for neutral atomic species
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
