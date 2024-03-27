@@ -22,6 +22,7 @@ import h5py as h5
 import csv
 
 from importlib_resources import files
+from scipy import constants
 
 # get data path
 TEST_DATAPATH = files("atomdb.data")
@@ -232,7 +233,6 @@ def _make_mults_dict(csv_file, max_atnum=100):
 
 multiplicities = _make_mults_dict(os.path.join(TEST_DATAPATH, "multiplicities_table.csv"))
 
-
 def dev_method(all_deps):
     """Mark a method as development.
 
@@ -256,3 +256,20 @@ def dev_method(all_deps):
             return wrapper
 
     return decorator
+
+# set constants and utility dictionary  for unit conversion
+angstrom = 100 * constants.pico * constants.m_e * constants.c * constants.alpha / constants.hbar
+amu = constants.gram / (constants.Avogadro * constants.m_e)
+
+convertor_types = {
+    "int": (lambda s: int(s)),
+    "float": (lambda s: float(s)),
+    "au": (lambda s: float(s)),  # just for clarity, atomic units
+    "str": (lambda s: s.strip()),
+    "angstrom": (lambda s: float(s) * angstrom),
+    "2angstrom": (lambda s: float(s) * angstrom / 2),
+    "angstrom**3": (lambda s: float(s) * angstrom**3),
+    "amu": (lambda s: float(s) * amu),
+}
+
+
