@@ -28,7 +28,7 @@ TEST_DATAPATH = files("atomdb.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 
-__all__ = ["multiplicities"]
+__all__ = ["multiplicities", "dev_method"]
 
 
 def _gs_mult_energy(atnum, nelec, datafile):
@@ -231,3 +231,28 @@ def _make_mults_dict(csv_file, max_atnum=100):
 
 
 multiplicities = _make_mults_dict(os.path.join(TEST_DATAPATH, "multiplicities_table.csv"))
+
+
+def dev_method(all_deps):
+    """Mark a method as development.
+
+    Parameters
+    ----------
+    all_deps : bool
+        If True, all dependencies are available and the method can be run. If False, the method
+        will be skipped and an informative error message will be printed.
+    """
+
+    def decorator(func):
+        if all_deps:
+            return func
+        else:
+
+            def wrapper(*args, **kwargs):
+                raise ImportError(
+                    f"Method {func.__name__} cannot be run. Development dependencies not available."
+                )
+
+            return wrapper
+
+    return decorator
