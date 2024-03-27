@@ -18,25 +18,31 @@ r"""Gaussian density compile function."""
 import os
 
 import numpy as np
-
-from gbasis.wrappers import from_iodata
-
-from gbasis.evals.density import evaluate_density as eval_dens
-from gbasis.evals.density import evaluate_density_gradient
-from gbasis.evals.density import evaluate_density_hessian
-from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
-from gbasis.evals.eval_deriv import evaluate_deriv_basis
-from gbasis.evals.eval import evaluate_basis
-
-from grid.onedgrid import UniformInteger
-from grid.rtransform import ExpRTransform
-from grid.atomgrid import AtomGrid
-
-from iodata import load_one
-
 import atomdb
 
+from atomdb.utils import dev_method
 from atomdb.periodic import Element
+
+# check for optional development dependencies
+all_deps = True
+try:
+    from gbasis.wrappers import from_iodata
+
+    from gbasis.evals.density import evaluate_density as eval_dens
+    from gbasis.evals.density import evaluate_density_gradient
+    from gbasis.evals.density import evaluate_density_hessian
+    from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
+    from gbasis.evals.eval_deriv import evaluate_deriv_basis
+    from gbasis.evals.eval import evaluate_basis
+
+    from grid.onedgrid import UniformInteger
+    from grid.rtransform import ExpRTransform
+    from grid.atomgrid import AtomGrid
+
+    from iodata import load_one
+
+except ImportError:
+    all_deps = False
 
 
 __all__ = [
@@ -63,6 +69,7 @@ Electronic structure and density properties evaluated with def2-svpd basis set
 """
 
 
+@dev_method(all_deps)
 def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
     r"""Load Gaussian fchk file and return the iodata object
 
@@ -98,6 +105,7 @@ def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
     return load_one(fchkpath)
 
 
+@dev_method(all_deps)
 def eval_orbs_density(one_density_matrix, orb_eval):
     r"""Return each orbital density evaluated at a set of points
 
@@ -124,6 +132,7 @@ def eval_orbs_density(one_density_matrix, orb_eval):
     return density
 
 
+@dev_method(all_deps)
 def eval_orbs_radial_d_density(one_density_matrix, basis, points, transform=None):
     """Compute the radial derivative of the density orbital components.
 
@@ -172,6 +181,7 @@ def eval_orbs_radial_d_density(one_density_matrix, basis, points, transform=None
     return output
 
 
+@dev_method(all_deps)
 def eval_orbs_radial_dd_density(one_density_matrix, basis, points, transform=None):
     """Compute the radial second derivative of the density orbital components.
 
@@ -242,6 +252,7 @@ def eval_orbs_radial_dd_density(one_density_matrix, basis, points, transform=Non
     return output
 
 
+@dev_method(all_deps)
 def eval_radial_d_density(one_density_matrix, basis, points):
     """Compute the radial derivative of the density.
 
@@ -269,6 +280,7 @@ def eval_radial_d_density(one_density_matrix, basis, points):
     return np.einsum("ij,ij->i", unitvect_pts, rho_grad)
 
 
+@dev_method(all_deps)
 def eval_radial_dd_density(one_density_matrix, basis, points):
     """Compute the radial derivative of the density.
 
@@ -296,6 +308,7 @@ def eval_radial_dd_density(one_density_matrix, basis, points):
     return np.einsum("ij,ijk,ik->i", unitvect_pts, rho_hess, unitvect_pts)
 
 
+@dev_method(all_deps)
 def eval_orb_ked(one_density_matrix, basis, points, transform=None):
     "Adapted from Gbasis"
     orbt_ked = 0
@@ -308,6 +321,7 @@ def eval_orb_ked(one_density_matrix, basis, points, transform=None):
     return 0.5 * orbt_ked
 
 
+@dev_method(all_deps)
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Compile the AtomDB database entry for densities from Gaussian wfn."""
     # Check arguments

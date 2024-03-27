@@ -16,22 +16,30 @@
 r"""HCI compile function."""
 
 import numpy as np
-
-from iodata import load_one
-
-from gbasis.wrappers import from_iodata
-
-from gbasis.evals.density import evaluate_density as eval_dens
-from gbasis.evals.density import evaluate_deriv_density as eval_d_dens
-from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
-from gbasis.evals.density import evaluate_basis
-from gbasis.evals.eval_deriv import evaluate_deriv_basis
-
-from grid.onedgrid import UniformInteger
-from grid.rtransform import ExpRTransform
-from grid.atomgrid import AtomGrid
-
 import atomdb
+
+from atomdb.utils import dev_method
+
+# check for optional development dependencies
+all_deps = True
+try:
+    from iodata import load_one
+
+    from iodata import load_one
+
+    from gbasis.wrappers import from_iodata
+
+    from gbasis.evals.density import evaluate_density as eval_dens
+    from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
+    from gbasis.evals.density import evaluate_basis
+    from gbasis.evals.eval_deriv import evaluate_deriv_basis
+
+    from grid.onedgrid import UniformInteger
+    from grid.rtransform import ExpRTransform
+    from grid.atomgrid import AtomGrid
+
+except ImportError:
+    all_deps = False
 
 
 __all__ = [
@@ -101,6 +109,7 @@ def eval_orb_ked(one_density_matrix, basis, points, transform=None, coord_type="
     return 0.5 * orbt_ked
 
 
+@dev_method(all_deps)
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Run an HCI computation and compile the AtomDB database entry."""
     # Check arguments
