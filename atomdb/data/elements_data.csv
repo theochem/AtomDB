@@ -3,7 +3,7 @@
 # Second row indicates  the source/alternative for a given property (can be empty) it is used to link the references with the values,,,,,,,,,,,,,,,,,,,,,,
 # Third row indicates the units,,,,,,,,,,,,,,,,,,,,,,
 ,,,,,,,,,,,,,,,,,,,,,,
-atnum,symbol,name,group,period,multiplicity,cov_radius,cov_radius,cov_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,at_radius,at_radius,eneg,pold,pold,c6,mass
+atnum,symbol,name,group,period,mult,cov_radius,cov_radius,cov_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,vdw_radius,at_radius,at_radius,eneg,pold,pold,c6,mass
 ,,,,,,cordero,bragg,slater,bondi,truhlar,rt,batsanov,dreiding,uff,mm3,wc,cr,pauling,crc,chu,chu,stb
 int,str,str,int,int,int,angstrom,angstrom,angstrom,angstrom,angstrom,angstrom,angstrom,2angstrom,2angstrom,angstrom,angstrom,angstrom,float,angstrom**3,au,au,amu
 1,H,Hydrogen,1,1,2,0.31,,0.25,1.2,,1.1,,3.195,2.886,1.62,0.529192875,0.53,2.2,0.666793,4.5,6.499026705,1.007975
@@ -118,8 +118,9 @@ int,str,str,int,int,int,angstrom,angstrom,angstrom,angstrom,angstrom,angstrom,an
 110,Ds,Darmstadtium,10,7,3,,,,,,,,,,,,,,,,,
 111,Rg,Roentgenium,11,7,2,,,,,,,,,,,,,,,,,
 112,Cn,Copernicium,12,7,1,,,,,,,,,,,,,,,,,
-113,Uut,Ununtrium,13,7,2,,,,,,,,,,,,,,,,,
+113,Nh,Nihonium,13,7,2,,,,,,,,,,,,,,,,,
 114,Fl,Flerovium,14,7,3,,,,,,,,,,,,,,,,,
-115,Uup,Ununpentium,15,7,4,,,,,,,,,,,,,,,,,
+115,Mc,Moscovium,15,7,4,,,,,,,,,,,,,,,,,
 116,Lv,Livermorium,16,7,3,,,,,,,,,,,,,,,,,
-117,Uus,Ununseptium,17,7,2,,,,,,,,,,,,,,,,,
+117,Ts,Tennessine,17,7,2,,,,,,,,,,,,,,,,,
+118,Og,Oganesson,18,7,1,,,,,,,,,,,,,,,,,
