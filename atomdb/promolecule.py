@@ -140,7 +140,7 @@ class Promolecule:
 
         # Define the property as a function, and call `_extensive_local_property` on it
         def f(atom):
-            return atom.interpolate_dens(spin=spin, log=log)
+            return atom.density_func(spin=spin, log=log)
 
         return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
 
@@ -160,7 +160,7 @@ class Promolecule:
         """
 
         def f(atom):
-            return atom.interpolate_ked(spin=spin, log=log)
+            return atom.ked_func(spin=spin, log=log)
 
         return sum(_extensive_local_property(self.atoms, self.coords, self.coeffs, points, f))
 
@@ -294,11 +294,9 @@ class Promolecule:
 
         # Define the property as a function, and call `_extensive_local_property` on it
         def f(atom):
-            return atom.interpolate_dens(spin=spin, log=log)
+            return atom.ddens_func(spin=spin, log=log)
 
-        atoms_ddens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f, deriv=1
-        )
+        atoms_ddens = _extensive_local_property(self.atoms, self.coords, self.coeffs, points, f)
 
         # The cartesian gradient (\nabla \rho_A) has to be evaluated using the chain rule:
         # \nabla \rho_A(x,y,z) = \frac{\partial \rho_A}{\partial r} *  \hat{r}
@@ -334,15 +332,14 @@ class Promolecule:
         """
 
         # Define the property as a function, and call `_extensive_local_property` on it
-        def f(atom):
-            return atom.interpolate_dens(spin=spin, log=log)
+        def df(atom):
+            return atom.ddens_func(spin=spin, log=log)
 
-        atoms_ddens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f, deriv=1
-        )
-        atoms_d2dens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f, deriv=2
-        )
+        def d2f(atom):
+            return atom.d2dens_func(spin=spin, log=log)
+
+        atoms_ddens = _extensive_local_property(self.atoms, self.coords, self.coeffs, points, df)
+        atoms_d2dens = _extensive_local_property(self.atoms, self.coords, self.coeffs, points, d2f)
 
         # Evaluate the derivatives of the radii
         atoms_router_triu = np.array(
@@ -391,19 +388,18 @@ class Promolecule:
 
         """
 
-        def f(atom):
-            return atom.interpolate_dens(spin=spin, log=log)
+        def df(atom):
+            return atom.ddens_func(spin=spin, log=log)
+
+        def d2f(atom):
+            return atom.d2dens_func(spin=spin, log=log)
 
         def shift(dens, radii):
             return 3 * dens / np.linalg.norm(radii)
 
         # Radial derivatives of the density
-        atoms_ddens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f, deriv=1
-        )
-        atoms_d2dens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f, deriv=2
-        )
+        atoms_ddens = _extensive_local_property(self.atoms, self.coords, self.coeffs, points, df)
+        atoms_d2dens = _extensive_local_property(self.atoms, self.coords, self.coeffs, points, d2f)
 
         return sum(
             d2dens - ddens + shift(ddens, points - coord)
