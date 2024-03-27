@@ -233,6 +233,7 @@ def _make_mults_dict(csv_file, max_atnum=100):
 
 multiplicities = _make_mults_dict(os.path.join(TEST_DATAPATH, "multiplicities_table.csv"))
 
+
 def dev_method(all_deps):
     """Mark a method as development.
 
@@ -257,6 +258,7 @@ def dev_method(all_deps):
 
     return decorator
 
+
 # set constants and utility dictionary  for unit conversion
 angstrom = 100 * constants.pico * constants.m_e * constants.c * constants.alpha / constants.hbar
 amu = constants.gram / (constants.Avogadro * constants.m_e)
@@ -271,5 +273,3 @@ convertor_types = {
     "angstrom**3": (lambda s: float(s) * angstrom**3),
     "amu": (lambda s: float(s) * amu),
 }
-
-
