@@ -49,7 +49,7 @@ def _gs_mult_energy(atnum, nelec, datafile):
     mult : int
         Multiplicity of the most stable electronic configuration
     energy : float
-        Energy of the most stable electronic configuration
+        Energy (in Hartree) of the most stable electronic configuration
     """
     # initialize multiplicity to zero and energy to a large value
     default_mult = 0
@@ -73,6 +73,8 @@ def _gs_mult_energy(atnum, nelec, datafile):
     # return multiplicity and energy of the most stable species or default values for missing data
     mult = mults[0] if len(mults) != 0 else default_mult
     energy = energy[0] if len(energy) != 0 else default_energy
+    # Convert energy to Hartree from cm^{-1}
+    energy *= 2 * constants.centi * constants.Rydberg
     return mult, energy
 
 
@@ -237,6 +239,8 @@ multiplicities = _make_mults_dict(os.path.join(TEST_DATAPATH, "multiplicities_ta
 # set constants and utility dictionary  for unit conversion
 angstrom = 100 * constants.pico * constants.m_e * constants.c * constants.alpha / constants.hbar
 amu = constants.gram / (constants.Avogadro * constants.m_e)
+cminv = 2 * constants.centi * constants.Rydberg
+ev = constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
 
 convertor_types = {
     "int": (lambda s: int(s)),

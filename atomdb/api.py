@@ -117,25 +117,28 @@ class SpeciesData:
     #
     dataset: str = field()
     elem: str = field()
-    natom: int = field()
-    basis: str = field()
+    atnum: int = field()
+    obasis_name: str = field()
     nelec: int = field()
     nspin: int = field()
     nexc: int = field()
     #
     # Element properties
     #
-    cov_radii: dict = field()
-    vdw_radii: dict = field()
-    mass: float = field()
+    atmass: float = field()
+    cov_radius: dict = field()
+    vdw_radius: dict = field()
+    at_radius: dict = field()
+    polarizability: dict = field()
+    dispersion_c6: dict = field()
     #
     # Electronic and molecular orbital energies
     #
     energy: float = field(default=None)
-    _mo_energy_a: ndarray = field(default=None)
-    _mo_energy_b: ndarray = field(default=None)
-    _mo_occs_a: ndarray = field(default=None)
-    _mo_occs_b: ndarray = field(default=None)
+    mo_energy_a: ndarray = field(default=None)
+    mo_energy_b: ndarray = field(default=None)
+    mo_occs_a: ndarray = field(default=None)
+    mo_occs_b: ndarray = field(default=None)
     #
     # Conceptual DFT related properties
     #
@@ -149,26 +152,26 @@ class SpeciesData:
     #
     # Density
     #
-    _orb_dens_up: ndarray = field(default=None)
-    _orb_dens_dn: ndarray = field(default=None)
+    mo_dens_a: ndarray = field(default=None)
+    mo_dens_b: ndarray = field(default=None)
     dens_tot: ndarray = field(default=None)
     #
     # Density gradient
     #
-    _orb_d_dens_up: ndarray = field(default=None)
-    _orb_d_dens_dn: ndarray = field(default=None)
+    mo_d_dens_a: ndarray = field(default=None)
+    mo_d_dens_b: ndarray = field(default=None)
     d_dens_tot: ndarray = field(default=None)
     #
     # Density laplacian
     #
-    _orb_dd_dens_up: ndarray = field(default=None)
-    _orb_dd_dens_dn: ndarray = field(default=None)
+    mo_dd_dens_a: ndarray = field(default=None)
+    mo_dd_dens_b: ndarray = field(default=None)
     dd_dens_tot: ndarray = field(default=None)
     #
     # Kinetic energy density
     #
-    _orb_ked_up: ndarray = field(default=None)
-    _orb_ked_dn: ndarray = field(default=None)
+    mo_ked_a: ndarray = field(default=None)
+    mo_ked_b: ndarray = field(default=None)
     ked_tot: ndarray = field(default=None)
 
 
@@ -180,24 +183,24 @@ class Species(SpeciesData):
         # Initialize superclass
         SpeciesData.__init__(self, *args, **kwargs)
         self.ao = _AtomicOrbitals(
-            self._mo_occs_a, self._mo_occs_b, self._mo_energy_a, self._mo_energy_b
+            self.mo_occs_a, self.mo_occs_b, self.mo_energy_a, self.mo_energy_b
         )
         # Reshape the orbital densities and kinetic energy densities as 2D arrays
-        self._orb_dens_up = self._to_ndarray(self._orb_dens_up, self.ao.norba)
-        self._orb_dens_dn = self._to_ndarray(self._orb_dens_dn, self.ao.norba)
-        self._orb_d_dens_up = self._to_ndarray(self._orb_d_dens_up, self.ao.norba)
-        self._orb_d_dens_dn = self._to_ndarray(self._orb_d_dens_dn, self.ao.norba)
-        self._orb_dd_dens_up = self._to_ndarray(self._orb_dd_dens_up, self.ao.norba)
-        self._orb_dd_dens_dn = self._to_ndarray(self._orb_dd_dens_dn, self.ao.norba)
-        self._orb_ked_up = self._to_ndarray(self._orb_ked_up, self.ao.norba)
-        self._orb_ked_dn = self._to_ndarray(self._orb_ked_dn, self.ao.norba)
+        self.mo_dens_a = self._to_ndarray(self.mo_dens_a, self.ao.norba)
+        self.mo_dens_b = self._to_ndarray(self.mo_dens_b, self.ao.norba)
+        self.mo_d_dens_a = self._to_ndarray(self.mo_d_dens_a, self.ao.norba)
+        self.mo_d_dens_b = self._to_ndarray(self.mo_d_dens_b, self.ao.norba)
+        self.mo_dd_dens_a = self._to_ndarray(self.mo_dd_dens_a, self.ao.norba)
+        self.mo_dd_dens_b = self._to_ndarray(self.mo_dd_dens_b, self.ao.norba)
+        self.mo_ked_a = self._to_ndarray(self.mo_ked_a, self.ao.norba)
+        self.mo_ked_b = self._to_ndarray(self.mo_ked_b, self.ao.norba)
         #
         # Attributes declared here are not considered as part of the dataclasses interface,
         # and therefore are not included in the output of dataclasses.asdict(species_instance)
         #
         # Charge and multiplicity
         #
-        self.charge = self.natom - self.nelec
+        self.charge = self.atnum - self.nelec
         self.mult = self.nspin + 1
         self.spinpol = int(kwargs.get("spinpol", 1))
         self.doc = get_docstring(self.dataset)
@@ -257,9 +260,9 @@ class Species(SpeciesData):
             raise ValueError(
                 f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
             )
-        if spin in ["a", "b", "m"] and (self._orb_dens_up is None):
+        if spin in ["a", "b", "m"] and (self.mo_dens_a is None):
             raise ValueError(f"Density values for `{spin}` spin-orbitals unavailable.")
-        if index is not None and (self._orb_dens_up is None):
+        if index is not None and (self.mo_dens_a is None):
             raise ValueError(
                 "Can not perform indexing since densities per orbital is missing in this dataset."
             )
@@ -267,11 +270,11 @@ class Species(SpeciesData):
         # Assign cases that require spin-densitiy data. Since these are always
         # stored as density per orbital they work for any `index` parameter case.
         if spin == "a":
-            orbs_dens = self._orb_dens_up if self.spinpol == 1 else self._orb_dens_dn
+            orbs_dens = self.mo_dens_a if self.spinpol == 1 else self.mo_dens_b
         elif spin == "b":
-            orbs_dens = self._orb_dens_dn if self.spinpol == 1 else self._orb_dens_up
+            orbs_dens = self.mo_dens_b if self.spinpol == 1 else self.mo_dens_a
         elif spin == "m":
-            orbs_dens = self.spinpol * (self._orb_dens_up - self._orb_dens_dn)
+            orbs_dens = self.spinpol * (self.mo_dens_a - self.mo_dens_b)
 
         # Evaluate property values for interpolation.
         # Total density (ab) is evaluated from spin components when indexing is required
@@ -282,7 +285,7 @@ class Species(SpeciesData):
                 value_array = sum(orbs_dens, axis=0)
         else:
             if spin == "ab":
-                orbs_dens = self._orb_dens_up + self._orb_dens_dn
+                orbs_dens = self.mo_dens_a + self.mo_dens_b
             orbs_dens = orbs_dens[index]  # M(K_orb,N)
             value_array = sum(orbs_dens, axis=0)  # (N,)
 
@@ -325,9 +328,9 @@ class Species(SpeciesData):
             raise ValueError(
                 f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
             )
-        if spin in ["a", "b", "m"] and (self._orb_d_dens_up is None):
+        if spin in ["a", "b", "m"] and (self.mo_d_dens_a is None):
             raise ValueError(f"Density property values for `{spin}` spin-orbitals unavailable.")
-        if index is not None and (self._orb_dens_up is None):
+        if index is not None and (self.mo_dens_a is None):
             raise ValueError(
                 "Can not perform indexing since densities per orbital is missing in this dataset."
             )
@@ -337,11 +340,11 @@ class Species(SpeciesData):
         # Assign cases that require spin-densitiy data. Since these are always
         # stored as density per orbital they work for any `index` parameter case.
         if spin == "a":
-            orbs_d_dens = self._orb_d_dens_up
+            orbs_d_dens = self.mo_d_dens_a
         elif spin == "b":
-            orbs_d_dens = self._orb_d_dens_dn
+            orbs_d_dens = self.mo_d_dens_b
         elif spin == "m":
-            orbs_d_dens = self._orb_d_dens_up - self._orb_d_dens_dn
+            orbs_d_dens = self.mo_d_dens_a - self.mo_d_dens_b
 
         # Get the property values for interpolation.
         # 1) If index is not provided, the gradient is summed along the axis of the molecular
@@ -355,7 +358,7 @@ class Species(SpeciesData):
                 value_array = sum(orbs_d_dens, axis=0)
         else:
             if spin == "ab":
-                orbs_d_dens = self._orb_d_dens_up + self._orb_d_dens_dn
+                orbs_d_dens = self.mo_d_dens_a + self.mo_d_dens_b
             orbs_d_dens = orbs_d_dens[index]  # M(K_orb,N)
             value_array = sum(orbs_d_dens, axis=0)  # (N,)
 
@@ -397,9 +400,9 @@ class Species(SpeciesData):
             raise ValueError(
                 f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
             )
-        if spin in ["a", "b", "m"] and (self._orb_d_dens_up is None):
+        if spin in ["a", "b", "m"] and (self.mo_d_dens_a is None):
             raise ValueError(f"Density property values for `{spin}` spin-orbitals unavailable.")
-        if index is not None and (self._orb_d_dens_up is None):
+        if index is not None and (self.mo_d_dens_a is None):
             raise ValueError(
                 "Can not perform indexing since densities per orbital are missing in this dataset."
             )
@@ -409,11 +412,11 @@ class Species(SpeciesData):
         # Assign cases that require spin-densitiy data. Since these are always
         # stored as density per orbital they work for any `index` parameter case.
         if spin == "a":
-            orbs_dd_dens = self._orb_dd_dens_up
+            orbs_dd_dens = self.mo_dd_dens_a
         elif spin == "b":
-            orbs_dd_dens = self._orb_dd_dens_dn
+            orbs_dd_dens = self.mo_dd_dens_b
         elif spin == "m":
-            orbs_dd_dens = self._orb_dd_dens_up - self._orb_dd_dens_dn
+            orbs_dd_dens = self.mo_dd_dens_a - self.mo_dd_dens_b
 
         # Get the property values for interpolation.
         # 1) If index is not provided, the gradient is summed along the axis of the molecular
@@ -427,7 +430,7 @@ class Species(SpeciesData):
                 value_array = sum(orbs_dd_dens, axis=0)
         else:
             if spin == "ab":
-                orbs_dd_dens = self._orb_dd_dens_up + self._orb_dd_dens_dn
+                orbs_dd_dens = self.mo_dd_dens_a + self.mo_dd_dens_b
             orbs_dd_dens = orbs_dd_dens[index]  # M(K_orb,N)
             value_array = sum(orbs_dd_dens, axis=0)  # (N,)
 
@@ -457,9 +460,9 @@ class Species(SpeciesData):
             raise ValueError(
                 f"Incorrect `spin` parameter {spin}, choose one of  `a`, `b`, `ab` or `m`."
             )
-        if spin in ["a", "b", "m"] and (self._orb_ked_up is None):
+        if spin in ["a", "b", "m"] and (self.mo_ked_a is None):
             raise ValueError(f"Kinetic energy density for `{spin}` spin-orbitals unavailable.")
-        if index is not None and (self._orb_ked_up is None):
+        if index is not None and (self.mo_ked_a is None):
             raise ValueError(
                 "Can not perform indexing since orbital densities are missing in this dataset."
             )
@@ -467,11 +470,11 @@ class Species(SpeciesData):
         # Assign cases that require spin-densitiy data. Since these are stored as density
         # per orbital they work for any `index` parameter case.
         if spin == "a":
-            orbs_ked = self._orb_ked_up if self.spinpol == 1 else self._orb_ked_dn
+            orbs_ked = self.mo_ked_a if self.spinpol == 1 else self.mo_ked_b
         elif spin == "b":
-            orbs_ked = self._orb_ked_dn if self.spinpol == 1 else self._orb_ked_up
+            orbs_ked = self.mo_ked_b if self.spinpol == 1 else self.mo_ked_a
         elif spin == "m":
-            orbs_ked = self.spinpol * (self._orb_ked_up - self._orb_ked_dn)
+            orbs_ked = self.spinpol * (self.mo_ked_a - self.mo_ked_b)
 
         # Evaluate property values for interpolation.
         # Total density (ab) is evaluated from spin components when indexing is required
@@ -482,7 +485,7 @@ class Species(SpeciesData):
                 value_array = sum(orbs_ked, axis=0)
         else:
             if spin == "ab":
-                orbs_ked = self._orb_ked_up + self._orb_ked_dn
+                orbs_ked = self.mo_ked_a + self.mo_ked_b
             orbs_ked = orbs_ked[index]  # M(K_orb,N)
             value_array = sum(orbs_ked, axis=0)  # (N,)
 

@@ -118,16 +118,16 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    natom = atomdb.element_number(elem)
-    nelec = natom - charge
+    atnum = atomdb.element_number(elem)
+    nelec = atnum - charge
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
-    basis = None
+    obasis_name = None
 
     # Check that the input multiplicity corresponds to the most stable electronic configuration.
     # For charged species take the multiplicity from the neutral isoelectronic species.
-    expected_mult = multiplicities[(natom, charge)]
+    expected_mult = multiplicities[(atnum, charge)]
     if mult != expected_mult:
         raise ValueError(
             f"Multiplicity {mult} not available for {elem} with charge = {charge}. "
@@ -135,18 +135,21 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         )
 
     species_table = load_numerical_hf_data()
-    data = species_table[(natom, nelec)]
+    data = species_table[(atnum, nelec)]
 
     #
     # Element periodic properties
     #
-    # cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
     atom = Element(elem)
-    cov_radii = atom.cov_radius
-    vdw_radii = atom.vdw_radius
-    mass = atom.mass["stb"]
-    if charge != 0:
-        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
+    atmass = atom.mass["stb"]
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
+    if charge == 0:
+        # overwrite values for neutral atomic species
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion_c6 = atom.c6
 
     # Get electronic structure data
     energy = data["energy_components"]["E"]
@@ -166,14 +169,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     return atomdb.Species(
         dataset,
         elem,
-        natom,
-        basis,
+        atnum,
+        obasis_name,
         nelec,
         nspin,
         nexc,
-        cov_radii,
-        vdw_radii,
-        mass,
+        atmass,
+        cov_radius,
+        vdw_radius,
+        at_radius,
+        polarizability,
+        dispersion_c6,
         energy,
         rs=points,
         dens_tot=dens_tot,

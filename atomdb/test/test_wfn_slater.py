@@ -37,11 +37,6 @@ TEST_DATAPATH = files("atomdb.test.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 
-# FIXME:sign error in parsed energy value (looks like T value instead of E was parsed from raw file).
-# This is a temporal fix until the parsing code for Slater's data gets updated from BFit.
-fix_sign = lambda value: -value
-
-
 @pytest.mark.parametrize(
     "atom, mult, answer",
     [
@@ -54,7 +49,7 @@ fix_sign = lambda value: -value
 def test_slater_energy_especies(atom, mult, answer):
     # load species and check energy
     sp = load(atom, 0, mult, dataset="slater", datapath=TEST_DATAPATH)
-    assert_almost_equal(fix_sign(sp.energy), answer, decimal=6)
+    assert_almost_equal(sp.energy, answer, decimal=6)
 
 
 @pytest.mark.parametrize(
@@ -76,7 +71,7 @@ def test_slater_positive_definite_kinetic_energy(atom, charge, mult, tol):
     grid = sp.rs
     energ = sp.ked_tot
     integral = np.trapz(energ, grid)
-    answer = -fix_sign(sp.energy)
+    answer = -sp.energy  # KED is negative of total energy
     # assert np.all(np.abs(integral - answer) < tol)
     assert_almost_equal(integral, answer, decimal=tol)
     # check interpolated density
@@ -139,7 +134,7 @@ def test_slater_atomic_density_gradient(atom, charge, mult):
     gradient = spline(grid, deriv=1)
 
     # get reference values from Slater wfn raw files
-    id = f"{str(sp.natom).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
+    id = f"{str(sp.atnum).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
     fname = f"{id}_slater_gradient.npy"
     answer = np.load(f"{TEST_DATAPATH}/slater/db/{fname}")
 
@@ -166,7 +161,7 @@ def test_slater_h_anion_density_splines():
     assert np.allclose(spline(grid), sp.ked_tot, atol=1e-6)
 
     # load reference values for gradient
-    id = f"{str(sp.natom).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
+    id = f"{str(sp.atnum).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
     fname = f"{id}_slater_gradient.npy"
     gradient = np.load(f"{TEST_DATAPATH}/slater/db/{fname}")
 
@@ -186,8 +181,8 @@ def test_slater_missing_attributes():
     assert sp.ip is None
     assert sp.mu is None
     assert sp.eta is None
-    assert sp._orb_dens_up is None
-    assert sp._orb_dens_dn is None
+    assert sp.mo_dens_a is None
+    assert sp.mo_dens_b is None
 
 
 def test_slater_orbitals_be():
@@ -196,15 +191,15 @@ def test_slater_orbitals_be():
 
     # check mo energy and occupation arrays
     # check array shapes
-    assert len(sp._mo_energy_a) == 2
-    assert len(sp._mo_energy_a) == len(sp._mo_energy_b)
-    assert len(sp._mo_occs_a) == 2
-    assert len(sp._mo_occs_a) == len(sp._mo_occs_b)
+    assert len(sp.mo_energy_a) == 2
+    assert len(sp.mo_energy_a) == len(sp.mo_energy_b)
+    assert len(sp.mo_occs_a) == 2
+    assert len(sp.mo_occs_a) == len(sp.mo_occs_b)
     # check array elements
-    assert np.allclose(sp._mo_energy_a, np.array([-4.7326699, -0.3092695]), atol=1e-6)
-    assert np.allclose(sp._mo_energy_b, np.array([-4.7326699, -0.3092695]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_a, np.array([1.0, 1.0]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_b, np.array([1.0, 1.0]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_a, np.array([-4.7326699, -0.3092695]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_b, np.array([-4.7326699, -0.3092695]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_a, np.array([1.0, 1.0]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_b, np.array([1.0, 1.0]), atol=1e-6)
 
 
 def test_slater_orbitals_ne():
@@ -213,15 +208,15 @@ def test_slater_orbitals_ne():
 
     # check mo energy and occupation arrays
     # check array shapes
-    assert len(sp._mo_energy_a) == 3
-    assert len(sp._mo_energy_a) == len(sp._mo_energy_b)
-    assert len(sp._mo_occs_a) == 3
-    assert len(sp._mo_occs_a) == len(sp._mo_occs_b)
+    assert len(sp.mo_energy_a) == 3
+    assert len(sp.mo_energy_a) == len(sp.mo_energy_b)
+    assert len(sp.mo_occs_a) == 3
+    assert len(sp.mo_occs_a) == len(sp.mo_occs_b)
     # check array elements
-    assert np.allclose(sp._mo_energy_a, np.array([-32.7724425, -1.9303907, -0.8504095]), atol=1e-6)
-    assert np.allclose(sp._mo_energy_b, np.array([-32.7724425, -1.9303907, -0.8504095]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_a, np.array([1.0, 1.0, 3.0]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_b, np.array([1.0, 1.0, 3.0]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_a, np.array([-32.7724425, -1.9303907, -0.8504095]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_b, np.array([-32.7724425, -1.9303907, -0.8504095]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_a, np.array([1.0, 1.0, 3.0]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_b, np.array([1.0, 1.0, 3.0]), atol=1e-6)
 
 
 def test_slater_orbitals_h():
@@ -230,15 +225,15 @@ def test_slater_orbitals_h():
 
     # check mo energy and occupation arrays
     # check array shapes
-    assert len(sp._mo_energy_a) == 1
-    assert len(sp._mo_energy_a) == len(sp._mo_energy_b)
-    assert len(sp._mo_occs_a) == 1
-    assert len(sp._mo_occs_a) == len(sp._mo_occs_b)
+    assert len(sp.mo_energy_a) == 1
+    assert len(sp.mo_energy_a) == len(sp.mo_energy_b)
+    assert len(sp.mo_occs_a) == 1
+    assert len(sp.mo_occs_a) == len(sp.mo_occs_b)
     # check array elements
-    assert np.allclose(sp._mo_energy_a, np.array([-0.50]), atol=1e-6)
-    assert np.allclose(sp._mo_energy_b, np.array([-0.50]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_a, np.array([1.0]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_b, np.array([0.0]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_a, np.array([-0.50]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_b, np.array([-0.50]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_a, np.array([1.0]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_b, np.array([0.0]), atol=1e-6)
 
 
 def test_slater_orbitals_h_anion():
@@ -247,15 +242,15 @@ def test_slater_orbitals_h_anion():
 
     # check mo energy and occupation arrays
     # check array shapes
-    assert len(sp._mo_energy_a) == 1
-    assert len(sp._mo_energy_a) == len(sp._mo_energy_b)
-    assert len(sp._mo_occs_a) == 1
-    assert len(sp._mo_occs_a) == len(sp._mo_occs_b)
+    assert len(sp.mo_energy_a) == 1
+    assert len(sp.mo_energy_a) == len(sp.mo_energy_b)
+    assert len(sp.mo_occs_a) == 1
+    assert len(sp.mo_occs_a) == len(sp.mo_occs_b)
     # check array elements
-    assert np.allclose(sp._mo_energy_a, np.array([-0.0462224]), atol=1e-6)
-    assert np.allclose(sp._mo_energy_b, np.array([-0.0462224]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_a, np.array([1.0]), atol=1e-6)
-    assert np.allclose(sp._mo_occs_b, np.array([1.0]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_a, np.array([-0.0462224]), atol=1e-6)
+    assert np.allclose(sp.mo_energy_b, np.array([-0.0462224]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_a, np.array([1.0]), atol=1e-6)
+    assert np.allclose(sp.mo_occs_b, np.array([1.0]), atol=1e-6)
 
 
 def test_slater_orbitals_ag():
@@ -264,10 +259,10 @@ def test_slater_orbitals_ag():
 
     # check mo energy and occupation arrays
     # check array shapes
-    assert len(sp._mo_energy_a) == 10
-    assert len(sp._mo_energy_a) == len(sp._mo_energy_b)
-    assert len(sp._mo_occs_a) == 10
-    assert len(sp._mo_occs_a) == len(sp._mo_occs_b)
+    assert len(sp.mo_energy_a) == 10
+    assert len(sp.mo_energy_a) == len(sp.mo_energy_b)
+    assert len(sp.mo_occs_a) == 10
+    assert len(sp.mo_occs_a) == len(sp.mo_occs_b)
     # check array elements
     energy = np.array(
         [
@@ -283,13 +278,13 @@ def test_slater_orbitals_ag():
             -0.5374007,
         ]
     )
-    assert np.allclose(sp._mo_energy_a, energy, atol=1e-6)
-    assert np.allclose(sp._mo_energy_b, energy, atol=1e-6)
+    assert np.allclose(sp.mo_energy_a, energy, atol=1e-6)
+    assert np.allclose(sp.mo_energy_b, energy, atol=1e-6)
     assert np.allclose(
-        sp._mo_occs_a, np.array([1.0, 1.0, 1.0, 1.0, 1.0, 3.0, 3.0, 3.0, 5.0, 5.0]), atol=1e-6
+        sp.mo_occs_a, np.array([1.0, 1.0, 1.0, 1.0, 1.0, 3.0, 3.0, 3.0, 5.0, 5.0]), atol=1e-6
     )
     assert np.allclose(
-        sp._mo_occs_b, np.array([1.0, 1.0, 1.0, 1.0, 0.0, 3.0, 3.0, 3.0, 5.0, 5.0]), atol=1e-6
+        sp.mo_occs_b, np.array([1.0, 1.0, 1.0, 1.0, 0.0, 3.0, 3.0, 3.0, 5.0, 5.0]), atol=1e-6
     )
 
 
