@@ -207,7 +207,7 @@ def test_compiled_gaussian_hf_data():
     # load radial grid, total density, alpha and beta (radial) orbital densities, orbital energies
     grid = sp.rs
     dens = sp.dens_tot
-    orb_dens_a = sp._orb_dens_up
+    orb_dens_a = sp.mo_dens_a
     energy_a = sp.ao.energy_a
 
     # check array shapes
@@ -247,7 +247,7 @@ def test_gaussian_hf_density_be(atom, mult, nelec, nalpha):
     # load Be atomic data and make density spline
     sp = load(atom, 0, mult, dataset="gaussian", datapath=TEST_DATAPATH)
     grid = sp.rs
-    orb_dens_a = sp._orb_dens_up
+    orb_dens_a = sp.mo_dens_a
     spline_dens = sp.density_func(spin="ab", log=True)
     dens_a = np.sum(orb_dens_a, axis=0)
 

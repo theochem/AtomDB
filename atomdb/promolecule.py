@@ -175,7 +175,7 @@ class Promolecule:
     def charge(self):
         r"""Compute the charge of the promolecule."""
 
-        # return sum(atom.natom for atom in self.atoms) - self.nelec()
+        # return sum(atom.atnum for atom in self.atoms) - self.nelec()
         def f(atom):
             return atom.charge
 
@@ -193,7 +193,7 @@ class Promolecule:
         r"""Compute the mass of the promolecule."""
 
         def f(atom):
-            return atom.mass
+            return atom.atmass
 
         return _extensive_global_property(self.atoms, self.coeffs, f)
 

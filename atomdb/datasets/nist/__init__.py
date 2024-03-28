@@ -26,6 +26,9 @@ import h5py as h5
 import csv
 
 import atomdb
+from atomdb.periodic import Element
+from atomdb.utils import _gs_mult_energy
+from atomdb.api import DEFAULT_DATAPATH
 
 
 __all__ = [
@@ -55,69 +58,50 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    natom = atomdb.element_number(elem)
-    nelec = natom - charge
+    atnum = atomdb.element_number(elem)
+    nelec = atnum - charge
     nspin = mult - 1
-    basis = None
+    obasis_name = None
+
+    # Check that the input charge is valid
+    if charge < -2 or charge > atnum:
+        raise ValueError(f"{elem} with {charge} not available.")
 
     #
     # Element properties
     #
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
-    if charge != 0:
-        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
+    atom = Element(elem)
+    atmass = atom.mass["stb"]
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
+    if charge == 0:
+        # overwrite values for neutral atomic species
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion_c6 = atom.c6
 
     #
     # Get the energy for the most stable electronic configuration from database_beta_1.3.0.h5.
     # Check that the input multiplicity corresponds to this configuration.
     #
+    datapath = f"{DEFAULT_DATAPATH}/{dataset.lower()}/raw/database_beta_1.3.0.h5"
+    # case 1: neutral or cationic species
     if charge >= 0:
-        # Neutral and cations
-        z = str(natom).zfill(3)
-        ne = str(nelec).zfill(3)
-        with h5.File(
-            os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
-        ) as f:
-            mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
-            energy = f[z][ne]["Energy"][...]
-        # sort based on energy
-        index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
-        mults = list(mults[index_sorting])
-        energy = list(energy[index_sorting])
-
-        if not mult == mults[0]:
-            raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
-        energy = energy[0]
-        # Convert energy to Hartree from cm^{-1}
-        energy *= 2 * constants.centi * constants.Rydberg
-    elif -2 <= charge < 0:
-        # Anions
-        # Get the multiplicity (the one with lowest energy) from the corresponding neutral
-        # isoelectronic species
-        z = str(natom - charge).zfill(3)
-        ne = str(nelec).zfill(3)
-        with h5.File(
-            os.path.join(os.path.dirname(__file__), "raw/database_beta_1.3.0.h5"), "r"
-        ) as f:
-            mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
-            energy = f[z][ne]["Energy"][...]
-        # sort based on energy
-        index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
-        mults = list(mults[index_sorting])
-        energy = list(energy[index_sorting])
-
-        if not mult == mults[0]:
-            raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
+        expected_mult, energy = _gs_mult_energy(atnum, nelec, datapath)
+    # case 2: anionic species, read multiplicity from neutral isoelectronic species
+    else:
+        expected_mult, energy = _gs_mult_energy(nelec, nelec, datapath)
         # There is no data for anions in database_beta_1.3.0.h5, therefore:
         energy = None
-    else:
-        raise ValueError(f"{elem} with {charge} not available.")
+
+    if not mult == expected_mult:
+        raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
 
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
-    data = list(
-        csv.reader(open(os.path.join(os.path.dirname(__file__), "raw/c6cp04533b1.csv"), "r"))
-    )
+    datapath = f"{DEFAULT_DATAPATH}/{dataset.lower()}/raw/c6cp04533b1.csv"
+    data = list(csv.reader(open(datapath, "r")))
     tabid = [i for i, row in enumerate(data) if "Element" in row]
     # Assign each conceptual-DFT data table to a variable.
     # Remove empty and header rows
@@ -127,29 +111,32 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     table_mus = [row for row in table_mus if len(row[1]) > 0]
     table_etas = data[tabid[2] :]
     table_etas = [row for row in table_etas if len(row[1]) > 0]
-    # Get property at table(natom, charge); convert to Hartree
+    # Get property at table(atnum, charge); convert to Hartree
     colid = table_ips[0].index(str(charge))
-    ip = float(table_ips[natom][colid]) if len(table_ips[natom][colid]) > 1 else None
+    ip = float(table_ips[atnum][colid]) if len(table_ips[atnum][colid]) > 1 else None
     ip *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
     colid = table_mus[0].index(str(charge))
-    mu = float(table_mus[natom][colid]) if len(table_mus[natom][colid]) > 1 else None
+    mu = float(table_mus[atnum][colid]) if len(table_mus[atnum][colid]) > 1 else None
     mu *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
     colid = table_etas[0].index(str(charge))
-    eta = float(table_etas[natom][colid]) if len(table_etas[natom][colid]) > 1 else None
+    eta = float(table_etas[atnum][colid]) if len(table_etas[atnum][colid]) > 1 else None
     eta *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
 
     # Return Species instance
     return atomdb.Species(
         dataset,
         elem,
-        natom,
-        basis,
+        atnum,
+        obasis_name,
         nelec,
         nspin,
         nexc,
-        cov_radii,
-        vdw_radii,
-        mass,
+        atmass,
+        cov_radius,
+        vdw_radius,
+        at_radius,
+        polarizability,
+        dispersion_c6,
         energy,
         ip=ip,
         mu=mu,

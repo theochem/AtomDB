@@ -71,9 +71,7 @@ def test_ddens_func():
 
     # B) Check the interpolated derivative of the spin density from the 2nd and 3rd
     # molecular orbitals.
-    d_dens_m_12 = np.sum(sp._orb_d_dens_up[[1, 2]], axis=0) - np.sum(
-        sp._orb_d_dens_dn[[1, 2]], axis=0
-    )
+    d_dens_m_12 = np.sum(sp.mo_d_dens_a[[1, 2]], axis=0) - np.sum(sp.mo_d_dens_b[[1, 2]], axis=0)
     spline_ddens_m = CubicSpline(sp.rs, d_dens_m_12)
     spline_d_dens_m = sp.ddens_func(spin="m", index=[1, 2])
 
@@ -99,9 +97,7 @@ def test_d2dens_func():
 
     # B) Check the interpolated order 2 derivative of the spin density from the 2nd and 3rd
     # molecular orbitals.
-    d2dens_m_12 = np.sum(sp._orb_d_dens_up[[1, 2]], axis=0) - np.sum(
-        sp._orb_d_dens_dn[[1, 2]], axis=0
-    )
+    d2dens_m_12 = np.sum(sp.mo_d_dens_a[[1, 2]], axis=0) - np.sum(sp.mo_d_dens_b[[1, 2]], axis=0)
     spline_d2dens_m = CubicSpline(sp.rs, d2dens_m_12)
     spline_dd_dens_m = sp.d2dens_func(spin="m", index=[1, 2])
 

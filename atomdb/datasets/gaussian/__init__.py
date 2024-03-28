@@ -316,15 +316,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    natom = atomdb.element_number(elem)
-    nelec = natom - charge
+    atnum = atomdb.element_number(elem)
+    nelec = atnum - charge
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
 
     # Load data from fchk
-    basis = "def2-svpd"
-    data = _load_fchk(natom, elem, nelec, mult, basis, datapath)
+    obasis_name = "def2-svpd"
+    data = _load_fchk(atnum, elem, nelec, mult, obasis_name, datapath)
 
     # Unrestricted Hartree-Fock SCF results
     energy = data.energy
@@ -339,7 +339,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # check for inconsistencies in filenames
     if not np.allclose(np.array([n_up, n_dn]), np.array([sum(occs_up), sum(occs_dn)])):
-        raise ValueError(f"Inconsistent data in fchk file for N: {natom}, M: {mult} CH: {charge}")
+        raise ValueError(f"Inconsistent data in fchk file for N: {atnum}, M: {mult} CH: {charge}")
 
     # Prepare data for computing Species properties
     # density matrix in AO basis
@@ -423,11 +423,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Get information about the element
     atom = Element(elem)
-    cov_radii = atom.cov_radius
-    vdw_radii = atom.vdw_radius
-    mass = atom.mass["stb"]
-    if charge != 0:
-        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
+    atmass = atom.mass["stb"]
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
+    # overwrite values for neutral atomic species
+    if charge == 0:
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion_c6 = atom.c6
 
     # Conceptual-DFT properties (WIP)
     # NOTE: Only the alpha component of the MOs is used bellow
@@ -442,14 +446,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     return atomdb.Species(
         dataset,
         elem,
-        natom,
-        basis,
+        atnum,
+        obasis_name,
         nelec,
         nspin,
         nexc,
-        cov_radii,
-        vdw_radii,
-        mass,
+        atmass,
+        cov_radius,
+        vdw_radius,
+        at_radius,
+        polarizability,
+        dispersion_c6,
         energy,
         mo_e_up,
         mo_e_dn,
@@ -460,19 +467,19 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         eta,
         rs=rs,
         # Density
-        _orb_dens_up=orb_dens_avg_up.flatten(),
-        _orb_dens_dn=orb_dens_avg_dn.flatten(),
+        mo_dens_a=orb_dens_avg_up.flatten(),
+        mo_dens_b=orb_dens_avg_dn.flatten(),
         dens_tot=dens_avg_tot,
         # Density gradient
-        _orb_d_dens_up=orb_d_dens_avg_up.flatten(),
-        _orb_d_dens_dn=orb_d_dens_avg_dn.flatten(),
+        mo_d_dens_a=orb_d_dens_avg_up.flatten(),
+        mo_d_dens_b=orb_d_dens_avg_dn.flatten(),
         d_dens_tot=d_dens_avg_tot,
         # Density laplacian
-        _orb_dd_dens_up=orb_dd_dens_avg_up.flatten(),
-        _orb_dd_dens_dn=orb_dd_dens_avg_dn.flatten(),
+        mo_dd_dens_a=orb_dd_dens_avg_up.flatten(),
+        mo_dd_dens_b=orb_dd_dens_avg_dn.flatten(),
         dd_dens_tot=dd_dens_avg_tot,
         # KED
-        _orb_ked_up=orb_ked_avg_up.flatten(),
-        _orb_ked_dn=orb_ked_avg_dn.flatten(),
+        mo_ked_a=orb_ked_avg_up.flatten(),
+        mo_ked_b=orb_ked_avg_dn.flatten(),
         ked_tot=ked_avg_tot,
     )
