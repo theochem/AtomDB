@@ -21,7 +21,7 @@ import os
 import h5py as h5
 import csv
 
-from importlib_resources import files
+from importlib.resources import files
 from scipy import constants
 
 # get data path

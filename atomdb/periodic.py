@@ -1,210 +1,242 @@
-import csv
-import numpy as np
+from csv import reader
 
-from importlib_resources import files
+from importlib.resources import files
+
 from atomdb.utils import convertor_types
 
-__all__ = ["_sym2num", "_name2num", "_num2sym", "_num2name", "Element"]
+__all__ = [
+    "Element",
+    "element_number",
+    "element_symbol",
+    "element_name",
+]
 
 
-if __name__ == "__main__":
-    print("This module is not meant to be run directly.")
-    print("Use 'from atomdb.periodic import Element' instead.")
-    raise SystemExit
+def setup_element():
+    r"""Generate the ``Element`` class and helper functions."""
+    data, props, srcs, units, prop2col, num2str, str2num = get_data()
+    prop2name, prop2desc, prop2src, prop2url, prop2note = get_info()
+
+    def element_number(elem):
+        ("Return the element number from a string or int.\n"
+         "\n"
+         "Parameters\n"
+         "----------\n"
+         "elem: (str | int)\n"
+         "    Symbol, name, or number of an element.\n"
+         "\n"
+         "Returns\n"
+         "-------\n"
+         "atnum : int\n"
+         "    Atomic number.\n")
+        return str2num[elem] if isinstance(elem, str) else int(elem)
+
+    def element_symbol(elem):
+        ("Return the element symbol from a string or int.\n"
+         "\n"
+         "Parameters\n"
+         "----------\n"
+         "elem: (str | int)\n"
+         "    Symbol, name, or number of an element.\n"
+         "\n"
+         "Returns\n"
+         "-------\n"
+         "symbol : str\n"
+         "    Element symbol.\n")
+        return num2str[
+            element_number(elem) if isinstance(elem, str) else int(elem)
+        ][0]
+
+    def element_name(elem):
+        ("Return the element name from a string or int.\n"
+         "\n"
+         "Parameters\n"
+         "----------\n"
+         "elem: (str | int)\n"
+         "    Symbol, name, or number of an element.\n"
+         "\n"
+         "Returns\n"
+         "-------\n"
+         "name : str\n"
+         "    Element name.\n")
+        return num2str[
+            element_number(elem) if isinstance(elem, str) else int(elem)
+        ][1]
+
+    def init(self, elem):
+        ("Initialize an ``Element`` instance.\n"
+         "\n"
+         "Parameters\n"
+         "----------\n"
+         "elem : (str | int)\n"
+         "    Symbol, name, or number of an element.\n")
+        self.atnum = element_number(elem)
+        self.name = element_name(elem)
+        self.symbol = element_symbol(elem)
+
+    # Element attributes; add __init__ method
+    attrs = {
+        "__init__": init,
+    }
+
+    # ELement class docstring header
+    class_doc = ("Element properties.\n"
+                 "\n"
+                 "Attributes\n"
+                 "----------\n"
+                 "atnum : int\n"
+                 "    Atomic number.\n"
+                 "symbol : str\n"
+                 "    Element symbol.\n"
+                 "name : str\n"
+                 "    Element name.\n")
+
+    # Autocomplete class docstring with data from the CSV files
+    for prop, name in prop2name.items():
+
+        # Add signature, description, sources, units, urls, and notes
+        short = f"{name} of the element."
+        if len(prop2col[prop]) == 1 and "" in prop2col[prop]:
+            # Only one default source
+            t = type(data[0][prop2col[prop][""]]).__name__
+            sig = f"{prop} : {t}"
+            long = ""
+        else:
+            # Multiple or non-default sources
+            t = type(data[0][next(iter(prop2col[prop].values()))]).__name__
+            sig = f"{prop} : Dict[{t}]"
+            long = ("\n"
+                    "Notes\n"
+                    "-----\n"
+                    "This property is a dictionary with the following keys:")
+            # Add unit, url, note for each source
+            for src in prop2col[prop].keys():
+                long += f'\n    * "{src}"'
+                if prop2src[prop][src] != "":
+                    long += ("\n        * Source\n"
+                             f"{indent_lines(prop2src[prop][src], 12)}")
+                if units[prop2col[prop][src]] != "":
+                    long += ("\n        * Units\n"
+                             f"{indent_lines(units[prop2col[prop][src]], 12)}")
+                if prop2url[prop][src] != "":
+                    long += ("\n        * URL\n"
+                             f"{indent_lines(prop2url[prop][src], 12)}")
+                if prop2note[prop][src] != "":
+                    long += ("\n        * Notes\n"
+                             f"{indent_lines(prop2note[prop][src], 12)}")
+            long += "\n"
+
+        # Add property to class docstring
+        class_doc += (f"{sig}\n"
+                      f"    {short}\n")
+
+        # Make property method for Element class with docstring
+        f = make_property(data, prop, prop2col)
+        f.__doc__ = (f"{short}\n"
+                     "\n"
+                     "Returns\n"
+                     "-------\n"
+                     f"{sig}\n"
+                     f"{long}")
+
+        # Add property method to attributes
+        attrs[prop] = f
+
+    # Add class docstring to attributes
+    attrs["__doc__"] = class_doc
+
+    # Construct Element class
+    Element = type("Element", (object,), attrs)
+
+    # Return constructed class and functions
+    return Element, element_number, element_symbol, element_name
 
 
-ATOM_DOCSTRING_BASE = (
-    "Class to store the properties of the elements.\n\n"
-    + "Attributes\n----------\n"
-    + "atnum : int\n    Atomic number of the element.\n"
-    + "symbol : str\n    Chemical symbol of the element.\n"
-    + "name : str\n    Name of the element.\n"
-)
+def read_csv(file):
+    r"""Read a CSV file into a list of lists."""
+    lines = []
+    with open(file) as f:
+        for row in reader(f):
+            # ignore comments and empty lines
+            if (
+                row
+                and not row[0].lstrip().startswith("#")
+                and any(c not in ", \n" for c in row)
+            ):
+                # Replace \n with new line in each element
+                lines.append([i.replace("\\n", "\n") for i in row])
+    return lines
 
 
-# auxiliary functions
-def _read_data_csv(file):
-    """Reads a csv file and returns a list of lists with the data.
-
-    The data is read from the file and stored in a list of lists. The first two rows are the column
-    headers and the key sources, respectively. From the third row onwards are the data values.
-
-
-    Parameters
-    ----------
-    file : file
-        The file to read.
-
-    Returns
-    -------
-    list of lists
-        The data in the file.
-    """
-    data = []
-    for row in csv.reader(file):
-        # ignore comments and empty lines
-        if row and not row[0].startswith("#") and not all(c in ", \n" for c in row):
-            # Replace \n with new line in each element
-            data.append([element.replace("\\n", "\n") for element in row])
-
-    # pop units from data (third row)
-    units = data.pop(2)
-
-    # convert data to the appropriate type (int, float, str, or amu)
-    for row in data[2:]:
-        row[:] = [convertor_types[unit](i) if i else np.nan for unit, i in zip(units, row)]
-    return data
+def get_data():
+    r"""Extract the contents of ``data/elements_data.csv``."""
+    data = read_csv(files("atomdb.data").joinpath("elements_data.csv"))
+    # Get property keys/source keys/units
+    props = data.pop(0)[3:]
+    srcs = data.pop(0)[3:]
+    units = data.pop(0)[3:]
+    # Create utility dictionary to locate the columns of the properties
+    prop2col = {}
+    for col, (prop, key) in enumerate(zip(props, srcs)):
+        prop2col.setdefault(prop, {})[key] = col
+    # Create maps from symbol/name to element number
+    num2str, str2num = {}, {}
+    for row in data:
+        atnum = int(row.pop(0))
+        symbol = row.pop(0).title()
+        name = row.pop(0).title()
+        num2str[atnum] = (symbol, name)
+        str2num[symbol] = atnum
+        str2num[name] = atnum
+        # Convert the rest of the data to numbers
+        for i, (unit, val) in enumerate(zip(units, row)):
+            row[i] = convertor_types[unit](val) if val else None
+    return data, props, srcs, units, prop2col, num2str, str2num
 
 
-# auxiliary functions
-def _read_csv(file):
-    """Reads a csv file and returns a list of lists with the data.
-
-    Parameters
-    ----------
-    file : file
-        The file to read.
-
-    Returns
-    -------
-    list of lists
-        The data in the file.
-    """
-    data = []
-    for row in csv.reader(file):
-        # ignore comments and empty lines
-        if row and not row[0].startswith("#") and not all(c in ", \n" for c in row):
-            # Replace \n with new line in each element
-            data.append([cell.replace("\\n", "\n") for cell in row])
-    return data
+def get_info():
+    r"""Extract the contents of ``data/data_info.csv``."""
+    info = read_csv(files("atomdb.data").joinpath("data_info.csv"))
+    prop2name = {}
+    prop2desc = {}
+    prop2src = {}
+    prop2url = {}
+    prop2note = {}
+    print([len(i) for i in info])
+    for prop, name, key, desc, src, url, note in info:
+        prop2name[prop] = name
+        prop2desc.setdefault(prop, {})[key] = desc
+        prop2src.setdefault(prop, {})[key] = src
+        prop2url.setdefault(prop, {})[key] = url
+        prop2note.setdefault(prop, {})[key] = note
+    return prop2name, prop2desc, prop2src, prop2url, prop2note
 
 
-def _indent_lines(input_string, indent):
-    """Indent each line of a string by a given number of spaces."""
+def indent_lines(input_string, indent):
+    r"""Indent each line of a string by a given number of spaces."""
     lines = input_string.splitlines()
     indented_lines = [(indent * " ") + line for line in lines]
     return "\n".join(indented_lines)
 
 
-def _gendoc(info_file):
-    """Generate a docstring for the Element class.
+def make_property(data, prop, prop2col):
+    r"""Construct a property method for the Element class."""
 
-    Parameters
-    ----------
-    info_file : str
-        The name of the csv file with the data for constructing the docstring.
-    """
-    # create a dictionary to store the metadata of the properties
-    _data_src = _read_csv(open(info_file))
-    _prop2name = {}
-    _prop2desc = {}
-    _prop2source = {}
-    _prop2url = {}
-    _prop2notes = {}
-    for prop, prop_name, key, description, source, url, notes in _data_src:
-        _prop2name[prop] = prop_name
-        _prop2desc.setdefault(prop, {})[key] = description
-        _prop2source.setdefault(prop, {})[key] = source
-        _prop2url.setdefault(prop, {})[key] = url
-        _prop2notes.setdefault(prop, {})[key] = notes
+    if len(prop2col[prop]) == 1 and "" in prop2col[prop]:
 
-    docstring = ATOM_DOCSTRING_BASE
+        def f(self):
+            return data[self.atnum - 1][prop2col[prop][""]]
+    else:
 
-    # autocomplete the docstring with data from the csv files
-    # for each property
-    for i in _prop2name:
-        # if only one source is available
-        if len(_prop2desc[i]) == 1:
-            # add line to docstring with property name, type, description, unit, source, and url
-            docstring += f"{i} : float\n    {_prop2name[i]} of the element.\n"
-            if list(_prop2desc[i].values())[0] != "":
-                docstring += _indent_lines(f"{list(_prop2desc[i].values())[0]}", 4) + "\n"
-            if list(_prop2source[i].values())[0] != "":
-                docstring += _indent_lines(f"{list(_prop2source[i].values())[0]}", 4) + "\n"
-            if list(_prop2url[i].values())[0] != "":
-                docstring += _indent_lines(f"{list(_prop2url[i].values())[0]}", 4) + "\n"
-            if list(_prop2notes[i].values())[0] != "":
-                docstring += _indent_lines(f"Notes:\n{list(_prop2notes[i].values())[0]}", 4) + "\n"
-        # if multiple sources are available
-        else:
-            docstring += f"{i} : dict\n    Dictionary with the {_prop2name[i]} of the element.\n"
-            # add a line docstring with the description, source, and url for each source
-            for j in _prop2col[i]:
-                if _prop2desc[i][j] != "":
-                    docstring += _indent_lines(f"{j} : {_prop2desc[i][j]}", 4) + "\n"
-    return docstring
+        def f(self):
+            row = data[self.atnum - 1]
+            return {
+                k: row[v] for k, v in prop2col[prop].items()
+                if row[v] is not None
+            }
+
+    return property(f)
 
 
-# Code to run when the module is imported
-data_file = files("atomdb.data").joinpath("elements_data.csv")
-info_file = files("atomdb.data").joinpath("data_info.csv")
-
-
-# work with data from "elements_data.csv"
-data = _read_data_csv(open(data_file))
-
-# get properties and key sources
-properties = data.pop(0)[3:]
-key_sources = data.pop(0)[3:]
-
-# convert data to the appropriate type
-atnums, symbols, names = [], [], []
-
-# set the atomic numbers, symbols, and names of the elements from the data
-atnums = [row[0] for row in data]
-symbols = [row[1] for row in data]
-names = [row[2] for row in data]
-
-# create utility dictionaries to convert between different element identifiers
-_sym2num = dict(zip(symbols, atnums))
-_name2num = dict(zip(names, atnums))
-_num2sym = dict(zip(atnums, symbols))
-_num2name = dict(zip(atnums, names))
-
-# create utility dictionary to locate the columns of the properties
-_prop2col = {}
-for column, (prop, key) in enumerate(zip(properties, key_sources)):
-    _prop2col.setdefault(prop, {})[key] = {"ncol": column + 3}
-
-
-class Element:
-    def __init__(self, id):
-        """Create an Element object.
-
-        Parameters
-        ----------
-        id : str or int
-            The atomic number, symbol, or name of the element.
-        """
-        # check if the input is a valid element identifier and get the atomic number
-        if isinstance(id, str):
-            # if it is a is a name
-            if len(id) > 3:
-                self.atnum = _name2num[id.lower()]
-            # if it is a symbol
-            else:
-                self.atnum = _sym2num[id]
-        elif isinstance(id, int) and id in _sym2num.values():
-            self.atnum = id
-        else:
-            raise ValueError(
-                "Invalid input for element identifier, must be Z, symbol, or name of element"
-            )
-        # set the symbol and name of the element
-        self.atsym = _num2sym[self.atnum]
-        self.atname = _num2name[self.atnum].capitalize()
-
-        # create a dictionary to store the properties of the element
-        tmp_dict = _prop2col.copy()
-        for i in tmp_dict:
-            # select the multiplicity of isoelectronic element
-            if len(tmp_dict[i]) == 1 and "" in tmp_dict[i]:
-                tmp_dict[i] = data[self.atnum - 1][tmp_dict[i][""]["ncol"]]
-            else:
-                tmp_dict[i] = {j: data[self.atnum - 1][tmp_dict[i][j]["ncol"]] for j in tmp_dict[i]}
-        # set the class attributes to the properties of the element
-        self.__dict__.update(tmp_dict)
-
-
-# set the docstring of the Element class
-Element.__doc__ = _gendoc(info_file)
+# Generate class and functions to export
+Element, element_number, element_symbol, element_name = setup_element()
