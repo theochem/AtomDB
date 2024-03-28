@@ -35,6 +35,7 @@ from grid.rtransform import ExpRTransform
 from grid.atomgrid import AtomGrid
 
 import atomdb
+from atomdb.periodic import Element
 
 
 __all__ = [
@@ -110,18 +111,18 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    natom = atomdb.element_number(elem)
-    nelec = natom - charge
+    atnum = atomdb.element_number(elem)
+    nelec = atnum - charge
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
-    basis = BASIS
+    obasis_name = BASIS
 
     # Load restricted Hartree-Fock SCF
     mol = gto.Mole()
     mol.build(
         atom=[[elem, (0, 0, 0)]],
-        basis=basis,
+        basis=obasis_name,
         charge=charge,
         spin=nspin,
     )
@@ -185,9 +186,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     #
     # Element properties
     #
-    cov_radii, vdw_radii, mass = atomdb.get_element_data(elem)
-    if charge != 0:
-        cov_radii, vdw_radii = [None, None]  # overwrite values for charged species
+    atom = Element(elem)
+    atmass = atom.mass["stb"]
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
+    # overwrite values for neutral atomic species
+    if charge == 0:
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion_c6 = atom.c6
+
     #
     # Conceptual-DFT properties (TODO)
     #
@@ -199,14 +208,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     return atomdb.Species(
         dataset,
         elem,
-        natom,
-        basis,
+        atnum,
+        obasis_name,
         nelec,
         nspin,
         nexc,
-        cov_radii,
-        vdw_radii,
-        mass,
+        atmass,
+        cov_radius,
+        vdw_radius,
+        at_radius,
+        polarizability,
+        dispersion_c6,
         energy,
         mo_e_up,
         mo_e_dn,
@@ -216,10 +228,12 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         mu,
         eta,
         rs=rs,
-        _orb_dens_up=orb_dens_avg_up.flatten(),
-        _orb_dens_dn=orb_dens_avg_dn.flatten(),
+        # Density
+        mo_dens_a=orb_dens_avg_up.flatten(),
+        mo_dens_b=orb_dens_avg_dn.flatten(),
         dens_tot=dens_avg_tot,
-        _orb_ked_up=orb_ked_avg_up.flatten(),
-        _orb_ked_dn=orb_ked_avg_dn.flatten(),
+        # KED
+        mo_ked_a=orb_ked_avg_up.flatten(),
+        mo_ked_b=orb_ked_avg_dn.flatten(),
         ked_tot=ked_avg_tot,
     )
