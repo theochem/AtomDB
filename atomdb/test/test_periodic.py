@@ -1,35 +1,34 @@
 import pytest
-import numpy as np
-from atomdb.periodic import _num2sym, _sym2num, _name2num, _num2name, Element
-from atomdb.utils import angstrom, amu
+
+from atomdb import Element, element_number, element_symbol, element_name
+
+from atomdb.utils import ANGSTROM, AMU
 
 
-def test_num2sym():
-    assert _num2sym[1] == "H"
-    assert _num2sym[6] == "C"
-    assert _num2sym[26] == "Fe"
+def testelement_symbol():
+    assert element_symbol(1) == "H"
+    assert element_symbol(6) == "C"
+    assert element_symbol(26) == "Fe"
 
 
 def test_sym2num():
-    assert _sym2num["H"] == 1
-    assert _sym2num["C"] == 6
-    assert _sym2num["Fe"] == 26
+    assert element_number("H") == 1
+    assert element_number("C") == 6
+    assert element_number("Fe") == 26
+
+    assert element_number("hydrogen") == 1
+    assert element_number("carbon") == 6
+    assert element_number("iron") == 26
+
+    assert element_number("Hydrogen") == 1
+    assert element_number("Carbon") == 6
+    assert element_number("Iron") == 26
 
 
-def _name2num():
-    assert _sym2num["hydrogen"] == 1
-    assert _sym2num["carbon"] == 6
-    assert _sym2num["iron"] == 26
-
-    assert _sym2num["Hydrogen"] == 1
-    assert _sym2num["Carbon"] == 6
-    assert _sym2num["Iron"] == 26
-
-
-def _num2name():
-    assert _sym2num[1] == "Hydrogen"
-    assert _sym2num[6] == "Carbon"
-    assert _sym2num[26] == "Iron"
+def test__num2name():
+    assert element_name(1) == "Hydrogen"
+    assert element_name(6) == "Carbon"
+    assert element_name(26) == "Iron"
 
 
 def test_element_invalid_element():
@@ -59,21 +58,25 @@ def test_get_attributes():
         "atname": "Hydrogen",
         "group": 1,
         "period": 1,
-        "cov_radius": {"cordero": 0.31 * angstrom, "bragg": np.nan, "slater": 0.25 * angstrom},
-        "vdw_radius": {
-            "bondi": 1.2 * angstrom,
-            "truhlar": np.nan,
-            "rt": 1.1 * angstrom,
-            "batsanov": np.nan,
-            "dreiding": 3.195 * angstrom / 2,
-            "uff": 2.886 * angstrom / 2,
-            "mm3": 1.62 * angstrom,
+        "cov_radius": {
+            "cordero": 0.31 * ANGSTROM,
+            # "bragg": np.nan,
+            "slater": 0.25 * ANGSTROM
         },
-        "at_radius": {"wc": 0.529192875 * angstrom, "cr": 0.53 * angstrom},
+        "vdw_radius": {
+            "bondi": 1.2 * ANGSTROM,
+            # "truhlar": np.nan,
+            "rt": 1.1 * ANGSTROM,
+            # "batsanov": np.nan,
+            "dreiding": 3.195 * ANGSTROM / 2,
+            "uff": 2.886 * ANGSTROM / 2,
+            "mm3": 1.62 * ANGSTROM,
+        },
+        "at_radius": {"wc": 0.529192875 * ANGSTROM, "cr": 0.53 * ANGSTROM},
         "eneg": {"pauling": 2.2},
-        "pold": {"crc": 0.666793 * angstrom**3, "chu": 4.5},
+        "pold": {"crc": 0.666793 * ANGSTROM**3, "chu": 4.5},
         "c6": {"chu": 6.499026705},
-        "mass": {"stb": 1.007975 * amu},
+        "mass": {"stb": 1.007975 * AMU},
     }
 
     # Carbon data
@@ -84,24 +87,24 @@ def test_get_attributes():
         "group": 14,
         "period": 2,
         "cov_radius": {
-            "cordero": 0.7445337366 * angstrom,
-            "bragg": 0.77 * angstrom,
-            "slater": 0.7 * angstrom,
+            "cordero": 0.7445337366 * ANGSTROM,
+            "bragg": 0.77 * ANGSTROM,
+            "slater": 0.7 * ANGSTROM,
         },
         "vdw_radius": {
-            "bondi": 1.7 * angstrom,
-            "truhlar": np.nan,
-            "rt": 1.77 * angstrom,
-            "batsanov": 1.7 * angstrom,
-            "dreiding": 3.8983 * angstrom / 2,
-            "uff": 3.851 * angstrom / 2,
-            "mm3": 2.04 * angstrom,
+            "bondi": 1.7 * ANGSTROM,
+            # "truhlar": np.nan,
+            "rt": 1.77 * ANGSTROM,
+            "batsanov": 1.7 * ANGSTROM,
+            "dreiding": 3.8983 * ANGSTROM / 2,
+            "uff": 3.851 * ANGSTROM / 2,
+            "mm3": 2.04 * ANGSTROM,
         },
-        "at_radius": {"wc": 0.62 * angstrom, "cr": 0.67 * angstrom},
+        "at_radius": {"wc": 0.62 * ANGSTROM, "cr": 0.67 * ANGSTROM},
         "eneg": {"pauling": 2.55},
-        "pold": {"crc": 1.76 * angstrom**3, "chu": 12.0},
+        "pold": {"crc": 1.76 * ANGSTROM**3, "chu": 12.0},
         "c6": {"chu": 46.6},
-        "mass": {"stb": 12.0106 * amu},
+        "mass": {"stb": 12.0106 * AMU},
     }
 
     # for each element, check if the attributes are as expected
