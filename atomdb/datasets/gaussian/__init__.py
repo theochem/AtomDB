@@ -45,12 +45,35 @@ __all__ = [
 
 METADATA = {}
 METADATA["PROPERTIES"] = {
-    "dataset", "elem", "natom", "basis", "nelec", "nspin", "nexc", "cov_radii",
-    "vdw_radii", "mass", "energy", "ip", "mu", "eta", "rs", "mo_e_up", "mo_e_dn",
-    "occs_up", "occs_dn", "_orb_dens_up", "_orb_dens_dn", "dens_tot", "_orb_ked_up",
-    "_orb_ked_dn", "ked_tot"
+    "dataset",
+    "elem",
+    "natom",
+    "basis",
+    "nelec",
+    "nspin",
+    "nexc",
+    "cov_radii",
+    "vdw_radii",
+    "mass",
+    "energy",
+    "ip",
+    "mu",
+    "eta",
+    "rs",
+    "mo_e_up",
+    "mo_e_dn",
+    "occs_up",
+    "occs_dn",
+    "_orb_dens_up",
+    "_orb_dens_dn",
+    "dens_tot",
+    "_orb_ked_up",
+    "_orb_ked_dn",
+    "ked_tot",
 }
-METADATA["DOCSTRING"] = """Gaussian basis densities (UHF) Dataset
+METADATA[
+    "DOCSTRING"
+] = """Gaussian basis densities (UHF) Dataset
 Electronic structure and density properties evaluated with def2-svpd basis set"""
 
 # generating the table for the sphinx documentation
@@ -71,6 +94,7 @@ NPOINTS = 1000
 SIZE = 170  # Lebedev grid sizes
 
 DEGREE = 21  #  Lebedev grid degrees
+
 
 def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
     r"""Load Gaussian fchk file and return the iodata object
