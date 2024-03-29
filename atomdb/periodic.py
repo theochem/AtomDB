@@ -2,7 +2,7 @@ from csv import reader
 
 from importlib.resources import files
 
-from atomdb.utils import convertor_types
+from atomdb.utils import CONVERTOR_TYPES
 
 __all__ = [
     "Element",
@@ -190,7 +190,7 @@ def get_data():
         str2num[name] = atnum
         # Convert the rest of the data to numbers
         for i, (unit, val) in enumerate(zip(units, row)):
-            row[i] = convertor_types[unit](val) if val else None
+            row[i] = CONVERTOR_TYPES[unit](val) if val else None
     return data, props, srcs, units, prop2col, num2str, str2num
 
 
@@ -202,7 +202,6 @@ def get_info():
     prop2src = {}
     prop2url = {}
     prop2note = {}
-    print([len(i) for i in info])
     for prop, name, key, desc, src, url, note in info:
         prop2name[prop] = name
         prop2desc.setdefault(prop, {})[key] = desc
