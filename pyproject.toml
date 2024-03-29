@@ -44,10 +44,9 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.16",
-    "pytest >=2.6",
     "scipy>=1.4",
-    "importlib_resources>=5.7",
     "msgpack",
+    "msgpack-numpy",
     "h5py",
 ]
 dynamic = ["version"]
@@ -59,6 +58,9 @@ Source = "https://github.com/theochem/atomdb/"
 Changelog = "https://github.com/theochem/atomdb/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
+dev = [
+    "pytest >=2.6",
+]
 doc = [
     "ipython",
     "numpydoc",
@@ -69,7 +71,7 @@ doc = [
     "sphinx_rtd_theme",
     "sphinx_autodoc_typehints",
     "docutils==0.16",  # Needed to show bullet points in sphinx_rtd_theme
-    "nbsphinx-link"
+    "nbsphinx-link",
 ]
 
 [tool.black]

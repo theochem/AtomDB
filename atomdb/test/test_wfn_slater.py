@@ -23,14 +23,18 @@
 # --
 #
 
+from importlib.resources import files
+
+import os
+
 import pytest
 
 import numpy as np
-from numpy.testing import assert_equal, assert_almost_equal, assert_raises
 
-from atomdb.api import load
-from importlib_resources import files
-import os
+from numpy.testing import assert_almost_equal
+
+from atomdb import load
+
 
 # get test data path
 TEST_DATAPATH = files("atomdb.test.data")
