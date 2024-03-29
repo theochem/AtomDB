@@ -38,6 +38,11 @@ table.docutils tbody tr.row-odd td {
     background-color: rgb(252, 252, 252);
 }
 
-div.wy-table-responsive {
+/* div.wy-table-responsive {
     max-height: 90vh;
+} */
+
+p {
+    white-space: normal;
+    text-wrap: wrap;
 }

@@ -37,12 +37,29 @@ from iodata import load_one
 import atomdb
 
 from atomdb.periodic import Element
-
+from atomdb.datasets import generate_property_docs
 
 __all__ = [
     "run",
 ]
 
+METADATA = {}
+METADATA["PROPERTIES"] = {
+    "dataset", "elem", "natom", "basis", "nelec", "nspin", "nexc", "cov_radii",
+    "vdw_radii", "mass", "energy", "ip", "mu", "eta", "rs", "mo_e_up", "mo_e_dn",
+    "occs_up", "occs_dn", "_orb_dens_up", "_orb_dens_dn", "dens_tot", "_orb_ked_up",
+    "_orb_ked_dn", "ked_tot"
+}
+METADATA["DOCSTRING"] = """Gaussian basis densities (UHF) Dataset
+Electronic structure and density properties evaluated with def2-svpd basis set"""
+
+# generating the table for the sphinx documentation
+__doc__ = METADATA["DOCSTRING"] + generate_property_docs(METADATA["PROPERTIES"], doctype="SPHINX")
+
+# augmenting the available properties and details to the DOCSTRING
+METADATA["DOCSTRING"] += generate_property_docs(METADATA["PROPERTIES"])
+
+DOCSTRING = METADATA["DOCSTRING"]
 
 # Parameters to generate an atomic grid from uniform radial grid
 # Use 170 points, lmax = 21 for the Lebedev grid since our basis
@@ -54,14 +71,6 @@ NPOINTS = 1000
 SIZE = 170  # Lebedev grid sizes
 
 DEGREE = 21  #  Lebedev grid degrees
-
-
-DOCSTRING = """Gaussian basis densities (UHF) Dataset
-
-Electronic structure and density properties evaluated with def2-svpd basis set
-
-"""
-
 
 def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
     r"""Load Gaussian fchk file and return the iodata object
@@ -101,19 +110,21 @@ def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
 def eval_orbs_density(one_density_matrix, orb_eval):
     r"""Return each orbital density evaluated at a set of points
 
-    rho_i(r) = \sum_j P_ij \phi_i(r) \phi_j(r)
+    .. math::
+
+        rho_i(r) = \sum_j P_ij \phi_i(r) \phi_j(r)
 
     Parameters
     ----------
-    one_density_matrix : np.ndarray(K_orb, K_orb)
+    one_density_matrix : ``np.ndarray(K_orb, K_orb)``
         One-electron density matrix (1DM) from K orbitals
-    orb_eval : np.ndarray(K_orb, N)
+    orb_eval : ``np.ndarray(K_orb, N)``
         orbitals evaluated at a set of grid points (N).
         These orbitals must be the basis used to evaluate the 1DM.
 
     Returns
     -------
-    orb_dens : np.ndarray(K_orb, N)
+    orb_dens : ``np.ndarray(K_orb, N)``
         orbitals density at a set of grid points (N)
     """
     #
@@ -125,26 +136,26 @@ def eval_orbs_density(one_density_matrix, orb_eval):
 
 
 def eval_orbs_radial_d_density(one_density_matrix, basis, points, transform=None):
-    """Compute the radial derivative of the density orbital components.
+    r"""Compute the radial derivative of the density orbital components.
 
     For a set of points, compute the radial derivative of the density component for each orbital
     given the basis set and the basis transformation matrix.
 
     Parameters
     ----------
-    one_density_matrix : np.ndarray(K_orb, K_orb)
+    one_density_matrix : ``np.ndarray(K_orb, K_orb)``
         One-electron density matrix in terms of the given basis set.
-    basis : gbasis.basis.Basis
+    basis : ``gbasis.basis.Basis``
         Basis set used to evaluate the radial derivative of the density
-    points : np.ndarray(N, 3)
+    points : ``np.ndarray(N, 3)``
         Cartesian coordinates of the points in space (in atomic units) where the derivatives
         are evaluated.
-        Rows correspond to the points and columns correspond to the :math:`x, y, \text{and} z`
+        Rows correspond to the points and columns correspond to the :math:`x, y, \text{ and } z`
         components.
 
     Returns
     -------
-    radial_orb_d_dens : np.ndarray(K, N)
+    radial_orb_d_dens : ``np.ndarray(K, N)``
         Radial derivative of the density at the set of points for each orbital component.
     """
     # compute the basis values for the points output shape (K, N)
@@ -173,18 +184,18 @@ def eval_orbs_radial_d_density(one_density_matrix, basis, points, transform=None
 
 
 def eval_orbs_radial_dd_density(one_density_matrix, basis, points, transform=None):
-    """Compute the radial second derivative of the density orbital components.
+    r"""Compute the radial second derivative of the density orbital components.
 
     For a set of points, compute the radial second derivative of the density component for each
     orbital given the basis set and the basis transformation matrix.
 
     Parameters
     ----------
-    one_density_matrix : np.ndarray(K_orb, K_orb)
+    one_density_matrix : ``np.ndarray(K_orb, K_orb)``
         One-electron density matrix in terms of the given basis set.
-    basis : gbasis.basis.Basis
+    basis : ``gbasis.basis.Basis``
         Basis set used to evaluate the radial derivative of the density
-    points : np.ndarray(N, 3)
+    points : ``np.ndarray(N, 3)``
         Cartesian coordinates of the points in space (in atomic units) where the derivatives
         are evaluated.
         Rows correspond to the points and columns correspond to the :math:`x, y, \text{and} z`
@@ -192,7 +203,7 @@ def eval_orbs_radial_dd_density(one_density_matrix, basis, points, transform=Non
 
     Returns
     -------
-    radial_dd_orb_dens : np.ndarray(K, N)
+    radial_dd_orb_dens : ``np.ndarray(K, N)``
         Radial second derivative of the density at the set of points for each orbital component.
     """
     # compute unitary vectors for the directions of the points
@@ -243,23 +254,23 @@ def eval_orbs_radial_dd_density(one_density_matrix, basis, points, transform=Non
 
 
 def eval_radial_d_density(one_density_matrix, basis, points):
-    """Compute the radial derivative of the density.
+    r"""Compute the radial derivative of the density.
 
     For a set of points, compute the radial derivative of the density
     given the one-electron density matrix and the basis set.
 
     Parameters
     ----------
-    one_density_matrix : np.ndarray(K_orb, K_orb)
+    one_density_matrix : ``np.ndarray(K_orb, K_orb)``
         One-electron density matrix (1DM) from K orbitals
-    basis : gbasis.basis.Basis
+    basis : ``gbasis.basis.Basis``
         Basis set used to evaluate the radial derivative of the density
-    points : np.ndarray(N, 3)
+    points : ``np.ndarray(N, 3)``
         Set of points where the radial derivative of the density is evaluated
 
     Returns
     -------
-    radial_d_density : np.ndarray(N)
+    radial_d_density : ``np.ndarray(N)``
         Radial derivative of the density at the set of points
     """
     rho_grad = evaluate_density_gradient(one_density_matrix, basis, points)
@@ -270,23 +281,23 @@ def eval_radial_d_density(one_density_matrix, basis, points):
 
 
 def eval_radial_dd_density(one_density_matrix, basis, points):
-    """Compute the radial derivative of the density.
+    r"""Compute the radial derivative of the density.
 
     For a set of points, compute the radial derivative of the density
     given the one-electron density matrix and the basis set.
 
     Parameters
     ----------
-    one_density_matrix : np.ndarray(K_orb, K_orb)
+    one_density_matrix : ``np.ndarray(K_orb, K_orb)``
         One-electron density matrix (1DM) from K orbitals
-    basis : gbasis.basis.Basis
+    basis : ``gbasis.basis.Basis``
         Basis set used to evaluate the radial derivative of the density
-    points : np.ndarray(N, 3)
+    points : ``np.ndarray(N, 3)``
         Set of points where the radial derivative of the density is evaluated
 
     Returns
     -------
-    radial_dd_density : np.ndarray(N)
+    radial_dd_density : ``np.ndarray(N)``
         Radial derivative of the density at the set of points
     """
     rho_hess = evaluate_density_hessian(one_density_matrix, basis, points)
@@ -297,7 +308,7 @@ def eval_radial_dd_density(one_density_matrix, basis, points):
 
 
 def eval_orb_ked(one_density_matrix, basis, points, transform=None):
-    "Adapted from Gbasis"
+    r"""Adapted from `theochem/gbasis <https://github.com/theochem/gbasis>`_"""
     orbt_ked = 0
     for orders in np.identity(3, dtype=int):
         deriv_orb_eval_one = evaluate_deriv_basis(basis, points, orders, transform=transform)
@@ -309,7 +320,7 @@ def eval_orb_ked(one_density_matrix, basis, points, transform=None):
 
 
 def run(elem, charge, mult, nexc, dataset, datapath):
-    r"""Compile the AtomDB database entry for densities from Gaussian wfn."""
+    r"""Compile the AtomDB database entry for densities from Gaussian Wavefunction File (wfn)."""
     # Check arguments
     if nexc != 0:
         raise ValueError("Nonzero value of `nexc` is not currently supported")
