@@ -27,16 +27,19 @@ import numpy as np
 import os
 from importlib_resources import files
 
-# mark all rest of this file as dev
+# avoid import error on 'not dev' tests, these statements are run even when the tests are skipped
+try:
+    from atomdb.datasets.gaussian import eval_radial_d_density, eval_radial_dd_density
+    from atomdb.datasets.gaussian import eval_orbs_radial_d_density, eval_orbs_radial_dd_density
+    from gbasis.wrappers import from_iodata
+    from gbasis.evals.density import evaluate_density_gradient, evaluate_density_laplacian
+    from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
+    from iodata import load_one
+except ImportError:
+    pass
+
+# mark all tests in this file as development tests
 pytestmark = pytest.mark.dev
-
-from atomdb.datasets.gaussian import eval_radial_d_density, eval_radial_dd_density
-from atomdb.datasets.gaussian import eval_orbs_radial_d_density, eval_orbs_radial_dd_density
-from gbasis.wrappers import from_iodata
-from gbasis.evals.density import evaluate_density_gradient, evaluate_density_laplacian
-from grid import UniformInteger, LinearInfiniteRTransform, AtomGrid
-from iodata import load_one
-
 
 # get test data path
 TEST_DATAPATH = files("atomdb.test.data")
