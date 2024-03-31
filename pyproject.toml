@@ -102,8 +102,10 @@ extend-exclude = ["doc/*", "doc/*/*"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-testpaths = ["tests"]
-addopts = "-m 'not dev'"
+testpaths = ["test"]
+addopts = "-m 'not dev' --import-mode=importlib"
 markers = [
     "dev: mark a developer test, needs extra dependencies.",
 ]
+
+
