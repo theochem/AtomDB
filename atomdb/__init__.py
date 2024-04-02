@@ -41,8 +41,7 @@ __all__ = [
     "load",
     "dump",
     "raw_datafile",
-    "make_promolecule"
-    "version",
+    "make_promolecule" "version",
 ]
 
 

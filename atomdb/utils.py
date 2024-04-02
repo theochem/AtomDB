@@ -59,8 +59,7 @@ MULT_TABLE_CSV = path.join(MODULE_DATAPATH, "multiplicities_table.csv")
 r"""The CSV file containing the multiplicities of species."""
 
 
-ANGSTROM = (100 * constants.pico * constants.m_e * constants.c *
-            constants.alpha / constants.hbar)
+ANGSTROM = 100 * constants.pico * constants.m_e * constants.c * constants.alpha / constants.hbar
 r"""Angstrom (:math:`\text{Å}`)."""
 
 
