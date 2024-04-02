@@ -70,26 +70,65 @@ def setup_element():
          "----------\n"
          "elem : (str | int)\n"
          "    Symbol, name, or number of an element.\n")
-        self.atnum = element_number(elem)
-        self.name = element_name(elem)
-        self.symbol = element_symbol(elem)
+        self._atnum = element_number(elem)
+
+    @property
+    def atnum(self):
+        return self._atnum
+
+    atnum.__doc__ = (
+        "Atomic number of the element.\n"
+        "\n"
+        "Returns\n"
+        "-------\n"
+        "atnum : int\n"
+    )
+
+    @property
+    def symbol(self):
+        return element_symbol(self._atnum)
+
+    symbol.__doc__ = (
+        "Symbol of the element.\n"
+        "\n"
+        "Returns\n"
+        "-------\n"
+        "symbol : str\n"
+    )
+
+    @property
+    def name(self):
+        return element_name(self._atnum)
+
+    name.__doc__ = (
+        "Name of the element.\n"
+        "\n"
+        "Returns\n"
+        "-------\n"
+        "name : str\n"
+    )
 
     # Element attributes; add __init__ method
     attrs = {
         "__init__": init,
+        "atnum": atnum,
+        "symbol": symbol,
+        "name": name,
     }
 
     # ELement class docstring header
-    class_doc = ("Element properties.\n"
-                 "\n"
-                 "Attributes\n"
-                 "----------\n"
-                 "atnum : int\n"
-                 "    Atomic number.\n"
-                 "symbol : str\n"
-                 "    Element symbol.\n"
-                 "name : str\n"
-                 "    Element name.\n")
+    class_doc = (
+        "Element properties.\n"
+        "\n"
+        "Attributes\n"
+        "----------\n"
+        "atnum : int\n"
+        "    Atomic number of the element.\n"
+        "symbol : str\n"
+        "    Symbol of the element.\n"
+        "name : str\n"
+        "    Name of the element.\n"
+    )
 
     # Autocomplete class docstring with data from the CSV files
     for prop, name in prop2name.items():
@@ -224,11 +263,11 @@ def make_property(data, prop, prop2col):
     if len(prop2col[prop]) == 1 and "" in prop2col[prop]:
 
         def f(self):
-            return data[self.atnum - 1][prop2col[prop][""]]
+            return data[self._atnum - 1][prop2col[prop][""]]
     else:
 
         def f(self):
-            row = data[self.atnum - 1]
+            row = data[self._atnum - 1]
             return {
                 k: row[v] for k, v in prop2col[prop].items()
                 if row[v] is not None

@@ -38,7 +38,7 @@ from numpy import ndarray
 from scipy.interpolate import CubicSpline
 
 from atomdb.utils import DEFAULT_DATASET, DEFAULT_DATAPATH
-from atomdb.periodic import element_symbol
+from atomdb.periodic import Element, element_symbol
 
 
 __all__ = [
@@ -181,7 +181,7 @@ class SpeciesData:
     r"""Database entry fields for atomic and ionic species."""
     # Species info
     elem: str = field()
-    natom: int = field()
+    atnum: int = field()
     basis: str = field()
     nelec: int = field()
     nspin: int = field()
@@ -225,7 +225,7 @@ class SpeciesData:
     ked_tot: ndarray = field(default_factory=default_matrix)
 
 
-class Species:
+class Species(Element):
     r"""Properties of atomic and ionic species."""
 
     def __init__(self, dataset, fields, spinpol=1):
@@ -233,6 +233,7 @@ class Species:
         self._dataset = dataset.lower()
         self._data = SpeciesData(**fields)
         self.spinpol = spinpol
+        Element.__init__(self, self._data.atnum)
 
     def get_docstring(self):
         r"""Docstring of the species' dataset."""
@@ -254,7 +255,7 @@ class Species:
     @property
     def charge(self):
         r"""Charge."""
-        return self._data.natom - self._data.nelec
+        return self._data.atnum - self._data.nelec
 
     @property
     def nspin(self):
