@@ -26,17 +26,13 @@ jobs:
         with:
           python-version: ${{ matrix.py }}
 
-      - name: Install dependencies for testing
-        run: |
-          pip install --upgrade pip
-          pip install pytest pytest-md pytest-emoji pytest-cov pyscf
-          pip install git+https://github.com/theochem/gbasis.git@master
-          pip install git+https://github.com/theochem/grid.git@master
-          pip install git+https://github.com/theochem/iodata.git@master
-
       - name: Install development version
         run: |
           pip install -v .
+
+      - name: Install extra test dependencies
+        run: |
+          pip install .[test_extra]
 
       - name: Run pytest default tests
         uses: pavelzw/pytest-action@v2
@@ -46,6 +42,10 @@ jobs:
           job-summary: true
           click-to-expand: true
           report-title: 'Test Report'
+
+      - name: Install Dev Dependencies
+        run: |
+          pip install .[dev]
 
       - name: Run pytest Dev Tests
         uses: pavelzw/pytest-action@v2
