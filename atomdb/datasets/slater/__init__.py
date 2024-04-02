@@ -195,7 +195,7 @@ class AtomicDensity:
         slater = norm.T * pref * np.exp(-exponent * points).T
         return slater
 
-    def phi_matrix(self, points, deriv=False):
+    def phi_matrix(self, points, deriv=0):
         r"""
         Compute the linear combination of Slater-type atomic orbitals on the given points.
 
@@ -217,8 +217,8 @@ class AtomicDensity:
         ----------
         points : ndarray, (N,)
             The radial grid points.
-        deriv : bool
-            If true, use the derivative of the slater-orbitals.
+        deriv : int
+            Order of the derivative. Default is 0 and can also be 1 or 2.
 
         Returns
         -------
@@ -232,14 +232,20 @@ class AtomicDensity:
             zero instead. See "derivative_slater_type_orbital".
 
         """
+
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            if deriv:
-                slater = self.derivative_slater_type_orbital(exps, number, points)
-            else:
+            if deriv == 0:
                 slater = self.slater_orbital(exps, number, points)
+            elif deriv == 1:
+                slater = self.derivative_slater_type_orbital(exps, number, points)
+            elif deriv == 2:
+                slater = self.second_derivative_slater_type_orbital(exps, number, points)
+            else:
+                raise ValueError("Derivative order can only be 0, 1 or 2.")
+
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
 
