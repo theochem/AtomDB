@@ -18,95 +18,81 @@ def setup_element():
     prop2name, prop2desc, prop2src, prop2url, prop2note = get_info()
 
     def element_number(elem):
-        ("Return the element number from a string or int.\n"
-         "\n"
-         "Parameters\n"
-         "----------\n"
-         "elem: (str | int)\n"
-         "    Symbol, name, or number of an element.\n"
-         "\n"
-         "Returns\n"
-         "-------\n"
-         "atnum : int\n"
-         "    Atomic number.\n")
+        (
+            "Return the element number from a string or int.\n"
+            "\n"
+            "Parameters\n"
+            "----------\n"
+            "elem: (str | int)\n"
+            "    Symbol, name, or number of an element.\n"
+            "\n"
+            "Returns\n"
+            "-------\n"
+            "atnum : int\n"
+            "    Atomic number.\n"
+        )
         return str2num[elem] if isinstance(elem, str) else int(elem)
 
     def element_symbol(elem):
-        ("Return the element symbol from a string or int.\n"
-         "\n"
-         "Parameters\n"
-         "----------\n"
-         "elem: (str | int)\n"
-         "    Symbol, name, or number of an element.\n"
-         "\n"
-         "Returns\n"
-         "-------\n"
-         "symbol : str\n"
-         "    Element symbol.\n")
-        return num2str[
-            element_number(elem) if isinstance(elem, str) else int(elem)
-        ][0]
+        (
+            "Return the element symbol from a string or int.\n"
+            "\n"
+            "Parameters\n"
+            "----------\n"
+            "elem: (str | int)\n"
+            "    Symbol, name, or number of an element.\n"
+            "\n"
+            "Returns\n"
+            "-------\n"
+            "symbol : str\n"
+            "    Element symbol.\n"
+        )
+        return num2str[element_number(elem) if isinstance(elem, str) else int(elem)][0]
 
     def element_name(elem):
-        ("Return the element name from a string or int.\n"
-         "\n"
-         "Parameters\n"
-         "----------\n"
-         "elem: (str | int)\n"
-         "    Symbol, name, or number of an element.\n"
-         "\n"
-         "Returns\n"
-         "-------\n"
-         "name : str\n"
-         "    Element name.\n")
-        return num2str[
-            element_number(elem) if isinstance(elem, str) else int(elem)
-        ][1]
+        (
+            "Return the element name from a string or int.\n"
+            "\n"
+            "Parameters\n"
+            "----------\n"
+            "elem: (str | int)\n"
+            "    Symbol, name, or number of an element.\n"
+            "\n"
+            "Returns\n"
+            "-------\n"
+            "name : str\n"
+            "    Element name.\n"
+        )
+        return num2str[element_number(elem) if isinstance(elem, str) else int(elem)][1]
 
     def init(self, elem):
-        ("Initialize an ``Element`` instance.\n"
-         "\n"
-         "Parameters\n"
-         "----------\n"
-         "elem : (str | int)\n"
-         "    Symbol, name, or number of an element.\n")
+        (
+            "Initialize an ``Element`` instance.\n"
+            "\n"
+            "Parameters\n"
+            "----------\n"
+            "elem : (str | int)\n"
+            "    Symbol, name, or number of an element.\n"
+        )
         self._atnum = element_number(elem)
 
     @property
     def atnum(self):
         return self._atnum
 
-    atnum.__doc__ = (
-        "Atomic number of the element.\n"
-        "\n"
-        "Returns\n"
-        "-------\n"
-        "atnum : int\n"
-    )
+    atnum.__doc__ = "Atomic number of the element.\n" "\n" "Returns\n" "-------\n" "atnum : int\n"
 
     @property
     def symbol(self):
         return element_symbol(self._atnum)
 
-    symbol.__doc__ = (
-        "Symbol of the element.\n"
-        "\n"
-        "Returns\n"
-        "-------\n"
-        "symbol : str\n"
-    )
+    symbol.__doc__ = "Symbol of the element.\n" "\n" "Returns\n" "-------\n" "symbol : str\n"
 
     @property
     def name(self):
         return element_name(self._atnum)
 
-    name.__doc__ = (
-        "Name of the element.\n"
-        "\n"
-        "Returns\n"
-        "-------\n"
-        "name : str\n"
-    )
+    name.__doc__ = "Name of the element.\n" "\n" "Returns\n" "-------\n" "name : str\n"
 
     # Element attributes; add __init__ method
     attrs = {
@@ -144,39 +130,26 @@ def setup_element():
             # Multiple or non-default sources
             t = type(data[0][next(iter(prop2col[prop].values()))]).__name__
             sig = f"{prop} : Dict[{t}]"
-            long = ("\n"
-                    "Notes\n"
-                    "-----\n"
-                    "This property is a dictionary with the following keys:")
+            long = "\n" "Notes\n" "-----\n" "This property is a dictionary with the following keys:"
             # Add unit, url, note for each source
             for src in prop2col[prop].keys():
                 long += f'\n    * "{src}"'
                 if prop2src[prop][src] != "":
-                    long += ("\n        * Source\n"
-                             f"{indent_lines(prop2src[prop][src], 12)}")
+                    long += "\n        * Source\n" f"{indent_lines(prop2src[prop][src], 12)}"
                 if units[prop2col[prop][src]] != "":
-                    long += ("\n        * Units\n"
-                             f"{indent_lines(units[prop2col[prop][src]], 12)}")
+                    long += "\n        * Units\n" f"{indent_lines(units[prop2col[prop][src]], 12)}"
                 if prop2url[prop][src] != "":
-                    long += ("\n        * URL\n"
-                             f"{indent_lines(prop2url[prop][src], 12)}")
+                    long += "\n        * URL\n" f"{indent_lines(prop2url[prop][src], 12)}"
                 if prop2note[prop][src] != "":
-                    long += ("\n        * Notes\n"
-                             f"{indent_lines(prop2note[prop][src], 12)}")
+                    long += "\n        * Notes\n" f"{indent_lines(prop2note[prop][src], 12)}"
             long += "\n"
 
         # Add property to class docstring
-        class_doc += (f"{sig}\n"
-                      f"    {short}\n")
+        class_doc += f"{sig}\n" f"    {short}\n"
 
         # Make property method for Element class with docstring
         f = make_property(data, prop, prop2col)
-        f.__doc__ = (f"{short}\n"
-                     "\n"
-                     "Returns\n"
-                     "-------\n"
-                     f"{sig}\n"
-                     f"{long}")
+        f.__doc__ = f"{short}\n" "\n" "Returns\n" "-------\n" f"{sig}\n" f"{long}"
 
         # Add property method to attributes
         attrs[prop] = f
@@ -197,11 +170,7 @@ def read_csv(file):
     with open(file) as f:
         for row in reader(f):
             # ignore comments and empty lines
-            if (
-                row
-                and not row[0].lstrip().startswith("#")
-                and any(c not in ", \n" for c in row)
-            ):
+            if row and not row[0].lstrip().startswith("#") and any(c not in ", \n" for c in row):
                 # Replace \n with new line in each element
                 lines.append([i.replace("\\n", "\n") for i in row])
     return lines
@@ -264,14 +233,12 @@ def make_property(data, prop, prop2col):
 
         def f(self):
             return data[self._atnum - 1][prop2col[prop][""]]
+
     else:
 
         def f(self):
             row = data[self._atnum - 1]
-            return {
-                k: row[v] for k, v in prop2col[prop].items()
-                if row[v] is not None
-            }
+            return {k: row[v] for k, v in prop2col[prop].items() if row[v] is not None}
 
     return property(f)
 

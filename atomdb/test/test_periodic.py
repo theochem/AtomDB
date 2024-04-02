@@ -61,7 +61,7 @@ def test_get_attributes():
         "cov_radius": {
             "cordero": 0.31 * ANGSTROM,
             # "bragg": np.nan,
-            "slater": 0.25 * ANGSTROM
+            "slater": 0.25 * ANGSTROM,
         },
         "vdw_radius": {
             "bondi": 1.2 * ANGSTROM,

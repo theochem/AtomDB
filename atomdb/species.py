@@ -82,8 +82,7 @@ def spline(method):
         # Validate `spin` variable
         if spin not in ("t", "a", "b", "m"):
             raise ValueError(
-                f"Invalid `spin` parameter '{spin}'; "
-                "choose one of ('t'| 'a' | 'b' | 'm')"
+                f"Invalid `spin` parameter '{spin}'; " "choose one of ('t'| 'a' | 'b' | 'm')"
             )
 
         # Set names for {a,b,tot} arrays
@@ -146,9 +145,7 @@ class DensitySpline:
 
         """
         if not (0 <= deriv <= 2):
-            raise ValueError(
-                f"Invalid derivative order {deriv}; must be 0 <= `deriv` <= 2"
-            )
+            raise ValueError(f"Invalid derivative order {deriv}; must be 0 <= `deriv` <= 2")
         elif self._log:
             y = np.exp(self._obj(x))
             if deriv == 1:
@@ -179,6 +176,7 @@ class JSONEncoder(json.JSONEncoder):
 @dataclass(eq=False, order=False)
 class SpeciesData:
     r"""Database entry fields for atomic and ionic species."""
+
     # Species info
     elem: str = field()
     atnum: int = field()
@@ -396,7 +394,9 @@ class Species(Element):
 
 
 def compile(
-    elem, charge, mult,
+    elem,
+    charge,
+    mult,
     nexc=0,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
@@ -415,21 +415,24 @@ def compile(
 def dump(*species, datapath=DEFAULT_DATAPATH):
     r"""Dump the Species instance(s) to a MessagePack file in the database."""
     for s in species:
-        fn = datafile(s.elem, s.charge, s.mult,
-                      nexc=s.nexc, dataset=s.dataset, datapath=datapath)
+        fn = datafile(s.elem, s.charge, s.mult, nexc=s.nexc, dataset=s.dataset, datapath=datapath)
         with open(fn, "wb") as f:
             f.write(packb(asdict(s._data), default=encode))
 
 
 def load(
-    elem, charge, mult,
+    elem,
+    charge,
+    mult,
     nexc=0,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
 ):
     r"""Load one or many atomic or ionic species from the AtomDB database."""
     fn = datafile(
-        elem, charge, mult,
+        elem,
+        charge,
+        mult,
         nexc=nexc,
         dataset=dataset,
         datapath=datapath,
@@ -438,9 +441,7 @@ def load(
         obj = []
         for file in glob(fn):
             with open(file, "rb") as f:
-                obj.append(
-                    Species(dataset, unpackb(f.readall(), object_hook=decode))
-                )
+                obj.append(Species(dataset, unpackb(f.readall(), object_hook=decode)))
     else:
         with open(fn) as f:
             obj = Species(dataset, unpackb(f.readall(), object_hook=decode))
@@ -448,7 +449,9 @@ def load(
 
 
 def datafile(
-    elem, charge, mult,
+    elem,
+    charge,
+    mult,
     nexc=0,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
@@ -458,14 +461,14 @@ def datafile(
     charge = "*" if charge is Ellipsis else f"{charge:03d}"
     mult = "*" if mult is Ellipsis else f"{mult:03d}"
     nexc = "*" if nexc is Ellipsis else f"{nexc:03d}"
-    return path.join(
-        datapath, dataset.lower(), "db",
-        f"{elem}_{charge}_{mult}_{nexc}.msg"
-    )
+    return path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
 
 
 def raw_datafile(
-    suffix, elem, charge, mult,
+    suffix,
+    elem,
+    charge,
+    mult,
     nexc=0,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
@@ -475,7 +478,4 @@ def raw_datafile(
     charge = "*" if charge is Ellipsis else f"{charge:03d}"
     mult = "*" if mult is Ellipsis else f"{mult:03d}"
     nexc = "*" if nexc is Ellipsis else f"{nexc:03d}"
-    return path.join(
-        datapath, dataset.lower(), "raw",
-        f"{elem}_{charge}_{mult}_{nexc}{suffix}"
-    )
+    return path.join(datapath, dataset.lower(), "raw", f"{elem}_{charge}_{mult}_{nexc}{suffix}")

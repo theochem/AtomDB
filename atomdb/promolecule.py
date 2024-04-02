@@ -142,7 +142,11 @@ class Promolecule:
 
         return sum(
             _extensive_local_property(
-                self.atoms, self.coords, self.coeffs, points, f,
+                self.atoms,
+                self.coords,
+                self.coeffs,
+                points,
+                f,
             )
         )
 
@@ -167,7 +171,11 @@ class Promolecule:
 
         return sum(
             _extensive_local_property(
-                self.atoms, self.coords, self.coeffs, points, f,
+                self.atoms,
+                self.coords,
+                self.coeffs,
+                points,
+                f,
             )
         )
 
@@ -305,7 +313,11 @@ class Promolecule:
             return atom.ddens_func(spin=spin, log=log)
 
         atoms_ddens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, f,
+            self.atoms,
+            self.coords,
+            self.coeffs,
+            points,
+            f,
         )
 
         # The cartesian gradient (\nabla \rho_A) has to be evaluated using
@@ -353,17 +365,22 @@ class Promolecule:
             return atom.d2dens_func(spin=spin, log=log)
 
         atoms_ddens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, df,
+            self.atoms,
+            self.coords,
+            self.coeffs,
+            points,
+            df,
         )
         atoms_d2dens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, d2f,
+            self.atoms,
+            self.coords,
+            self.coeffs,
+            points,
+            d2f,
         )
 
         # Evaluate the derivatives of the radii
-        dradii = np.array([
-            _radial_vector_outer_triu(points - coord)
-            for coord in self.coords
-        ])
+        dradii = np.array([_radial_vector_outer_triu(points - coord) for coord in self.coords])
 
         # Get the unique elements of the Hessian
         # \sum_A c_A
@@ -420,16 +437,23 @@ class Promolecule:
 
         # Radial derivatives of the density
         atoms_ddens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, df,
+            self.atoms,
+            self.coords,
+            self.coeffs,
+            points,
+            df,
         )
         atoms_d2dens = _extensive_local_property(
-            self.atoms, self.coords, self.coeffs, points, d2f,
+            self.atoms,
+            self.coords,
+            self.coeffs,
+            points,
+            d2f,
         )
 
         return sum(
             d2dens - ddens + shift(ddens, points - coord)
-            for (d2dens, ddens, coord)
-            in zip(atoms_d2dens, atoms_ddens, self.coords)
+            for (d2dens, ddens, coord) in zip(atoms_d2dens, atoms_ddens, self.coords)
         )
 
 
@@ -470,8 +494,7 @@ def make_promolecule(
     elif units.lower() == "angstrom":
         coords = [coord / 0.52917721092 for coord in coords]
     else:
-        raise ValueError(f"Invalid `units` parameter '{units}'; "
-                         "must be 'bohr' or 'angstrom'")
+        raise ValueError(f"Invalid `units` parameter '{units}'; " "must be 'bohr' or 'angstrom'")
 
     # Get atomic symbols/numbers from inputs
     atoms = [element_symbol(atom) for atom in atnums]
@@ -492,40 +515,38 @@ def make_promolecule(
     # Construct linear combination of species
     promol = Promolecule()
 
-    for atom, atnum, coord, charge, mult in \
-            zip(atoms, atnums, coords, charges, mults):
+    for atom, atnum, coord, charge, mult in zip(atoms, atnums, coords, charges, mults):
 
         # Integer charge and multiplicity
         #
         if isinstance(charge, Integral) and isinstance(mult, Integral):
             try:
-                specie = load(atom, charge, abs(mult),
-                              dataset=dataset, datapath=datapath)
+                specie = load(atom, charge, abs(mult), dataset=dataset, datapath=datapath)
                 if mult < 0:
                     specie.spinpol = -1
                 promol._extend((specie,), (coord,), (1.0,))
                 continue
             except FileNotFoundError:
-                warn("Unable to load species corresponding to `charge, mult`; "
-                     "generating species via linear combination "
-                     "of other species",
-                     stacklevel=1)
+                warn(
+                    "Unable to load species corresponding to `charge, mult`; "
+                    "generating species via linear combination "
+                    "of other species",
+                    stacklevel=1,
+                )
 
         # Non-integer charge and multiplicity
         #
         nelec = atnum - charge
         nspin = np.sign(mult) * (abs(mult) - 1)
         # Get all candidates for linear combination
-        species_list = load(atom, ..., ..., nexc=0,
-                            dataset=dataset, datapath=datapath)
+        species_list = load(atom, ..., ..., nexc=0, dataset=dataset, datapath=datapath)
         for specie in species_list[: len(species_list)]:
             if specie.nspin > 0:
                 specie_neg_spinpol = deepcopy(specie)
                 specie_neg_spinpol.spinpol = -1
                 species_list.append(specie_neg_spinpol)
 
-        trial_species = chain(combinations(species_list, 2),
-                              combinations(species_list, 3))
+        trial_species = chain(combinations(species_list, 2), combinations(species_list, 3))
         good_combs = []
         for ts in trial_species:
             energies = np.asarray([t.energy for t in ts], dtype=float)
@@ -543,15 +564,13 @@ def make_promolecule(
                 bounds=(0, 1),
             )
             if result.success:
-                good_combs.append((np.dot(energies, result.x),
-                                   ts,
-                                   [coord for t in ts],
-                                   result.x))
+                good_combs.append((np.dot(energies, result.x), ts, [coord for t in ts], result.x))
         if len(good_combs) > 0:
             promol._extend(*(min(good_combs, key=itemgetter(0))[1:]))
         else:
-            raise ValueError("Unable to construct species with non-integer"
-                             "charge/spin from database entries")
+            raise ValueError(
+                "Unable to construct species with non-integer" "charge/spin from database entries"
+            )
 
     # Return Promolecule instance
     return promol
@@ -577,10 +596,9 @@ def _extensive_local_property(atoms, atom_coords, coeffs, points, f, deriv=0):
 def _intensive_property(atoms, coeffs, f, p=1):
     r"""Helper function for computing intensive properties."""
     # P-mean of each atom's property value
-    return (
-        sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) /
-        sum(coeffs)
-    ) ** (1 / p)
+    return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)) ** (
+        1 / p
+    )
 
 
 def _radial_vector_outer_triu(radii):
@@ -595,8 +613,7 @@ def _radial_vector_outer_triu(radii):
     radv_outer = np.empty((len(radii), len(indices)))
     # Outer product of each radial unit vector
     for col, ij in enumerate(indices):
-        radv_outer[:, col] = (unit_v(radii)[:, ij // 3] *
-                              unit_v(radii)[:, ij % 3])
+        radv_outer[:, col] = unit_v(radii)[:, ij // 3] * unit_v(radii)[:, ij % 3]
     return radv_outer
 
 
