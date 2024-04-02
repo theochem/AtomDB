@@ -22,8 +22,7 @@ from atomdb import compile, load
 
 # Initialize command line argument parser
 #
-parser = ArgumentParser(prog="atomdb",
-                        description="Compile or query an AtomDB entry.")
+parser = ArgumentParser(prog="atomdb", description="Compile or query an AtomDB entry.")
 
 # Define subcommands
 #
@@ -31,39 +30,28 @@ command = parser.add_argument_group("commands")
 
 command_group = command.add_mutually_exclusive_group(required=True)
 
-command_group.add_argument("-c", "--compile",
-                           action="store_true",
-                           help="compile a species into the database")
+command_group.add_argument(
+    "-c", "--compile", action="store_true", help="compile a species into the database"
+)
 
-command_group.add_argument("-q", "--query",
-                           action="store_true",
-                           help="query a species from the database")
+command_group.add_argument(
+    "-q", "--query", action="store_true", help="query a species from the database"
+)
 
 
 # Add arguments
 #
 arg_group = parser.add_argument_group("arguments")
 
-arg_group.add_argument("dataset",
-                       type=str,
-                       help="name of dataset")
+arg_group.add_argument("dataset", type=str, help="name of dataset")
 
-arg_group.add_argument("elem",
-                       type=str,
-                       help="element symbol")
+arg_group.add_argument("elem", type=str, help="element symbol")
 
-arg_group.add_argument("charge",
-                       type=int,
-                       help="charge")
+arg_group.add_argument("charge", type=int, help="charge")
 
-arg_group.add_argument("mult",
-                       type=int,
-                       help="multiplicity")
+arg_group.add_argument("mult", type=int, help="multiplicity")
 
-arg_group.add_argument("-e", "--exc",
-                       type=int,
-                       default=0,
-                       help="excitation level")
+arg_group.add_argument("-e", "--exc", type=int, default=0, help="excitation level")
 
 
 if __name__ == "__main__":
@@ -76,7 +64,6 @@ if __name__ == "__main__":
 
     elif args.query:
 
-        species = load(args.elem, args.charge, args.mult,
-                       args.exc, args.dataset)
+        species = load(args.elem, args.charge, args.mult, args.exc, args.dataset)
 
         print(species.to_json())
