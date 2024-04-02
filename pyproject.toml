@@ -73,6 +73,17 @@ doc = [
     "docutils==0.16",  # Needed to show bullet points in sphinx_rtd_theme
     "nbsphinx-link",
 ]
+dev = [
+    "pyscf",
+    "qc-gbasis@git+https://github.com/theochem/gbasis.git@master",
+    "qc-grid@git+https://github.com/theochem/grid.git@master",
+    "qc-iodata@git+https://github.com/theochem/iodata.git@master"
+]
+test_extra = [
+    "pytest-md",
+    "pytest-emoji",
+    "pytest-cov",
+]
 
 [tool.black]
 line-length = 100
@@ -93,8 +104,10 @@ extend-exclude = ["doc/*", "doc/*/*"]
 
 [tool.pytest.ini_options]
 minversion = "7.0"
-testpaths = ["tests"]
-addopts = "-m 'not dev'"
+testpaths = ["test"]
+addopts = "-m 'not dev' --import-mode=importlib"
 markers = [
     "dev: mark a developer test, needs extra dependencies.",
 ]
+
+
