@@ -652,6 +652,7 @@ def load_slater_wfn(element, anion=False, cation=False):
         "zr",
     ]
 
+    # select and open file containing the slater data
     is_heavy_element = element.lower() in heavy_atoms
     if (anion or cation) and is_heavy_element:
         raise ValueError("Both Anion & Cation Slater File for element %s does not exist." % element)
@@ -675,7 +676,7 @@ def load_slater_wfn(element, anion=False, cation=False):
 
     def get_number_of_electrons_per_orbital(configuration):
         """
-        Get the Occupation Number for all orbitals of an _element returing an dictionary.
+        Get the Occupation Number for all orbitals of an _element returning an dictionary.
 
         Parameters
         ----------
@@ -781,65 +782,74 @@ def load_slater_wfn(element, anion=False, cation=False):
         return true_configuration
 
     with open(file_name, "r") as f:
-        line = f.readline()
-        configuration = line.split()[1].replace(",", "")
+        next_line = f.readline()
+        configuration = next_line.split()[1].replace(",", "")
         if is_heavy_element:
             configuration = configuration_exact_for_heavy_elements(configuration)
-
-        next_line = f.readline()
-        # Sometimes there are blank lin es.
-        while len(next_line.strip()) == 0:
-            next_line = f.readline()
-
+        # in light atoms, the energy is the next line with data
+        next_line = f.readline().strip()
+        # some cases have empty lines before the energy (remove them)
+        while not next_line:
+            next_line = f.readline().strip()
+        # heavy atoms have 6 lines of redundant data before the energy (skip them)
         if is_heavy_element:
-            # Heavy element slater files has extra redundant information of 5 lines.
-            for i in range(0, 6):
-                f.readline()
+            for _ in range(0, 6):
+                next_line = f.readline().strip()
 
-        next_line = f.readline()
-        energy = [float(next_line.split()[2])] + [
-            float(x) for x in (re.findall(r"[= -]\d+.\d+", f.readline()))[:-1]
-        ]
+        # read total energy
+        energy = [float(next_line.split("=")[1])]
 
+        # declare containers for orbitals, orbital basis, cusp, energy, exponents, and coefficients
         orbitals = []
-        orbitals_basis = {"S": [], "P": [], "D": [], "F": []}
+        orbitals_basis = {}
         orbitals_cusp = []
         orbitals_energy = []
-        orbitals_exp = {"S": [], "P": [], "D": [], "F": []}
+        orbitals_exp = {}
         orbitals_coeff = {}
 
-        line = f.readline()
-        while line.strip() != "":
-            # If line has ___S___ or P or D where _ = " ".
-            if re.search(r"  [S|P|D|F]  ", line):
-                # Get All The Orbitals
-                subshell = line.split()[0]
-                list_of_orbitals = line.split()[1:]
+        while next_line.strip() != "":
+            # If line has ___S___ or P or D where _ = " ". This is the start of a new sub-shell
+            if re.search(r"  [S|P|D|F]  ", next_line):
+                # read sub-shell (e.g S) and orbitals (e.g 1S, 2S, 3S) for that sub-shell
+                subshell = next_line.split()[0]
+                list_of_orbitals = next_line.split()[1:]
+
+                # add sub-shell orbitals to the list of orbitals
                 orbitals += list_of_orbitals
-                for x in list_of_orbitals:
-                    orbitals_coeff[x] = []  # Initilize orbitals inside coefficient dictionary
 
-                # Get Energy, Cusp Levels
-                line = f.readline()
-                orbitals_energy.extend([float(x) for x in line.split()[1:]])
+                # read orbital energies from next line and store them with same order as orbitals
+                next_line = f.readline().strip()
+                orbitals_energy.extend([float(x) for x in next_line.split()[1:]])
+
+                # save cusp values, for heavy atoms this is not present
                 if not is_heavy_element:
-                    # Heavy atoms slater files, doesn't have cusp values,.
-                    line = f.readline()
-                    orbitals_cusp.extend([float(x) for x in line.split()[1:]])
-                line = f.readline()
+                    next_line = f.readline()
+                    orbitals_cusp.extend([float(x) for x in next_line.split()[1:]])
+                next_line = f.readline()
+                # read lines until next sub-shell and get the exponents and coefficients
+                for next_line in f:
+                    # break if next line is not an integer followed by a sub-shell (e.g 1S, 2S)
+                    if not re.match(r"\A^\d" + subshell, next_line.lstrip()):
+                        break
 
-                # Get Exponents, Coefficients, Orbital Basis
-                while re.match(r"\A^\d" + subshell, line.lstrip()):
+                    list_words = next_line.split()
+                    # read orbital basis from first column, save basis list for each sub-shell
+                    orbitals_basis.setdefault(subshell, []).append(list_words[0])
+                    # read basis exponents from second column and save as basis list (same order)
+                    orbitals_exp.setdefault(subshell, []).append(float(list_words[1]))
 
-                    list_words = line.split()
-                    orbitals_exp[subshell] += [float(list_words[1])]
-                    orbitals_basis[subshell] += [list_words[0]]
-
+                    # read orbital basis coefficients from the correct column.
+                    # for each orbital, the coefficients are saved in same order as basis list
                     for x in list_of_orbitals:
-                        orbitals_coeff[x] += [float(list_words[get_column(x)])]
-                    line = f.readline()
+                        coeff = float(list_words[get_column(x)])
+                        orbitals_coeff.setdefault(x, []).append(coeff)
             else:
-                line = f.readline()
+                next_line = f.readline()
+
+    # sort orbitals, cusps, energies by ascending energy
+    orbitals = [x for _, x in sorted(zip(orbitals_energy, orbitals))]
+    orbitals_cusp = [x for _, x in sorted(zip(orbitals_energy, orbitals_cusp))]
+    orbitals_energy = sorted(orbitals_energy)
 
     data = {
         "configuration": configuration,
@@ -867,7 +877,6 @@ def load_slater_wfn(element, anion=False, cation=False):
             if len(value) != 0
         },
     }
-
     return data
 
 
