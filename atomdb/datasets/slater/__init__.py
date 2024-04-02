@@ -343,6 +343,52 @@ class AtomicDensity:
         deriv = deriv_pref * slater
         return deriv
 
+    @staticmethod
+    def second_derivative_slater_type_orbital(exponent, number, points):
+        r"""
+        Compute the derivative of Slater-type orbitals on the given points.
+
+        A Slater-type orbital is defined as:
+        .. math::
+            \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - C \bigg) N r^{n-1} e^{- C r),
+
+        where,
+            :math:`n` is the principal quantum number of that orbital.
+            :math:`N` is the normalizing constant.
+            :math:`r` is the radial point, distance to the origin.
+            :math:`C` is the zeta exponent of that orbital.
+
+        Parameters
+        ----------
+        exponent : ndarray, (M, 1)
+            The zeta exponents of Slater orbitals.
+        number : ndarray, (M, 1)
+            The principle quantum numbers of Slater orbitals.
+        points : ndarray, (N,)
+            The radial grid points. If points contain zero, then it is undefined at those
+            points and set to zero.
+
+        Returns
+        -------
+        slater : ndarray, (N, M)
+            The second derivative of Slater-type orbitals evaluated on the grid points.
+
+        Notes
+        -----
+        - At r = 0, the derivative is undefined and this function returns zero instead.
+
+        References
+        ----------
+        See wikipedia page on "Slater-Type orbitals".
+
+        """
+        slater = AtomicDensity.slater_orbital(exponent, number, points)
+        # derivative
+        deriv_pref = ((number.T - 1.0) / np.reshape(points, (points.shape[0], 1)) - exponent.T) ** 2
+        deriv_pref -= (number.T - 1.0) / np.reshape(points, (points.shape[0], 1)) ** 2
+        deriv2 = deriv_pref * slater
+        return deriv2
+
     def lagrangian_kinetic_energy(self, points):
         r"""
         Positive definite or Lagrangian kinectic energy density.
