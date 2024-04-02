@@ -332,7 +332,7 @@ class AtomicDensity:
         Returns
         -------
         slater : ndarray, (N, M)
-            The Slater-type orbitals evaluated on the grid points.
+            The derivative of Slater-type orbitals evaluated on the grid points.
 
         Notes
         -----
@@ -457,7 +457,28 @@ class AtomicDensity:
         deriv : ndarray, (N,)
             The derivative of atomic density on the grid points.
         """
-        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=True)
+        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=1)
+        derivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        return derivative
+
+    def second_derivative_density(self, points):
+        r"""
+        Return the second derivative of the atomic density on a set of points.
+
+        Parameters
+        ----------
+        points : ndarray,(N,)
+            The radial grid points.
+
+        Returns
+        -------
+        deriv : ndarray, (N,)
+            The derivative of atomic density on the grid points.
+        """
+        factor = (
+            self.phi_matrix(points) * self.phi_matrix(points, deriv=2)
+            + self.phi_matrix(points, deriv=1) ** 2
+        )
         derivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
         return derivative
 
