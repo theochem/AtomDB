@@ -769,5 +769,8 @@ def get_element_data(elem):
 
 def get_docstring(dataset):
     """Retrieve the dataset doctring."""
-    submodule = import_module(f"atomdb.datasets.{dataset}")
-    return submodule.DOCSTRING
+    # FIXME: This function breacks the inicialization of the Species class.
+    # The databases docstrings need to be separated from the compilation scripts files.
+    # submodule = import_module(f"atomdb.datasets.{dataset}")
+    # return submodule.DOCSTRING
+    return "No documentation available."
