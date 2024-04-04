@@ -139,11 +139,11 @@ def make_mult_dict(max_atnum=100):
         # Skip the row header
         next(reader)
         # Read column header
-        col_header = next(reader)[1:]
+        col_header = next(reader)
         # Read table data
         table = list(reader)
 
-    # Read charges from the labels
+    # Read charges from the labels, skip the first element which is for atomic numbers
     charges = [int(charge) for charge in col_header[1:]]
 
     # Store multiplicities in a dictionary; keys are tuples (atnum, charge)

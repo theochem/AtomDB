@@ -1,6 +1,6 @@
 from csv import reader
 
-from importlib.resources import files
+from importlib_resources import files
 
 from atomdb.utils import CONVERTOR_TYPES
 
