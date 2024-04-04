@@ -27,8 +27,8 @@ import csv
 
 import atomdb
 from atomdb.periodic import Element
-from atomdb.utils import _gs_mult_energy
-from atomdb.api import DEFAULT_DATAPATH
+from atomdb.utils import MULTIPLICITIES, CMINV, EV 
+from atomdb.species import DEFAULT_DATAPATH
 
 
 __all__ = [
@@ -50,6 +50,46 @@ For each element/charge pair the values correspond to the most stable electronic
 """
 
 
+def load_nist_spectra_data(atnum, nelec, datafile):
+    """Load data from database_beta_1.3.0.h5 file into a `SpeciesTable`.
+    
+    Note: function based on spectra.py module from old master
+    https://github.com/theochem/AtomDB/blob/oldmaster/atomdb/io/spectra.py
+    """
+
+    # set keys for the atomic number and number of electrons
+    z = str(atnum).zfill(3)
+    ne = str(nelec).zfill(3)
+
+    # in database_beta_1.3.0.h5
+    with h5.File(datafile, "r") as f:
+        # for specie with atomic number z and ne electrons get mults, energies, configurations & J values
+        mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
+        energy = f[z][ne]["Energy"][...]
+        config = f[z][ne]["Config"][...]
+        j_vals = f[z][ne]["J"][...]
+        assert len(mults) == len(energy) == len(config) == len(j_vals)
+
+    # found violations in Derick"s data (they should be mult ordered!)
+    if all(mults != sorted(mults)):
+        print((mults, sorted(mults)))
+        print((energy, config, j_vals))
+        print("WARN number={0}, elec={1}, {2}, {3}".format(z, ne, mults, sorted(mults)))
+
+    # sort based on energy
+    index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
+    # mults = list(mults[index_sorting])
+    # energy = list(energy[index_sorting])
+
+    # sort and store the mults, energies, configurations & J values in ascending order of energy
+    output = {"mult": list(mults[index_sorting]),
+            "energy": list(energy[index_sorting]),
+            "config": list(config[index_sorting]),
+            "j_vals": list(j_vals[index_sorting])}
+    
+    return output
+
+
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Parse NIST related data and compile the AtomDB database entry."""
     # Check arguments
@@ -66,37 +106,37 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Check that the input charge is valid
     if charge < -2 or charge > atnum:
         raise ValueError(f"{elem} with {charge} not available.")
-
-    #
-    # Element properties
-    #
-    atom = Element(elem)
-    atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
-        None,
-    ] * 5
-    if charge == 0:
-        # overwrite values for neutral atomic species
-        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
-        polarizability = atom.pold
-        dispersion_c6 = atom.c6
-
-    #
-    # Get the energy for the most stable electronic configuration from database_beta_1.3.0.h5.
+    
     # Check that the input multiplicity corresponds to this configuration.
-    #
-    datapath = f"{DEFAULT_DATAPATH}/{dataset.lower()}/raw/database_beta_1.3.0.h5"
-    # case 1: neutral or cationic species
-    if charge >= 0:
-        expected_mult, energy = _gs_mult_energy(atnum, nelec, datapath)
-    # case 2: anionic species, read multiplicity from neutral isoelectronic species
-    else:
-        expected_mult, energy = _gs_mult_energy(nelec, nelec, datapath)
-        # There is no data for anions in database_beta_1.3.0.h5, therefore:
-        energy = None
+    if not mult == MULTIPLICITIES[(atnum, charge)]:
+        raise ValueError(f"{elem} with charge {charge} and multiplicity {mult} not available.")
 
-    if not mult == expected_mult:
-        raise ValueError(f"{elem} with {charge} and multiplicity {mult} not available.")
+    print(f"Generating {elem} with charge {charge} and multiplicity {mult}.")
+    # #
+    # # Element properties
+    # #
+    # atom = Element(elem)
+    # atmass = atom.mass["stb"]
+    # cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+    #     None,
+    # ] * 5
+    # if charge == 0:
+    #     # overwrite values for neutral atomic species
+    #     cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+    #     polarizability = atom.pold
+    #     dispersion_c6 = atom.c6
+
+    #
+    # Get the ground state energy from database_beta_1.3.0.h5.
+    #
+    # Set an energy default value since there is no data for anions in database_beta_1.3.0.h5.
+    energy = None
+    datapath = f"{DEFAULT_DATAPATH}/{dataset.lower()}/raw/database_beta_1.3.0.h5"
+    if charge >= 0: # neutral or cationic species
+        spectra_data = load_nist_spectra_data(atnum, nelec, datapath)
+        energies = spectra_data["energy"]
+        # Convert energy to Hartree from cm^{-1} if available
+        energy = energies[0] * CMINV if len(energies) != 0 else energy
 
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
@@ -113,17 +153,33 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     table_etas = [row for row in table_etas if len(row[1]) > 0]
     # Get property at table(atnum, charge); convert to Hartree
     colid = table_ips[0].index(str(charge))
-    ip = float(table_ips[atnum][colid]) if len(table_ips[atnum][colid]) > 1 else None
-    ip *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
+    ip = float(table_ips[atnum][colid]) * EV if len(table_ips[atnum][colid]) > 1 else None
     colid = table_mus[0].index(str(charge))
-    mu = float(table_mus[atnum][colid]) if len(table_mus[atnum][colid]) > 1 else None
-    mu *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
+    mu = float(table_mus[atnum][colid]) * EV if len(table_mus[atnum][colid]) > 1 else None
     colid = table_etas[0].index(str(charge))
-    eta = float(table_etas[atnum][colid]) if len(table_etas[atnum][colid]) > 1 else None
-    eta *= constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
+    eta = float(table_etas[atnum][colid]) * EV if len(table_etas[atnum][colid]) > 1 else None
 
     # Return Species instance
-    return atomdb.Species(
+    # return atomdb.Species(
+    #     dataset,
+    #     elem,
+    #     atnum,
+    #     obasis_name,
+    #     nelec,
+    #     nspin,
+    #     nexc,
+    #     # atmass,
+    #     # cov_radius,
+    #     # vdw_radius,
+    #     # at_radius,
+    #     # polarizability,
+    #     # dispersion_c6,
+    #     energy,
+    #     ip=ip,
+    #     mu=mu,
+    #     eta=eta,
+    # )
+    atom =  atomdb.Species(
         dataset,
         elem,
         atnum,
@@ -131,14 +187,16 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         nelec,
         nspin,
         nexc,
-        atmass,
-        cov_radius,
-        vdw_radius,
-        at_radius,
-        polarizability,
-        dispersion_c6,
-        energy,
+        energy=energy,
         ip=ip,
         mu=mu,
         eta=eta,
     )
+
+    print(vars(atom))
+    # print(atom._data.elem, atom.charge, atom.mult)
+    # print(atom.energy, atom.ip, atom.mu, atom.nexc)
+    print(atom.atmass)
+    print(atom.spinpol)
+    print(atom.polarizability)
+    return atom
