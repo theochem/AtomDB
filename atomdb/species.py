@@ -73,9 +73,15 @@ def scalar(method):
     return wrapper
 
 
+def _remove_suffix(input_string, suffix):
+    if suffix and input_string.endswith(suffix):
+        return input_string[:-len(suffix)]
+    return input_string
+
+
 def spline(method):
     r"""Expose a SpeciesData field via the ``DensitySpline`` interface."""
-    name = method.__name__.removesuffix("_func")
+    name = _remove_suffix(method.__name__, "_func")
 
     def wrapper(self, spin="t", index=None):
         rf"""{method.__doc__}"""
@@ -180,7 +186,7 @@ class SpeciesData:
     # Species info
     elem: str = field()
     atnum: int = field()
-    basis: str = field()
+    obasis_name: str = field()
     nelec: int = field()
     nspin: int = field()
     nexc: int = field()
@@ -226,10 +232,10 @@ class SpeciesData:
 class Species(Element):
     r"""Properties of atomic and ionic species."""
 
-    def __init__(self, dataset, fields, spinpol=1):
+    def __init__(self, dataset, *args, spinpol=1, **fields):
         r"""Initialize a ``Species`` instance."""
         self._dataset = dataset.lower()
-        self._data = SpeciesData(**fields)
+        self._data = SpeciesData(*args, **fields)
         self.spinpol = spinpol
         Element.__init__(self, self._data.atnum)
 
@@ -258,12 +264,12 @@ class Species(Element):
     @property
     def nspin(self):
         r"""Spin number :math:`N_S = N_α - N_β`."""
-        self._data.nspin * self._spinpol
+        return self._data.nspin * self._spinpol
 
     @property
     def mult(self):
         r"""Multiplicity :math:`M = \left|N_S\right| + 1`."""
-        self._data.nspin + 1
+        return self._data.nspin + 1
 
     @property
     def spinpol(self):
@@ -282,6 +288,21 @@ class Species(Element):
             raise ValueError("`spinpol` must be +1 or -1")
 
         self._spinpol = spinpol
+
+    @property
+    def atmass(self):
+        r"""Atomic mass."""
+        return self.mass["stb"]
+
+    @property
+    def polarizability(self):
+        r"""Isolated atom dipole polarizability."""
+        return self.pold
+
+    @property
+    def dispersion_c6(self):
+        r"""Isolated atom C6 dispersion coefficients."""
+        return self.c6
 
     @scalar
     def nexc(self):
@@ -415,7 +436,7 @@ def compile(
 def dump(*species, datapath=DEFAULT_DATAPATH):
     r"""Dump the Species instance(s) to a MessagePack file in the database."""
     for s in species:
-        fn = datafile(s.elem, s.charge, s.mult, nexc=s.nexc, dataset=s.dataset, datapath=datapath)
+        fn = datafile(s._data.elem, s.charge, s.mult, nexc=s.nexc, dataset=s.dataset, datapath=datapath)
         with open(fn, "wb") as f:
             f.write(packb(asdict(s._data), default=encode))
 
@@ -437,14 +458,15 @@ def load(
         dataset=dataset,
         datapath=datapath,
     )
+    print(fn)
     if Ellipsis in (elem, charge, mult, nexc):
         obj = []
         for file in glob(fn):
             with open(file, "rb") as f:
-                obj.append(Species(dataset, unpackb(f.readall(), object_hook=decode)))
+                obj.append(Species(dataset, unpackb(f.read(), object_hook=decode)))
     else:
-        with open(fn) as f:
-            obj = Species(dataset, unpackb(f.readall(), object_hook=decode))
+        with open(fn, "rb") as f:
+            obj = Species(dataset, unpackb(f.read(), object_hook=decode))
     return obj
 
 
