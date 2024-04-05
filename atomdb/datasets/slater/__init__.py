@@ -483,6 +483,72 @@ class AtomicDensity:
         return derivative
 
 
+def get_cs_occupations(configuration):
+    """
+    Get the alpha and beta occupation numbers for each contracted shell.
+
+    Parameters
+    ----------
+    configuration : str
+        The electron configuration.
+
+    Returns
+    --------
+    a_occ, b_occ, max_occ : dict, dict, dict
+        Dictionaries containing the alpha, beta, and maximum occupation numbers for each
+        contracted shell. Keys are the contracted shells (e.g. 1S, 2S, 2P, 3D) and values are
+        the occupation numbers.
+
+    """
+    # alpha and beta occupation numbers for each contracted shell
+    a_occ = {}
+    b_occ = {}
+
+    # fill in the occupation numbers for the K, L, M, N shells if they are present
+    for cs in ["K", "L", "M", "N"]:
+        if cs in configuration:
+            if cs == "K":
+                a_occ["1S"], b_occ["1S"] = 1, 1
+            elif cs == "L":
+                a_occ["2S"], b_occ["2S"] = 1, 1
+                a_occ["2P"], b_occ["2P"] = 3, 3
+            elif cs == "M":
+                a_occ["3S"], b_occ["3S"] = 1, 1
+                a_occ["3P"], b_occ["3P"] = 3, 3
+                a_occ["3D"], b_occ["3D"] = 5, 5
+            elif cs == "N":
+                a_occ["4S"], b_occ["4S"] = 1, 1
+                a_occ["4P"], b_occ["4P"] = 3, 3
+                a_occ["4D"], b_occ["4D"] = 5, 5
+                a_occ["4F"], b_occ["4F"] = 7, 7
+
+    # create possible contracted shells and their max occupation numbers for alpha or beta
+    contractions = [
+        *[str(x) + "S" for x in range(1, 8)],
+        *[str(x) + "P" for x in range(2, 8)],
+        *[str(x) + "D" for x in range(3, 8)],
+        *[str(x) + "F" for x in range(4, 8)],
+    ]
+
+    # maximum occupation numbers for each contracted shell (alpha or beta only)
+    max_occ = {"S": 1, "P": 3, "D": 5, "F": 7}
+
+    # for each possible contracted shell
+    for cs in contractions:
+        # check if the contracted shell is the configuration
+        if cs in configuration:
+            # get the total number of electrons in the contracted shell
+            n_elec = re.search(cs + r"\((.*?)\)", configuration).group(1)
+            n_elec = int(n_elec)
+
+            # fill alpha and beta occupations for the contracted shell following Hund's rule
+            if n_elec > max_occ[cs[-1]]:
+                a_occ[cs], b_occ[cs] = max_occ[cs[-1]], n_elec - max_occ[cs[-1]]
+            else:
+                a_occ[cs], b_occ[cs] = n_elec, 0
+    return a_occ, b_occ, max_occ
+
+
 def load_slater_wfn(element, anion=False, cation=False):
     """
     Return the data recorded in the atomic Slater wave-function file as a dictionary.
@@ -673,67 +739,6 @@ def load_slater_wfn(element, anion=False, cation=False):
         file_path = "raw/neutral/%s.slater" % element.lower()
 
     file_name = os.path.join(os.path.dirname(__file__), file_path)
-
-    def get_number_of_electrons_per_orbital(configuration):
-        """
-        Get the Occupation Number for all orbitals of an _element returning an dictionary.
-
-        Parameters
-        ----------
-        configuration : str
-            The electron configuration.
-
-        Returns
-        --------
-        dict
-            a dict containing the number and orbital.
-
-        """
-        electron_config_list = configuration
-
-        shells = ["K", "L", "M", "N"]
-
-        out = {}
-        orbitals = (
-            [str(x) + "S" for x in range(1, 8)]
-            + [str(x) + "P" for x in range(2, 8)]
-            + [str(x) + "D" for x in range(3, 8)]
-            + [str(x) + "F" for x in range(4, 8)]
-        )
-        for orb in orbitals:
-            # Initialize all atomic orbitals to zero electrons
-            out[orb] = 0
-
-        for x in shells:
-            if x in electron_config_list:
-                if x == "K":
-                    out["1S"] = 2
-                elif x == "L":
-                    out["2S"] = 2
-                    out["2P"] = 6
-                elif x == "M":
-                    out["3S"] = 2
-                    out["3P"] = 6
-                    out["3D"] = 10
-                elif x == "N":
-                    out["4S"] = 2
-                    out["4P"] = 6
-                    out["4D"] = 10
-                    out["4F"] = 14
-
-        for x in orbitals:
-            if x in electron_config_list:
-                index = electron_config_list.index(x)
-                orbital = electron_config_list[index : index + 2]
-
-                if orbital[1] == "D" or orbital[1] == "F":
-                    # num_electrons = re.sub('[(){}<>,]', "", electron_config_list.split(orbital)[1])
-                    num_electrons = re.search(orbital + r"\((.*?)\)", electron_config_list).group(1)
-                    out[orbital] = int(num_electrons)
-                else:
-                    out[orbital] = int(electron_config_list[index + 3 : index + 4])
-
-        return {key: value for key, value in out.items() if value != 0}
 
     def get_column(t_orbital):
         """
