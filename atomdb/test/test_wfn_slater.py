@@ -27,6 +27,7 @@ import pytest
 
 import numpy as np
 from numpy.testing import assert_equal, assert_almost_equal, assert_raises
+from atomdb.datasets.slater import get_cs_occupations
 
 from atomdb.api import load
 from importlib_resources import files
@@ -35,7 +36,6 @@ import os
 # get test data path
 TEST_DATAPATH = files("atomdb.test.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
-
 
 @pytest.mark.parametrize(
     "atom, mult, answer",
