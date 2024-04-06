@@ -791,6 +791,7 @@ def load_slater_wfn(element, anion=False, cation=False):
         configuration = next_line.split()[1].replace(",", "")
         if is_heavy_element:
             configuration = configuration_exact_for_heavy_elements(configuration)
+
         # in light atoms, the energy is the next line with data
         next_line = f.readline().strip()
         # some cases have empty lines before the energy (remove them)
@@ -800,36 +801,36 @@ def load_slater_wfn(element, anion=False, cation=False):
         if is_heavy_element:
             for _ in range(0, 6):
                 next_line = f.readline().strip()
-
         # read total energy
         energy = [float(next_line.split("=")[1])]
 
         # declare containers for orbitals, orbital basis, cusp, energy, exponents, and coefficients
-        orbitals = []
-        orbitals_basis = {}
-        orbitals_cusp = []
-        orbitals_energy = []
-        orbitals_exp = {}
-        orbitals_coeff = {}
+        cs = []
+        cs_basis = {}
+        cs_cusp = []
+        cs_energy = []
+        cs_exp = {}
+        cs_coeff = {}
 
         while next_line.strip() != "":
             # If line has ___S___ or P or D where _ = " ". This is the start of a new sub-shell
             if re.search(r"  [S|P|D|F]  ", next_line):
-                # read sub-shell (e.g S) and orbitals (e.g 1S, 2S, 3S) for that sub-shell
+                # read sub-shell (e.g S) and contractions (e.g 1S, 2S, 3S) for that sub-shell
                 subshell = next_line.split()[0]
                 list_of_orbitals = next_line.split()[1:]
 
-                # add sub-shell orbitals to the list of orbitals
-                orbitals += list_of_orbitals
+                # add sub-shell contractions to the list of contractions
+                cs += list_of_orbitals
 
-                # read orbital energies from next line and store them with same order as orbitals
+                # read contractions energies from next line and store them following the
+                # contractions list order
                 next_line = f.readline().strip()
-                orbitals_energy.extend([float(x) for x in next_line.split()[1:]])
+                cs_energy.extend([float(x) for x in next_line.split()[1:]])
 
                 # save cusp values, for heavy atoms this is not present
                 if not is_heavy_element:
                     next_line = f.readline()
-                    orbitals_cusp.extend([float(x) for x in next_line.split()[1:]])
+                    cs_cusp.extend([float(x) for x in next_line.split()[1:]])
                 next_line = f.readline()
                 # read lines until next sub-shell and get the exponents and coefficients
                 for next_line in f:
@@ -839,46 +840,77 @@ def load_slater_wfn(element, anion=False, cation=False):
 
                     list_words = next_line.split()
                     # read orbital basis from first column, save basis list for each sub-shell
-                    orbitals_basis.setdefault(subshell, []).append(list_words[0])
+                    cs_basis.setdefault(subshell, []).append(list_words[0])
                     # read basis exponents from second column and save as basis list (same order)
-                    orbitals_exp.setdefault(subshell, []).append(float(list_words[1]))
+                    cs_exp.setdefault(subshell, []).append(float(list_words[1]))
 
                     # read orbital basis coefficients from the correct column.
                     # for each orbital, the coefficients are saved in same order as basis list
                     for x in list_of_orbitals:
                         coeff = float(list_words[get_column(x)])
-                        orbitals_coeff.setdefault(x, []).append(coeff)
+                        cs_coeff.setdefault(x, []).append(coeff)
             else:
                 next_line = f.readline()
 
-    # sort orbitals, cusps, energies by ascending energy
-    orbitals = [x for _, x in sorted(zip(orbitals_energy, orbitals))]
-    orbitals_cusp = [x for _, x in sorted(zip(orbitals_energy, orbitals_cusp))]
-    orbitals_energy = sorted(orbitals_energy)
+    # create dictionaries with energy and cusps for each contracted shell
+    cs_energy_dict = {i: j for i, j in zip(cs, cs_energy)}
+    cs_cusp_dict = {i: j for i, j in zip(cs, cs_cusp)}
+
+    # compute alpha, beta and max occupation numbers for each contracted shell
+    a_occ_dict, b_occ_dict, max_occ_dict = get_cs_occupations(configuration)
+    # list of orbital occupations
+    a_occ = []
+    b_occ = []
+    # list of orbitals energies and cusps
+    orbitals = []
+    orb_energy = []
+    orb_cusp = []
+
+    # for each contracted shell, in order of increasing energy
+    for _, contraction in sorted(zip(cs_energy, cs)):
+        # for each orbital in the contracted shell
+        for i in range(max_occ_dict[contraction[-1]]):
+            # append the orbital to the list
+            orbitals.append(contraction)
+            # compute alpha and beta occupation numbers for the orbital
+            a_occ_val = 1 if i <= a_occ_dict[contraction] else 0
+            b_occ_val = 1 if i <= b_occ_dict[contraction] else 0
+            # add orbital occupation numbers to the list
+            a_occ.append(a_occ_val)
+            b_occ.append(b_occ_val)
+            # get orbital energy, exponent, and coefficient
+            orb_energy.append(cs_energy_dict[contraction])
+            # get orbital cusp
+            if cs_cusp_dict:
+                orb_cusp.append(cs_cusp_dict[contraction])
+
+    # construct the total orbital list, occupation list, energy list, cusp list
+    orbitals += orbitals
+    orb_occ = np.array(a_occ + b_occ)
+    orb_energy = np.array(orb_energy + orb_energy)
+    orb_cusp = np.array(orb_cusp + orb_cusp)
 
     data = {
         "configuration": configuration,
         "energy": energy,
         "orbitals": orbitals,
-        "orbitals_energy": np.array(orbitals_energy)[:, None],
-        "orbitals_cusp": np.array(orbitals_cusp)[:, None],
-        "orbitals_basis": orbitals_basis,
+        "orbitals_energy": orb_energy[:, None],
+        "orbitals_cusp": orb_cusp[:, None],
+        "orbitals_basis": cs_basis,
         "orbitals_exp": {
             key: np.asarray(value).reshape(len(value), 1)
-            for key, value in orbitals_exp.items()
+            for key, value in cs_exp.items()
             if value != []
         },
         "orbitals_coeff": {
             key: np.asarray(value).reshape(len(value), 1)
-            for key, value in orbitals_coeff.items()
+            for key, value in cs_coeff.items()
             if value != []
         },
-        "orbitals_occupation": np.array(
-            [get_number_of_electrons_per_orbital(configuration)[k] for k in orbitals]
-        )[:, None],
+        "orbitals_occupation": orb_occ[:, None],
         "basis_numbers": {
             key: np.asarray([[int(x[0])] for x in value])
-            for key, value in orbitals_basis.items()
+            for key, value in cs_basis.items()
             if len(value) != 0
         },
     }
