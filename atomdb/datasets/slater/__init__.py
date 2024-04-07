@@ -69,7 +69,7 @@ class AtomicDensity:
     orbitals : list, (M,)
         List of strings representing each of the orbitals in the electron configuration.
         For example, Beryllium has ["1S", "2S"] in its electron configuration.
-        Ordered based on "S", "P", "D", etc.
+        Ordered based on orbital energy.
     orbitals_occupation : ndarray, (M, 1)
         Returns the number of electrons in each of the orbitals in the electron configuration.
         e.g. Beryllium has two electrons in "1S" and two electrons in "2S".
@@ -204,8 +204,8 @@ class AtomicDensity:
         Compute the linear combination of Slater-type atomic orbitals on the given points.
 
         Each row corresponds to a point on the grid, represented as :math:`r` and
-         each column is represented as a linear combination of Slater-type atomic orbitals
-         of the form:
+        each column is represented as a linear combination of Slater-type atomic orbitals
+        of the form:
 
         .. math::
             \sum c_i R(r, n_i, C_i)
@@ -240,6 +240,7 @@ class AtomicDensity:
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
+            # get exponent and number of the orbital type (s, p, d, f)
             exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             if deriv == 0:
                 slater = self.slater_orbital(exps, number, points)
@@ -299,8 +300,10 @@ class AtomicDensity:
         # compute orbital occupation numbers
         orb_occs = self.orbitals_occupation
         if mode == "valence":
-            orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
-            orb_occs = orb_occs * np.exp(-((self.orbitals_energy - orb_homo) ** 2))
+            # get index of homo (equal to sum of occupied alpha orbitals)
+            orb_homo = sum(orb_occs[: len(orb_occs) // 2 - 1])
+            e_orb_homo = self.orbitals_energy[orb_homo]
+            orb_occs = orb_occs * np.exp(-((self.orbitals_energy - e_orb_homo) ** 2))
         elif mode == "core":
             orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
             orb_occs = orb_occs * (1.0 - np.exp(-((self.orbitals_energy - orb_homo) ** 2)))
@@ -929,59 +932,6 @@ def load_slater_wfn(element, anion=False, cation=False, data_path=DATAPATH):
     return data
 
 
-def split_configuration(orbitals, occupations):
-    r"""Split electronic configuration into alpha and beta components following Hund's rule
-
-    Returns
-    -------
-    occs_a : list
-        alpha electronic configuration for each orbital (M values)
-    occs_b : list
-        beta electronic configuration for each orbital (M values)
-    """
-    subshell_alphas = {"S": 1, "P": 3, "D": 5, "F": 7}
-    occs_a = []
-    occs_b = []
-    for i, orb in enumerate(orbitals):
-        n_el = occupations[i] - 1  # N electrons in sub shell - 1
-        na_sshell = subshell_alphas[orb[-1]]  # N alpha electrons in sub shell
-        row = n_el // na_sshell
-        col = n_el % na_sshell
-        if row == 0:
-            na = (row * na_sshell + col) + 1
-            nb = 0
-        else:
-            na = na_sshell
-            nb = (row * na_sshell + col) - na + 1
-        occs_a.append(na)
-        occs_b.append(nb)
-
-    return np.array(occs_a, dtype=float), np.array(occs_b, dtype=float)
-
-
-def eval_multiplicity(orbitals, occupations):
-    r"""Evaluate multiplicity
-
-    Parameters
-    ----------
-    orbitals : list, (M,)
-        List of strings representing each of the orbitals in the electron configuration.
-        Ordered based on "S", "P", "D", etc. For example, Beryllium has ["1S", "2S"] in its electron
-        configuration.
-    occupations : ndarray, (M,)
-        Number of electrons in each of the orbitals in the electron configuration.
-
-    Returns
-    -------
-    Spin multiplicity : int
-
-    """
-    occs_a, occs_b = split_configuration(orbitals, occupations)
-    na = sum(occs_a)
-    nb = sum(occs_b)
-    return int((na - nb)) + 1
-
-
 DOCSTRING = """Slater Dataset
 
 The following neutral and ionic (+/- 1 charge) species are available:
@@ -1034,17 +984,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         species = AtomicDensity(elem, anion=True, cation=False)
 
     # Check multiplicity value
-    mo_occ = species.orbitals_occupation.ravel()  # these are configurations not occupations
-    multiplicity = eval_multiplicity(species.orbitals, mo_occ)
+    mo_occ = species.orbitals_occupation.ravel()
+    multiplicity = int(np.sum(mo_occ[: len(mo_occ) // 2] - mo_occ[len(mo_occ) // 2 :])) + 1
     if mult != multiplicity:
         raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
 
     # Get electronic structure data
-    # FIXME:sign error in parsed energy value (looks like T value instead of E was parsed from raw file).
-    # This is a temporal fix until the parsing code for Slater's data gets updated from BFit.
-    energy = -species.energy[0]
-    mo_energies_a = species.orbitals_energy.ravel()  # assuming same alpha and beta energies
-    mo_occ_a, mo_occ_b = split_configuration(species.orbitals, mo_occ)
+    energy = -species.energy
+    # Get MO energies and occupations
+    mo_energies_a = species.orbitals_energy.ravel()[: len(mo_occ) // 2]
+    mo_energies_b = species.orbitals_energy.ravel()[len(mo_occ) // 2 :]
+    mo_occ_a, mo_occ_b = mo_occ[: len(mo_occ) // 2], mo_occ[len(mo_occ) // 2 :]
 
     # Make grid
     points = np.linspace(*BOUND, NPOINTS)
@@ -1077,7 +1027,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         dispersion_c6,
         energy,
         mo_energy_a=mo_energies_a,
-        mo_energy_b=mo_energies_a,
+        mo_energy_b=mo_energies_b,
         mo_occs_a=mo_occ_a,
         mo_occs_b=mo_occ_b,
         rs=points,
