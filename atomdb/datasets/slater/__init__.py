@@ -29,6 +29,7 @@ load_slater_wfn : Function for reading and returning information from '.slater' 
 
 
 import numpy as np
+from importlib_resources import files
 import os
 import re
 from scipy.special import factorial
@@ -42,6 +43,9 @@ __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
 BOUND = (1e-5, 15.0)
 
 NPOINTS = 10000
+
+DATAPATH = files("atomdb.datasets.slater.raw")
+DATAPATH = os.path.abspath(DATAPATH._paths[0])
 
 
 class AtomicDensity:
@@ -549,18 +553,20 @@ def get_cs_occupations(configuration):
     return a_occ, b_occ, max_occ
 
 
-def load_slater_wfn(element, anion=False, cation=False):
+def load_slater_wfn(element, anion=False, cation=False, data_path=DATAPATH):
     """
     Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
     Parameters
     ----------
-    file_name : str
-        The path to the Slater atomic file.
+    element : str
+        The element symbol.
     anion : bool
         If true, then the anion of element is used.
     cation : bool
         If true, then the cation of element is used.
+    datapath : str or Path
+        The path to the data folder.
 
     """
     # Heavy atoms from atom cs to lr.
@@ -725,20 +731,20 @@ def load_slater_wfn(element, anion=False, cation=False):
     if anion:
         if element.lower() in anion_atoms:
             # file_path = "./atomdb/data/anion/%s.an" % element.lower()
-            file_path = "raw/anion/%s.an" % element.lower()
+            file_path = "anion/%s.an" % element.lower()
         else:
             raise ValueError("Anion Slater File for element %s does not exist." % element)
     elif cation:
         if element.lower() in cation_atoms:
             # file_path = "./atomdb/data/cation/%s.cat" % element.lower()
-            file_path = "raw/cation/%s.cat" % element.lower()
+            file_path = "cation/%s.cat" % element.lower()
         else:
             raise ValueError("Cation Slater File for element %s does not exist." % element)
     else:
         # file_path = "./atomdb/data/neutral/%s.slater" % element.lower()
-        file_path = "raw/neutral/%s.slater" % element.lower()
+        file_path = "neutral/%s.slater" % element.lower()
 
-    file_name = os.path.join(os.path.dirname(__file__), file_path)
+    file_name = os.path.join(data_path, file_path)
 
     def get_column(t_orbital):
         """
@@ -797,6 +803,7 @@ def load_slater_wfn(element, anion=False, cation=False):
         # some cases have empty lines before the energy (remove them)
         while not next_line:
             next_line = f.readline().strip()
+
         # heavy atoms have 6 lines of redundant data before the energy (skip them)
         if is_heavy_element:
             for _ in range(0, 6):
@@ -812,13 +819,18 @@ def load_slater_wfn(element, anion=False, cation=False):
         cs_exp = {}
         cs_coeff = {}
 
-        while next_line.strip() != "":
+        # ignore next line, has no useful information T, V and V/T
+        f.readline()
+        # some files have empty lines before the first sub-shell
+        while not f.readline().strip():
+            pass
+
+        while next_line:
             # If line has ___S___ or P or D where _ = " ". This is the start of a new sub-shell
             if re.search(r"  [S|P|D|F]  ", next_line):
                 # read sub-shell (e.g S) and contractions (e.g 1S, 2S, 3S) for that sub-shell
                 subshell = next_line.split()[0]
                 list_of_orbitals = next_line.split()[1:]
-
                 # add sub-shell contractions to the list of contractions
                 cs += list_of_orbitals
 
@@ -831,8 +843,8 @@ def load_slater_wfn(element, anion=False, cation=False):
                 if not is_heavy_element:
                     next_line = f.readline()
                     cs_cusp.extend([float(x) for x in next_line.split()[1:]])
-                next_line = f.readline()
                 # read lines until next sub-shell and get the exponents and coefficients
+
                 for next_line in f:
                     # break if next line is not an integer followed by a sub-shell (e.g 1S, 2S)
                     if not re.match(r"\A^\d" + subshell, next_line.lstrip()):
@@ -858,6 +870,7 @@ def load_slater_wfn(element, anion=False, cation=False):
 
     # compute alpha, beta and max occupation numbers for each contracted shell
     a_occ_dict, b_occ_dict, max_occ_dict = get_cs_occupations(configuration)
+
     # list of orbital occupations
     a_occ = []
     b_occ = []
@@ -873,8 +886,8 @@ def load_slater_wfn(element, anion=False, cation=False):
             # append the orbital to the list
             orbitals.append(contraction)
             # compute alpha and beta occupation numbers for the orbital
-            a_occ_val = 1 if i <= a_occ_dict[contraction] else 0
-            b_occ_val = 1 if i <= b_occ_dict[contraction] else 0
+            a_occ_val = 1 if i < a_occ_dict[contraction] else 0
+            b_occ_val = 1 if i < b_occ_dict[contraction] else 0
             # add orbital occupation numbers to the list
             a_occ.append(a_occ_val)
             b_occ.append(b_occ_val)
@@ -889,7 +902,6 @@ def load_slater_wfn(element, anion=False, cation=False):
     orb_occ = np.array(a_occ + b_occ)
     orb_energy = np.array(orb_energy + orb_energy)
     orb_cusp = np.array(orb_cusp + orb_cusp)
-
     data = {
         "configuration": configuration,
         "energy": energy,
