@@ -241,16 +241,15 @@ class AtomicDensity:
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
             # get exponent and number of the orbital type (s, p, d, f)
-            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+            exps, numbers = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
             if deriv == 0:
-                slater = self.slater_orbital(exps, number, points)
+                slater = self.slater_orbital(exps, numbers, points)
             elif deriv == 1:
-                slater = self.derivative_slater_type_orbital(exps, number, points)
+                slater = self.derivative_slater_type_orbital(exps, numbers, points)
             elif deriv == 2:
-                slater = self.second_derivative_slater_type_orbital(exps, number, points)
+                slater = self.second_derivative_slater_type_orbital(exps, numbers, points)
             else:
                 raise ValueError("Derivative order can only be 0, 1 or 2.")
-
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
 
