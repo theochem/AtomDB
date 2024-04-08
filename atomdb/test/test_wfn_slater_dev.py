@@ -302,7 +302,7 @@ def test_load_slater_wfn_basis_numbers():
     assert all([a == int(b[0]) for a, b in zip(anion_basis["S"].ravel(), ref_an_S_basis)])
 
 
-def test_atomic_density_heavy_cs():
+def test_eval_density_heavy_cs():
     r"""Test integration of atomic density of carbon anion and cation."""
     # These files don't exist.
     with pytest.raises(ValueError):
@@ -312,11 +312,11 @@ def test_atomic_density_heavy_cs():
 
     cs = AtomicDensity("cs")
     grid = np.arange(0.0, 40.0, 0.0001)
-    dens = cs.atomic_density(grid, mode="total")
+    dens = cs.eval_density(grid, mode="total")
     assert_almost_equal(4 * np.pi * np.trapz(dens * grid**2.0, grid), 55.0, decimal=5)
 
 
-def test_atomic_density_heavy_rn():
+def test_eval_density_heavy_rn():
     r"""Test integration of atomic density of carbon anion and cation."""
 
     # These files don't exist.
@@ -326,7 +326,7 @@ def test_atomic_density_heavy_rn():
         AtomicDensity("rn", anion=True)
     rn = AtomicDensity("rn")
     grid = np.arange(0.0, 40.0, 0.0001)
-    dens = rn.atomic_density(grid, mode="total")
+    dens = rn.eval_density(grid, mode="total")
     assert_almost_equal(4 * np.pi * np.trapz(dens * grid**2.0, grid), 86, decimal=5)
 
 
@@ -346,7 +346,7 @@ def test_raises():
         AtomicDensity.slater_orbital(np.array([[1]]), np.array([[2]]), np.array([[1.0]]))
     c = AtomicDensity("c")
     with pytest.raises(ValueError):
-        c.atomic_density(np.array([[1.0]]), "not total")
+        c.eval_density(np.array([[1.0]]), "not total")
 
 
 # def test_parsing_slater_density_k():
