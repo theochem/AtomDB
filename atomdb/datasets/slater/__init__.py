@@ -253,7 +253,7 @@ class AtomicDensity:
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
 
-    def atomic_density(self, points, mode="total"):
+    def eval_density(self, points, mode="total"):
         r"""
         Compute atomic density on the given points.
 
@@ -334,7 +334,7 @@ class AtomicDensity:
         orb_dens = self.phi_matrix(points) ** 2 * orb_occs.ravel() / (4 * np.pi)
         return orb_dens
 
-    def eval_orbs_ddensity(self, points):
+    def eval_orbs_radial_d_density(self, points):
         r"""Return each orbital density evaluated at a set of points
 
         rho_i(r) = n_i |P(r, n_i, C_i)|^2
@@ -359,7 +359,7 @@ class AtomicDensity:
         orb_derivative = 2.0 * factor * self.orbitals_occupation.ravel() / (4 * np.pi)
         return orb_derivative
 
-    def eval_orbs_d2density(self, points):
+    def eval_orbs_radial_dd_density(self, points):
         r"""Return each orbital density evaluated at a set of points
 
         rho_i(r) = n_i |P(r, n_i, C_i)|^2
@@ -480,7 +480,7 @@ class AtomicDensity:
 
     def lagrangian_kinetic_energy(self, points):
         r"""
-        Positive definite or Lagrangian kinectic energy density.
+        Positive definite or Lagrangian kinetic energy density.
 
         Parameters
         ----------
@@ -526,7 +526,7 @@ class AtomicDensity:
         energy += np.dot(molecular, orb_occs).ravel() / 2.0
         return energy
 
-    def derivative_density(self, points):
+    def eval_radial_d_density(self, points):
         r"""
         Return the derivative of the atomic density on a set of points.
 
@@ -544,7 +544,7 @@ class AtomicDensity:
         derivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
         return derivative
 
-    def second_derivative_density(self, points):
+    def eval_radial_dd_density(self, points):
         r"""
         Return the second derivative of the atomic density on a set of points.
 
