@@ -310,6 +310,83 @@ class AtomicDensity:
         dens = np.dot(self.phi_matrix(points) ** 2, orb_occs).ravel() / (4 * np.pi)
         return dens
 
+    def eval_orbs_density(self, points):
+        r"""Return each orbital density evaluated at a set of points
+
+        rho_i(r) = n_i |P(r, n_i, C_i)|^2
+
+        where,
+        :math:`n_i` is the number of electrons in orbital i.
+        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
+            on the point :math:`r`.
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_dens : np.ndarray(K_orb, N)
+            orbitals density at a set of grid points (N)
+        """
+        orb_occs = self.orbitals_occupation
+        orb_dens = self.phi_matrix(points) ** 2 * orb_occs.ravel() / (4 * np.pi)
+        return orb_dens
+
+    def eval_orbs_ddensity(self, points):
+        r"""Return each orbital density evaluated at a set of points
+
+        rho_i(r) = n_i |P(r, n_i, C_i)|^2
+
+        where,
+        :math:`n_i` is the number of electrons in orbital i.
+        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
+            on the point :math:`r`.
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_dens : np.ndarray(K_orb, N)
+            orbitals density at a set of grid points (N)
+        """
+
+        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=1)
+        orb_derivative = 2.0 * factor * self.orbitals_occupation.ravel() / (4 * np.pi)
+        return orb_derivative
+
+    def eval_orbs_d2density(self, points):
+        r"""Return each orbital density evaluated at a set of points
+
+        rho_i(r) = n_i |P(r, n_i, C_i)|^2
+
+        where,
+        :math:`n_i` is the number of electrons in orbital i.
+        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
+            on the point :math:`r`.
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_dens : np.ndarray(K_orb, N)
+            orbitals density at a set of grid points (N)
+        """
+
+        factor = (
+            self.phi_matrix(points) * self.phi_matrix(points, deriv=2)
+            + self.phi_matrix(points, deriv=1) ** 2
+        )
+        orb_derivative = 2.0 * factor * self.orbitals_occupation.ravel() / (4 * np.pi)
+        return orb_derivative
+
     @staticmethod
     def derivative_slater_type_orbital(exponent, number, points):
         r"""
