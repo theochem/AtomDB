@@ -562,8 +562,8 @@ class AtomicDensity:
             self.phi_matrix(points) * self.phi_matrix(points, deriv=2)
             + self.phi_matrix(points, deriv=1) ** 2
         )
-        derivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
-        return derivative
+        dderivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        return dderivative
 
 
 def get_cs_occupations(configuration):
