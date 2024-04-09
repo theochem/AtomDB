@@ -26,9 +26,7 @@ import h5py as h5
 import csv
 
 import atomdb
-from atomdb.periodic import Element
-from atomdb.utils import MULTIPLICITIES, CMINV, EV 
-from atomdb.species import DEFAULT_DATAPATH
+from atomdb.utils import MODULE_DATAPATH, DEFAULT_DATAPATH, MULTIPLICITIES, CMINV, EV
 
 
 __all__ = [
@@ -52,7 +50,7 @@ For each element/charge pair the values correspond to the most stable electronic
 
 def load_nist_spectra_data(atnum, nelec, datafile):
     """Load data from database_beta_1.3.0.h5 file into a `SpeciesTable`.
-    
+
     Note: function based on spectra.py module from old master
     https://github.com/theochem/AtomDB/blob/oldmaster/atomdb/io/spectra.py
     """
@@ -86,7 +84,7 @@ def load_nist_spectra_data(atnum, nelec, datafile):
             "energy": list(energy[index_sorting]),
             "config": list(config[index_sorting]),
             "j_vals": list(j_vals[index_sorting])}
-    
+
     return output
 
 
@@ -106,7 +104,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Check that the input charge is valid
     if charge < -2 or charge > atnum:
         raise ValueError(f"{elem} with {charge} not available.")
-    
+
     # Check that the input multiplicity corresponds to this configuration.
     if not mult == MULTIPLICITIES[(atnum, charge)]:
         raise ValueError(f"{elem} with charge {charge} and multiplicity {mult} not available.")
@@ -131,17 +129,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     #
     # Set an energy default value since there is no data for anions in database_beta_1.3.0.h5.
     energy = None
-    datapath = f"{DEFAULT_DATAPATH}/{dataset.lower()}/raw/database_beta_1.3.0.h5"
+    h5path = os.path.join(MODULE_DATAPATH, "database_beta_1.3.0.h5")
     if charge >= 0: # neutral or cationic species
-        spectra_data = load_nist_spectra_data(atnum, nelec, datapath)
+        spectra_data = load_nist_spectra_data(atnum, nelec, h5path)
         energies = spectra_data["energy"]
         # Convert energy to Hartree from cm^{-1} if available
         energy = energies[0] * CMINV if len(energies) != 0 else energy
 
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
-    datapath = f"{DEFAULT_DATAPATH}/{dataset.lower()}/raw/c6cp04533b1.csv"
-    data = list(csv.reader(open(datapath, "r")))
+    csvpath = os.path.join(MODULE_DATAPATH, "c6cp04533b1.csv")
+    data = list(csv.reader(open(csvpath, "r")))
     tabid = [i for i, row in enumerate(data) if "Element" in row]
     # Assign each conceptual-DFT data table to a variable.
     # Remove empty and header rows
@@ -179,24 +177,21 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     #     mu=mu,
     #     eta=eta,
     # )
-    atom =  atomdb.Species(
-        dataset,
-        elem,
-        atnum,
-        obasis_name,
-        nelec,
-        nspin,
-        nexc,
+    # print(atom._data.elem, atom.charge, atom.mult)
+    # print(atom.energy, atom.ip, atom.mu, atom.nexc)
+    # print(atom.atmass)
+    # print(atom.spinpol)
+    # print(atom.polarizability)
+    fields = dict(
+        elem=elem,
+        atnum=atnum,
+        obasis_name=obasis_name,
+        nelec=nelec,
+        nspin=nspin,
+        nexc=nexc,
         energy=energy,
         ip=ip,
         mu=mu,
         eta=eta,
     )
-
-    print(vars(atom))
-    # print(atom._data.elem, atom.charge, atom.mult)
-    # print(atom.energy, atom.ip, atom.mu, atom.nexc)
-    print(atom.atmass)
-    print(atom.spinpol)
-    print(atom.polarizability)
-    return atom
+    return atomdb.Species(dataset, fields)

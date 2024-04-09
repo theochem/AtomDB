@@ -190,25 +190,24 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     eta = None
 
     # Return Species instance
-    return atomdb.Species(
-        dataset,
-        elem,
-        natom,
-        basis,
-        nelec,
-        nspin,
-        nexc,
-        cov_radii,
-        vdw_radii,
-        mass,
-        energy,
-        mo_e_up,
-        mo_e_dn,
-        occs_up,
-        occs_dn,
-        ip,
-        mu,
-        eta,
+    fields = dict(
+        elem=elem,
+        natom=natom,
+        basis=basis,
+        nelec=nelec,
+        nspin=nspin,
+        nexc=nexc,
+        # cov_radii=cov_radii,
+        # vdw_radii=vdw_radii,
+        # mass=mass,
+        energy=energy,
+        mo_e_up=mo_e_up,
+        mo_e_dn=mo_e_dn,
+        occs_up=occs_up,
+        occs_dn=occs_dn,
+        ip=ip,
+        mu=mu,
+        eta=eta,
         rs=rs,
         _orb_dens_up=orb_dens_avg_up.flatten(),
         _orb_dens_dn=orb_dens_avg_dn.flatten(),
@@ -217,3 +216,4 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         _orb_ked_dn=orb_ked_avg_dn.flatten(),
         ked_tot=ked_avg_tot,
     )
+    return atomdb.Species(dataset, fields)
