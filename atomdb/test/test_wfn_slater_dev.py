@@ -349,27 +349,84 @@ def test_raises():
         c.eval_density(np.array([[1.0]]), "not total")
 
 
-# def test_parsing_slater_density_k():
-#     # Load the K file
-#     k = load_slater_wfn("k")
+def test_parsing_slater_density_k():
+    # Load the K file
+    k = load_slater_wfn("k")
 
-#     assert k["configuration"] == "K(2)L(8)3S(2)3P(6)4S(1)"
-#     assert k["energy"] == [599.164786943]
+    assert k["configuration"] == "K(2)L(8)3S(2)3P(6)4S(1)"
+    assert k["energy"] == [-599.164786322]
 
-#     assert k['orbitals'] == ["1S", "2S", "3S", "4S", "2P", "3P"]
-#     assert np.all(abs(k['orbitals_cusp'] - np.array([1.0003111, 0.9994803, 1.0005849, 1.0001341,
-#                                                      1.0007902, 0.9998975])[:, None]) < 1.e-6)
-#     assert np.all(abs(k['orbitals_energy'] - np.array([-133.5330493, -14.4899575, -1.7487797, -0.1474751, -11.5192795,
-#                                                        -0.9544227])[:, None]) < 1.e-6)
-#     assert k['orbitals_basis']['P'] == ['2P', '3P', '2P', '3P', '2P', '2P', '3P', '2P', '2P', '2P']
+    assert k["orbitals"] == [
+        "1S",
+        "2S",
+        "2P",
+        "2P",
+        "2P",
+        "3S",
+        "3P",
+        "3P",
+        "3P",
+        "4S",
+        "1S",
+        "2S",
+        "2P",
+        "2P",
+        "2P",
+        "3S",
+        "3P",
+        "3P",
+        "3P",
+        "4S",
+    ]
+    cusps = [
+        1.0003111,
+        0.9994803,
+        1.0007902,
+        1.0007902,
+        1.0007902,
+        1.0005849,
+        0.9998975,
+        0.9998975,
+        0.9998975,
+        1.0001341,
+    ] * 2
 
-#     basis_numbers = np.array([[2], [3], [2], [3], [2], [2], [3], [2], [2], [2]])
-#     assert np.all(np.abs(k['basis_numbers']['P'] - basis_numbers) < 1e-5)
+    assert np.allclose(k["orbitals_cusp"].ravel(), np.array(cusps), atol=1.0e-6)
 
-#     # Check coefficients of 3P orbital
-#     coeff_3P = np.array([0.0000354, 0.0011040, -0.0153622, 0.0620133, -0.1765320, -0.3537264,
-#                          -0.3401560, 1.3735350, 0.1055549, 0.0010773])
-#     assert (abs(k['orbitals_coeff']['3P'] - coeff_3P.reshape(10, 1)) < 1.e-6).all()
+    ref_orb_energy = [
+        -133.5330493,
+        -14.4899575,
+        -11.5192795,
+        -11.5192795,
+        -11.5192795,
+        -1.7487797,
+        -0.9544227,
+        -0.9544227,
+        -0.9544227,
+        -0.1474751,
+    ] * 2
+    assert np.allclose(k["orbitals_energy"].ravel(), np.array(ref_orb_energy), atol=1.0e-6)
+    assert k["orbitals_basis"]["P"] == ["2P", "3P", "2P", "3P", "2P", "2P", "3P", "2P", "2P", "2P"]
+
+    basis_numbers = np.array([[2], [3], [2], [3], [2], [2], [3], [2], [2], [2]])
+    np.allclose(k["basis_numbers"]["P"], basis_numbers)
+
+    # Check coefficients of 3P orbital
+    coeff_3P = np.array(
+        [
+            0.0000354,
+            0.0011040,
+            -0.0153622,
+            0.0620133,
+            -0.1765320,
+            -0.3537264,
+            -0.3401560,
+            1.3735350,
+            0.1055549,
+            0.0010773,
+        ]
+    )
+    assert (abs(k["orbitals_coeff"]["3P"] - coeff_3P.reshape(10, 1)) < 1.0e-6).all()
 
 
 # def test_parsing_slater_density_i():
