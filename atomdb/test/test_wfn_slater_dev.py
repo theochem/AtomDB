@@ -25,9 +25,9 @@
 
 import pytest
 
+from atomdb.datasets.slater import AtomicDensity
 from atomdb.datasets.slater import get_cs_occupations
 from atomdb.datasets.slater import load_slater_wfn
-from atomdb.datasets.slater import AtomicDensity
 
 from importlib_resources import files
 import numpy as np
