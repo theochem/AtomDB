@@ -38,7 +38,7 @@ from numpy import ndarray
 from scipy.interpolate import CubicSpline
 
 from atomdb.utils import DEFAULT_DATASET, DEFAULT_DATAPATH
-from atomdb.periodic import Element, element_symbol
+from atomdb.periodic import element_symbol
 
 
 __all__ = [
@@ -48,6 +48,15 @@ __all__ = [
     "load",
     "raw_datafile",
 ]
+
+
+def default_required(name, typeof):
+    r"""Default factory for required fields."""
+
+    def f():
+        raise KeyError(f"Field {name} of type {typeof} was not found")
+
+    return f
 
 
 def default_vector():
@@ -184,18 +193,26 @@ class SpeciesData:
     r"""Database entry fields for atomic and ionic species."""
 
     # Species info
-    elem: str = field()
-    atnum: int = field()
-    obasis_name: str = field()
-    nelec: int = field()
-    nspin: int = field()
-    nexc: int = field()
+    elem: str = field(default_factory=default_required("elem", "str"))
+    atnum: int = field(default_factory=default_required("atnum", "int"))
+    nelec: int = field(default_factory=default_required("nelec", "int"))
+    nspin: int = field(default_factory=default_required("nspin", "int"))
+    nexc: int = field(default_factory=default_required("nexc", "int"))
+
+    # Scalar properties
+    cov_radius: float = field(default=None)
+    vdw_radius: float = field(default=None)
+    polarizability: float = field(default=None)
+    dispersion_c6: float = field(default=None)
 
     # Scalar energy and CDFT-related properties
     energy: float = field(default=None)
     ip: float = field(default=None)
     mu: float = field(default=None)
     eta: float = field(default=None)
+
+    # Basis set name
+    obasis_name: str = field(default=None)
 
     # Radial grid
     rs: ndarray = field(default_factory=default_vector)
@@ -229,15 +246,14 @@ class SpeciesData:
     ked_tot: ndarray = field(default_factory=default_matrix)
 
 
-class Species(Element):
+class Species:
     r"""Properties of atomic and ionic species."""
 
-    def __init__(self, dataset, *args, spinpol=1, **fields):
+    def __init__(self, dataset, fields, spinpol=1):
         r"""Initialize a ``Species`` instance."""
         self._dataset = dataset.lower()
-        self._data = SpeciesData(*args, **fields)
+        self._data = SpeciesData(**fields)
         self.spinpol = spinpol
-        Element.__init__(self, self._data.atnum)
 
     def get_docstring(self):
         r"""Docstring of the species' dataset."""

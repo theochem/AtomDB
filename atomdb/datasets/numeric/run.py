@@ -166,22 +166,22 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     ked_tot = None
 
     # Return Species instance
-    return atomdb.Species(
-        dataset,
-        elem,
-        atnum,
-        obasis_name,
-        nelec,
-        nspin,
-        nexc,
-        atmass,
-        cov_radius,
-        vdw_radius,
-        at_radius,
-        polarizability,
-        dispersion_c6,
-        energy,
+    fields = dict(
+        elem=elem,
+        atnum=atnum,
+        obasis_name=obasis_name,
+        nelec=nelec,
+        nspin=nspin,
+        nexc=nexc,
+        # atmass=atmass,
+        # cov_radius=cov_radius,
+        # vdw_radius=vdw_radius,
+        # at_radius=at_radius,
+        # polarizability=polarizability,
+        # dispersion_c6=dispersion_c6,
+        energy=energy,
         rs=points,
         dens_tot=dens_tot,
         ked_tot=ked_tot,
     )
+    return atomdb.Species(dataset, fields)

@@ -930,21 +930,20 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     ked_tot = species.lagrangian_kinetic_energy(points)
 
     # Return Species instance
-    return atomdb.Species(
-        dataset,
-        elem,
-        atnum,
-        obasis_name,
-        nelec,
-        nspin,
-        nexc,
-        atmass,
-        cov_radius,
-        vdw_radius,
-        at_radius,
-        polarizability,
-        dispersion_c6,
-        energy,
+    fields = dict(
+        elem=elem,
+        atnum=atnum,
+        obasis_name=obasis_name,
+        nelec=nelec,
+        nspin=nspin,
+        nexc=nexc,
+        # atmass=atmass,
+        # cov_radius=cov_radius,
+        # vdw_radius=vdw_radius,
+        # at_radius=at_radius,
+        # polarizability=polarizability,
+        # dispersion_c6=dispersion_c6,
+        energy=energy,
         mo_energy_a=mo_energies_a,
         mo_energy_b=mo_energies_a,
         mo_occs_a=mo_occ_a,
@@ -954,3 +953,4 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         d_dens_tot=d_dens_tot,
         ked_tot=ked_tot,
     )
+    return atomdb.Species(dataset, fields)
