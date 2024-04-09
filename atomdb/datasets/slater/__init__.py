@@ -1109,32 +1109,65 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
 
     # Get electronic structure data
-    energy = -species.energy
+    energy = species.energy
+    norba = len(mo_occ) // 2
     # Get MO energies and occupations
-    mo_energies_a = species.orbitals_energy.ravel()[: len(mo_occ) // 2]
-    mo_energies_b = species.orbitals_energy.ravel()[len(mo_occ) // 2 :]
-    mo_occ_a, mo_occ_b = mo_occ[: len(mo_occ) // 2], mo_occ[len(mo_occ) // 2 :]
+    mo_e_up = species.orbitals_energy.ravel()[:norba]
+    mo_e_dn = species.orbitals_energy.ravel()[norba:]
+    occs_up, occs_dn = mo_occ[:norba], mo_occ[norba:]
 
     # Make grid
-    points = np.linspace(*BOUND, NPOINTS)
+    onedg = UniformInteger(NPOINTS)  # number of uniform grid points.
+    rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg)  # radial grid
 
-    # Compute densities and derivatives
-    dens_orbs = species.phi_matrix(points) ** 2 / (4 * np.pi)
-    dens_tot = species.atomic_density(points, "total")
-    # dens_core = species.atomic_density(points, "core")
-    # dens_valence = species.atomic_density(points, "valence")
-    d_dens_tot = species.derivative_density(points)
+    # Evaluate properties on the grid:
+    # --------------------------------
+    rs = rgrid.points
 
-    # Compute laplacian and kinetic energy density
-    # lapl_tot = None
-    ked_tot = species.lagrangian_kinetic_energy(points)
+    # total and spin-up orbital, and spin-down orbital densities
+    orb_dens_up = species.eval_orbs_density(rs)[:norba, :]
+    orb_dens_dn = species.eval_orbs_density(rs)[norba:, :]
+    dens_tot = species.eval_density(rs, mode="total")
+
+    # total, spin-up orbital, and spin-down orbital first (radial) derivatives of the density
+    d_dens_tot = species.eval_radial_d_density(rs)
+    orb_d_dens_up = species.eval_orbs_radial_d_density(rs)[:norba, :]
+    orb_d_dens_dn = species.eval_orbs_radial_d_density(rs)[norba:, :]
+
+    # total, spin-up orbital, and spin-down orbital second (radial) derivatives of the density
+    dd_dens_tot = species.eval_radial_dd_density(rs)
+    orb_dd_dens_up = species.eval_orbs_radial_dd_density(rs)[:norba, :]
+    orb_dd_dens_dn = species.eval_orbs_radial_dd_density(rs)[norba:, :]
+
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
+    ked_tot = species.eval_ked_positive_definite(rs)
+    mo_ked_a = species.eval_orbs_ked_positive_definite(rs)[:norba, :]
+    mo_ked_b = species.eval_orbs_ked_positive_definite(rs)[:norba, :]
+
+    # Get information about the element
+    atom = Element(elem)
+    atmass = atom.mass["stb"]
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
+    # overwrite values for neutral atomic species
+    if charge == 0:
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion_c6 = atom.c6
+
+    # Conceptual-DFT properties (WIP)
+    ip = -mo_e_up[np.sum(occs_up) - 1]  # - energy of HOMO
+    # ea = -mo_e_dn[np.sum(occs_dn)] if np.sum(occs_dn) < np.sum(occs_up) else None  # - LUMO energy
+    mu = None
+    eta = None
 
     # Return Species instance
     return atomdb.Species(
         dataset,
         elem,
         atnum,
-        obasis_name,
+        "Slater",
         nelec,
         nspin,
         nexc,
@@ -1145,12 +1178,28 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         polarizability,
         dispersion_c6,
         energy,
-        mo_energy_a=mo_energies_a,
-        mo_energy_b=mo_energies_b,
-        mo_occs_a=mo_occ_a,
-        mo_occs_b=mo_occ_b,
-        rs=points,
+        mo_e_up,
+        mo_e_dn,
+        occs_up,
+        occs_dn,
+        ip,
+        mu,
+        eta,
+        rs=rs,
+        # Density
+        mo_dens_a=orb_dens_up.flatten(),
+        mo_dens_b=orb_dens_dn.flatten(),
         dens_tot=dens_tot,
+        # Density gradient
+        mo_d_dens_a=orb_d_dens_up.flatten(),
+        mo_d_dens_b=orb_d_dens_dn.flatten(),
         d_dens_tot=d_dens_tot,
+        # Density laplacian
+        mo_dd_dens_a=orb_dd_dens_up.flatten(),
+        mo_dd_dens_b=orb_dd_dens_dn.flatten(),
+        dd_dens_tot=dd_dens_tot,
+        # KED
+        mo_ked_a=mo_ked_a,
+        mo_ked_b=mo_ked_b,
         ked_tot=ked_tot,
     )
