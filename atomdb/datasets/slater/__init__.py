@@ -337,12 +337,13 @@ class AtomicDensity:
         """
         orb_occs = self.orbitals_occupation
         orb_dens = self.phi_matrix(points) ** 2 * orb_occs.ravel() / (4 * np.pi)
-        return orb_dens
+        return orb_dens.T
 
     def eval_orbs_radial_d_density(self, points):
         r"""Return each orbital density evaluated at a set of points
 
-        rho_i(r) = n_i |P(r, n_i, C_i)|^2
+        math::
+        \frac{d \rho_i(r)}{dr} = n_i \frac{d}{dr} |P(r, n_i, C_i)|^2
 
         where,
         :math:`n_i` is the number of electrons in orbital i.
@@ -367,7 +368,8 @@ class AtomicDensity:
     def eval_orbs_radial_dd_density(self, points):
         r"""Return each orbital density evaluated at a set of points
 
-        rho_i(r) = n_i |P(r, n_i, C_i)|^2
+        math::
+        \frac{d^{2} \rho_i(r)}{dr^{2}} = n_i \frac{d^{2}}{dr^{2}} |P(r, n_i, C_i)|^2
 
         where,
         :math:`n_i` is the number of electrons in orbital i.
@@ -390,7 +392,7 @@ class AtomicDensity:
             + self.phi_matrix(points, deriv=1) ** 2
         )
         orb_derivative = 2.0 * factor * self.orbitals_occupation.ravel() / (4 * np.pi)
-        return orb_derivative
+        return orb_derivative.T
 
     @staticmethod
     def derivative_slater_type_orbital(exponent, number, points):
@@ -483,7 +485,51 @@ class AtomicDensity:
         deriv2 = deriv_pref * slater
         return deriv2
 
-    def lagrangian_kinetic_energy(self, points):
+    def eval_orbs_ked_positive_definite(self, points):
+        r"""Return each the kinetic energy density of each orbital evaluated at a set of points
+
+        math::
+            \tau_{\text{PD}}^{i} \left(\mathbf{r}\right) = \tfrac{1}{2} n_i \rvert \nabla \phi_i \left(\mathbf{r}\right) \lvert^2
+
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_ked : np.ndarray(K_orb, N)
+            orbitals kinetic energy density values at a set of grid points (N).
+        """
+        phi_matrix = np.zeros((len(points), len(self.orbitals)))
+        for index, orbital in enumerate(self.orbitals):
+            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+            slater = AtomicDensity.slater_orbital(exps, number, points)
+            # derivative
+            deriv_pref = (number.T - 1.0) - exps.T * np.reshape(points, (points.shape[0], 1))
+            deriv = deriv_pref * slater
+            phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
+
+        angular = []  # Angular numbers are l(l + 1)
+        for index, orbital in enumerate(self.orbitals):
+            if "S" in orbital:
+                angular.append(0.0)
+            elif "P" in orbital:
+                angular.append(2.0)
+            elif "D" in orbital:
+                angular.append(6.0)
+            elif "F" in orbital:
+                angular.append(12.0)
+
+        orb_occs = self.orbitals_occupation
+        orbs_ked = phi_matrix**2.0 * orb_occs.ravel() / 2.0
+        # Add other term
+        molecular = self.phi_matrix(points) ** 2.0 * np.array(angular)
+        orbs_ked += molecular * orb_occs.ravel() / 2.0
+        return orbs_ked.T
+
+    def eval_ked_positive_definite(self, points):
         r"""
         Positive definite or Lagrangian kinetic energy density.
 
