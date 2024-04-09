@@ -487,7 +487,11 @@ class Species(SpeciesData):
             if spin == "ab":
                 orbs_ked = self.mo_ked_a + self.mo_ked_b
             orbs_ked = orbs_ked[index]  # M(K_orb,N)
-            value_array = sum(orbs_ked, axis=0)  # (N,)
+            # colapse the orbital dimension to get the total KED
+            if orbs_ked.shape[0] > 1:
+                value_array = sum(orbs_ked, axis=0)  # (N,)
+            else:
+                value_array = orbs_ked.ravel()
 
         return cubic_interp(self.rs, value_array, log=log)
 
