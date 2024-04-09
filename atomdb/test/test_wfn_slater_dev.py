@@ -23,27 +23,32 @@
 # --
 #
 
+
+import numpy as np
 import pytest
 
-from atomdb.datasets.slater import AtomicDensity
-from atomdb.datasets.slater import get_cs_occupations
-from atomdb.datasets.slater import load_slater_wfn
-
+# avoid import error on 'not dev' tests, these statements are run even when the tests are skipped
 from importlib_resources import files
-import numpy as np
 from numpy.testing import assert_allclose, assert_array_equal, assert_almost_equal, assert_equal
 import os
 
+try:
+    from atomdb.datasets.slater import AtomicDensity
+    from atomdb.datasets.slater import get_cs_occupations
+    from atomdb.datasets.slater import load_slater_wfn
+
+    # get test data path
+    TEST_DATAPATH = files("atomdb.test.data")
+    TEST_DATAPATH = os.path.abspath(TEST_DATAPATH._paths[0])
+
+    # raw data path
+    RAW_DATAPATH = files("atomdb.datasets.slater.raw")
+    RAW_DATAPATH = os.path.abspath(RAW_DATAPATH._paths[0])
+except ImportError:
+    pass
+
 # mark all tests in this file as development tests
 pytestmark = pytest.mark.dev
-
-# get test data path
-TEST_DATAPATH = files("atomdb.test.data")
-TEST_DATAPATH = os.path.abspath(TEST_DATAPATH._paths[0])
-
-# raw data path
-RAW_DATAPATH = files("atomdb.datasets.slater.raw")
-RAW_DATAPATH = os.path.abspath(RAW_DATAPATH._paths[0])
 
 
 def test_get_cs_occupations():
