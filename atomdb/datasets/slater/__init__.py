@@ -29,12 +29,15 @@ load_slater_wfn : Function for reading and returning information from '.slater' 
 
 
 import numpy as np
-from importlib_resources import files
 import os
 import re
-from scipy.special import factorial
 import atomdb
+
 from atomdb.periodic import Element
+from grid.onedgrid import UniformInteger
+from grid.rtransform import ExpRTransform
+from importlib_resources import files
+from scipy.special import factorial
 
 
 __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
@@ -132,7 +135,7 @@ class AtomicDensity:
 
     """
 
-    def __init__(self, element, anion=False, cation=False):
+    def __init__(self, element, anion=False, cation=False, data_path=None):
         r"""
         Construct AtomicDensity object.
 
@@ -144,12 +147,14 @@ class AtomicDensity:
             If true, then the anion of element is used.
         cation : bool
             If true, then the cation of element is used.
+        data_path : str or Path or None
+            The path to the data folder if not the default.
 
         """
         if not isinstance(element, str) or not element.isalpha():
             raise TypeError("The element argument should be all letters string.")
 
-        data = load_slater_wfn(element, anion, cation)
+        data = load_slater_wfn(element, anion, cation, data_path)
         for key, value in data.items():
             setattr(self, key, value)
 
@@ -632,7 +637,7 @@ def get_cs_occupations(configuration):
     return a_occ, b_occ, max_occ
 
 
-def load_slater_wfn(element, anion=False, cation=False, data_path=DATAPATH):
+def load_slater_wfn(element, anion=False, cation=False, data_path=None):
     """
     Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
@@ -644,10 +649,14 @@ def load_slater_wfn(element, anion=False, cation=False, data_path=DATAPATH):
         If true, then the anion of element is used.
     cation : bool
         If true, then the cation of element is used.
-    datapath : str or Path
+    data_path : str or Path or None
         The path to the data folder.
 
     """
+    # set the data path
+    if data_path is None:
+        data_path = DATAPATH
+
     # Heavy atoms from atom cs to lr.
     heavy_atoms = [
         "cs",
@@ -981,6 +990,7 @@ def load_slater_wfn(element, anion=False, cation=False, data_path=DATAPATH):
     orb_occ = np.array(a_occ + b_occ)
     orb_energy = np.array(orb_energy + orb_energy)
     orb_cusp = np.array(orb_cusp + orb_cusp)
+
     data = {
         "configuration": configuration,
         "energy": energy,
@@ -1032,32 +1042,19 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     if charge != 0 and abs(charge) > 1:
         raise ValueError(f"`charge` must be one of -1, 0 or 1")
 
-    # Get information about the element
-    atom = Element(elem)
-    atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
-        None,
-    ] * 5
-    if charge == 0:
-        # overwrite values for neutral atomic species
-        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
-        polarizability = atom.pold
-        dispersion_c6 = atom.c6
-
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
     atnum = atomdb.element_number(elem)
     nelec = atnum - charge
     nspin = mult - 1
-    obasis_name = None
 
     # Retrieve Slater data
     if charge == 0:
-        species = AtomicDensity(elem, anion=False, cation=False)
+        species = AtomicDensity(elem, anion=False, cation=False, data_path=datapath)
     elif charge > 0:
-        species = AtomicDensity(elem, anion=False, cation=True)
+        species = AtomicDensity(elem, anion=False, cation=True, data_path=datapath)
     else:
-        species = AtomicDensity(elem, anion=True, cation=False)
+        species = AtomicDensity(elem, anion=True, cation=False, data_path=datapath)
 
     # Check multiplicity value
     mo_occ = species.orbitals_occupation.ravel()
