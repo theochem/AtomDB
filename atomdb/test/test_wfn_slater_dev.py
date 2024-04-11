@@ -33,9 +33,9 @@ from numpy.testing import assert_allclose, assert_array_equal, assert_almost_equ
 import os
 
 try:
-    from atomdb.datasets.slater import AtomicDensity
-    from atomdb.datasets.slater import get_cs_occupations
-    from atomdb.datasets.slater import load_slater_wfn
+    from atomdb.datasets.slater.run import AtomicDensity
+    from atomdb.datasets.slater.run import get_cs_occupations
+    from atomdb.datasets.slater.run import load_slater_wfn
 
     # get test data path
     TEST_DATAPATH = files("atomdb.test.data")

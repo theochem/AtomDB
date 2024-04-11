@@ -13,20 +13,6 @@
 # You should have received a copy of the GNU General Public License
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-r"""
-Module responsible for reading and storing atomic wave-function information from '.slater' files and
-    computing electron density, and kinetic energy from them.
-
-AtomicDensity:
-    Information about atoms obtained from .slater file and able to construct atomic density
-        (total, core and valence) from the linear combination of Slater-type orbitals.
-    Elements supported by default from "./atomdb/data/slater_atom/" range from Hydrogen to Xenon.
-
-load_slater_wfn : Function for reading and returning information from '.slater' files that consist
-    of anion, cation and neutral atomic wave-function information.
-
-"""
-
 
 import numpy as np
 import os
@@ -36,7 +22,8 @@ import atomdb
 from atomdb.periodic import Element
 from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
-from importlib_resources import files
+# from importlib_resources import files
+from atomdb.utils import DEFAULT_DATAPATH
 from scipy.special import factorial
 
 
@@ -47,8 +34,8 @@ BOUND = (1e-5, 15.0)
 
 NPOINTS = 10000
 
-DATAPATH = files("atomdb.datasets.slater.raw")
-DATAPATH = os.path.abspath(DATAPATH._paths[0])
+# DATAPATH = files("atomdb.datasets.slater.raw")
+# DATAPATH = os.path.abspath(DATAPATH._paths[0])
 
 
 class AtomicDensity:
@@ -701,7 +688,8 @@ def load_slater_wfn(element, anion=False, cation=False, data_path=None):
     """
     # set the data path
     if data_path is None:
-        data_path = DATAPATH
+        data_path = DEFAULT_DATAPATH
+    data_path = os.path.join(data_path, "slater", "raw")
 
     # Heavy atoms from atom cs to lr.
     heavy_atoms = [
@@ -1109,7 +1097,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
 
     # Get electronic structure data
-    energy = species.energy
+    energy = species.energy[0] # get energy from list
     norba = len(mo_occ) // 2
     # Get MO energies and occupations
     mo_e_up = species.orbitals_energy.ravel()[:norba]
@@ -1177,10 +1165,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         polarizability=polarizability,
         dispersion_c6=dispersion_c6,
         energy=energy,
-        mo_e_up=mo_e_up,
-        mo_e_dn=mo_e_dn,
-        occs_up=occs_up,
-        occs_dn=occs_dn,
+        mo_energy_a=mo_e_up,
+        mo_energy_b=mo_e_dn,
+        mo_occs_a=occs_up,
+        mo_occs_b=occs_dn,
         ip=ip,
         mu=mu,
         eta=eta,
