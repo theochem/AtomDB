@@ -84,7 +84,7 @@ def scalar(method):
 
 def _remove_suffix(input_string, suffix):
     if suffix and input_string.endswith(suffix):
-        return input_string[:-len(suffix)]
+        return input_string[: -len(suffix)]
     return input_string
 
 
@@ -118,12 +118,10 @@ def spline(method):
             arr = getattr(self._data, name_b)
         elif spin == "m":
             arr = getattr(self._data, name_a) - getattr(self._data, name_b)
-
+        if index is not None:
+            arr = arr[index].sum(axis=0)
         # Return cubic spline
-        return DensitySpline(
-            self._data.rs,
-            arr[... if index is None else index].sum(axis=0),
-        )
+        return DensitySpline(self._data.rs, arr)
 
     return wrapper
 
@@ -200,8 +198,10 @@ class SpeciesData:
     nexc: int = field(default_factory=default_required("nexc", "int"))
 
     # Scalar properties
+    atmass: float = field(default=None)
     cov_radius: float = field(default=None)
     vdw_radius: float = field(default=None)
+    at_radius: float = field(default=None)
     polarizability: float = field(default=None)
     dispersion_c6: float = field(default=None)
 
@@ -305,20 +305,45 @@ class Species:
 
         self._spinpol = spinpol
 
-    @property
+    @scalar
+    def atnum(self):
+        r"""Atomic mass."""
+        pass
+
+    @scalar
+    def nelec(self):
+        r"""Atomic mass."""
+        pass
+
+    @scalar
     def atmass(self):
         r"""Atomic mass."""
-        return self.mass["stb"]
+        pass
 
-    @property
+    @scalar
+    def cov_radius(self):
+        r"""Covalent radius (derived from crystallographic data)."""
+        pass
+
+    @scalar
+    def vdw_radius(self):
+        r"""Van der Waals radii."""
+        pass
+
+    @scalar
+    def at_radius(self):
+        r"""Atomic radius."""
+        pass
+
+    @scalar
     def polarizability(self):
         r"""Isolated atom dipole polarizability."""
-        return self.pold
+        pass
 
-    @property
+    @scalar
     def dispersion_c6(self):
         r"""Isolated atom C6 dispersion coefficients."""
-        return self.c6
+        pass
 
     @scalar
     def nexc(self):
