@@ -31,9 +31,13 @@ load_slater_wfn : Function for reading and returning information from '.slater' 
 import numpy as np
 import os
 import re
-from scipy.special import factorial
 import atomdb
+
 from atomdb.periodic import Element
+from grid.onedgrid import UniformInteger
+from grid.rtransform import ExpRTransform
+from importlib_resources import files
+from scipy.special import factorial
 
 
 __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
@@ -42,6 +46,9 @@ __all__ = ["AtomicDensity", "load_slater_wfn", "run"]
 BOUND = (1e-5, 15.0)
 
 NPOINTS = 10000
+
+DATAPATH = files("atomdb.datasets.slater.raw")
+DATAPATH = os.path.abspath(DATAPATH._paths[0])
 
 
 class AtomicDensity:
@@ -65,7 +72,7 @@ class AtomicDensity:
     orbitals : list, (M,)
         List of strings representing each of the orbitals in the electron configuration.
         For example, Beryllium has ["1S", "2S"] in its electron configuration.
-        Ordered based on "S", "P", "D", etc.
+        Ordered based on orbital energy.
     orbitals_occupation : ndarray, (M, 1)
         Returns the number of electrons in each of the orbitals in the electron configuration.
         e.g. Beryllium has two electrons in "1S" and two electrons in "2S".
@@ -128,7 +135,7 @@ class AtomicDensity:
 
     """
 
-    def __init__(self, element, anion=False, cation=False):
+    def __init__(self, element, anion=False, cation=False, data_path=None):
         r"""
         Construct AtomicDensity object.
 
@@ -140,12 +147,14 @@ class AtomicDensity:
             If true, then the anion of element is used.
         cation : bool
             If true, then the cation of element is used.
+        data_path : str or Path or None
+            The path to the data folder if not the default.
 
         """
         if not isinstance(element, str) or not element.isalpha():
             raise TypeError("The element argument should be all letters string.")
 
-        data = load_slater_wfn(element, anion, cation)
+        data = load_slater_wfn(element, anion, cation, data_path)
         for key, value in data.items():
             setattr(self, key, value)
 
@@ -195,13 +204,13 @@ class AtomicDensity:
         slater = norm.T * pref * np.exp(-exponent * points).T
         return slater
 
-    def phi_matrix(self, points, deriv=False):
+    def phi_matrix(self, points, deriv=0):
         r"""
         Compute the linear combination of Slater-type atomic orbitals on the given points.
 
         Each row corresponds to a point on the grid, represented as :math:`r` and
-         each column is represented as a linear combination of Slater-type atomic orbitals
-         of the form:
+        each column is represented as a linear combination of Slater-type atomic orbitals
+        of the form:
 
         .. math::
             \sum c_i R(r, n_i, C_i)
@@ -217,8 +226,8 @@ class AtomicDensity:
         ----------
         points : ndarray, (N,)
             The radial grid points.
-        deriv : bool
-            If true, use the derivative of the slater-orbitals.
+        deriv : int
+            Order of the derivative. Default is 0 and can also be 1 or 2.
 
         Returns
         -------
@@ -232,18 +241,24 @@ class AtomicDensity:
             zero instead. See "derivative_slater_type_orbital".
 
         """
+
         # compute orbital composed of a linear combination of Slater
         phi_matrix = np.zeros((len(points), len(self.orbitals)))
         for index, orbital in enumerate(self.orbitals):
-            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            if deriv:
-                slater = self.derivative_slater_type_orbital(exps, number, points)
+            # get exponent and number of the orbital type (s, p, d, f)
+            exps, numbers = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+            if deriv == 0:
+                slater = self.slater_orbital(exps, numbers, points)
+            elif deriv == 1:
+                slater = self.derivative_slater_type_orbital(exps, numbers, points)
+            elif deriv == 2:
+                slater = self.second_derivative_slater_type_orbital(exps, numbers, points)
             else:
-                slater = self.slater_orbital(exps, number, points)
+                raise ValueError("Derivative order can only be 0, 1 or 2.")
             phi_matrix[:, index] = np.dot(slater, self.orbitals_coeff[orbital]).ravel()
         return phi_matrix
 
-    def atomic_density(self, points, mode="total"):
+    def eval_density(self, points, mode="total"):
         r"""
         Compute atomic density on the given points.
 
@@ -289,14 +304,95 @@ class AtomicDensity:
         # compute orbital occupation numbers
         orb_occs = self.orbitals_occupation
         if mode == "valence":
-            orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
-            orb_occs = orb_occs * np.exp(-((self.orbitals_energy - orb_homo) ** 2))
+            # get index of homo (equal to sum of occupied alpha orbitals)
+            orb_homo = sum(orb_occs[: len(orb_occs) // 2 - 1])
+            e_orb_homo = self.orbitals_energy[orb_homo]
+            orb_occs = orb_occs * np.exp(-((self.orbitals_energy - e_orb_homo) ** 2))
         elif mode == "core":
             orb_homo = self.orbitals_energy[len(self.orbitals_occupation) - 1]
             orb_occs = orb_occs * (1.0 - np.exp(-((self.orbitals_energy - orb_homo) ** 2)))
         # compute density
         dens = np.dot(self.phi_matrix(points) ** 2, orb_occs).ravel() / (4 * np.pi)
         return dens
+
+    def eval_orbs_density(self, points):
+        r"""Return each orbital density evaluated at a set of points
+
+        rho_i(r) = n_i |P(r, n_i, C_i)|^2
+
+        where,
+        :math:`n_i` is the number of electrons in orbital i.
+        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
+            on the point :math:`r`.
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_dens : np.ndarray(K_orb, N)
+            orbitals density at a set of grid points (N)
+        """
+        orb_occs = self.orbitals_occupation
+        orb_dens = self.phi_matrix(points) ** 2 * orb_occs.ravel() / (4 * np.pi)
+        return orb_dens.T
+
+    def eval_orbs_radial_d_density(self, points):
+        r"""Return each orbital density evaluated at a set of points
+
+        math::
+        \frac{d \rho_i(r)}{dr} = n_i \frac{d}{dr} |P(r, n_i, C_i)|^2
+
+        where,
+        :math:`n_i` is the number of electrons in orbital i.
+        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
+            on the point :math:`r`.
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_dens : np.ndarray(K_orb, N)
+            orbitals density at a set of grid points (N)
+        """
+
+        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=1)
+        orb_derivative = 2.0 * factor * self.orbitals_occupation.ravel() / (4 * np.pi)
+        return orb_derivative
+
+    def eval_orbs_radial_dd_density(self, points):
+        r"""Return each orbital density evaluated at a set of points
+
+        math::
+        \frac{d^{2} \rho_i(r)}{dr^{2}} = n_i \frac{d^{2}}{dr^{2}} |P(r, n_i, C_i)|^2
+
+        where,
+        :math:`n_i` is the number of electrons in orbital i.
+        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
+            on the point :math:`r`.
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_dens : np.ndarray(K_orb, N)
+            orbitals density at a set of grid points (N)
+        """
+
+        factor = (
+            self.phi_matrix(points) * self.phi_matrix(points, deriv=2)
+            + self.phi_matrix(points, deriv=1) ** 2
+        )
+        orb_derivative = 2.0 * factor * self.orbitals_occupation.ravel() / (4 * np.pi)
+        return orb_derivative.T
 
     @staticmethod
     def derivative_slater_type_orbital(exponent, number, points):
@@ -326,7 +422,7 @@ class AtomicDensity:
         Returns
         -------
         slater : ndarray, (N, M)
-            The Slater-type orbitals evaluated on the grid points.
+            The derivative of Slater-type orbitals evaluated on the grid points.
 
         Notes
         -----
@@ -343,9 +439,99 @@ class AtomicDensity:
         deriv = deriv_pref * slater
         return deriv
 
-    def lagrangian_kinetic_energy(self, points):
+    @staticmethod
+    def second_derivative_slater_type_orbital(exponent, number, points):
         r"""
-        Positive definite or Lagrangian kinectic energy density.
+        Compute the derivative of Slater-type orbitals on the given points.
+
+        A Slater-type orbital is defined as:
+        .. math::
+            \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - C \bigg) N r^{n-1} e^{- C r),
+
+        where,
+            :math:`n` is the principal quantum number of that orbital.
+            :math:`N` is the normalizing constant.
+            :math:`r` is the radial point, distance to the origin.
+            :math:`C` is the zeta exponent of that orbital.
+
+        Parameters
+        ----------
+        exponent : ndarray, (M, 1)
+            The zeta exponents of Slater orbitals.
+        number : ndarray, (M, 1)
+            The principle quantum numbers of Slater orbitals.
+        points : ndarray, (N,)
+            The radial grid points. If points contain zero, then it is undefined at those
+            points and set to zero.
+
+        Returns
+        -------
+        slater : ndarray, (N, M)
+            The second derivative of Slater-type orbitals evaluated on the grid points.
+
+        Notes
+        -----
+        - At r = 0, the derivative is undefined and this function returns zero instead.
+
+        References
+        ----------
+        See wikipedia page on "Slater-Type orbitals".
+
+        """
+        slater = AtomicDensity.slater_orbital(exponent, number, points)
+        # derivative
+        deriv_pref = ((number.T - 1.0) / np.reshape(points, (points.shape[0], 1)) - exponent.T) ** 2
+        deriv_pref -= (number.T - 1.0) / np.reshape(points, (points.shape[0], 1)) ** 2
+        deriv2 = deriv_pref * slater
+        return deriv2
+
+    def eval_orbs_ked_positive_definite(self, points):
+        r"""Return each the kinetic energy density of each orbital evaluated at a set of points
+
+        math::
+            \tau_{\text{PD}}^{i} \left(\mathbf{r}\right) = \tfrac{1}{2} n_i \rvert \nabla \phi_i \left(\mathbf{r}\right) \lvert^2
+
+
+        Parameters
+        ----------
+        points: np.ndarray(N)
+            radial grid points
+
+        Returns
+        -------
+        orb_ked : np.ndarray(K_orb, N)
+            orbitals kinetic energy density values at a set of grid points (N).
+        """
+        phi_matrix = np.zeros((len(points), len(self.orbitals)))
+        for index, orbital in enumerate(self.orbitals):
+            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
+            slater = AtomicDensity.slater_orbital(exps, number, points)
+            # derivative
+            deriv_pref = (number.T - 1.0) - exps.T * np.reshape(points, (points.shape[0], 1))
+            deriv = deriv_pref * slater
+            phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
+
+        angular = []  # Angular numbers are l(l + 1)
+        for index, orbital in enumerate(self.orbitals):
+            if "S" in orbital:
+                angular.append(0.0)
+            elif "P" in orbital:
+                angular.append(2.0)
+            elif "D" in orbital:
+                angular.append(6.0)
+            elif "F" in orbital:
+                angular.append(12.0)
+
+        orb_occs = self.orbitals_occupation
+        orbs_ked = phi_matrix**2.0 * orb_occs.ravel() / 2.0
+        # Add other term
+        molecular = self.phi_matrix(points) ** 2.0 * np.array(angular)
+        orbs_ked += molecular * orb_occs.ravel() / 2.0
+        return orbs_ked.T
+
+    def eval_ked_positive_definite(self, points):
+        r"""
+        Positive definite or Lagrangian kinetic energy density.
 
         Parameters
         ----------
@@ -391,7 +577,7 @@ class AtomicDensity:
         energy += np.dot(molecular, orb_occs).ravel() / 2.0
         return energy
 
-    def derivative_density(self, points):
+    def eval_radial_d_density(self, points):
         r"""
         Return the derivative of the atomic density on a set of points.
 
@@ -405,25 +591,118 @@ class AtomicDensity:
         deriv : ndarray, (N,)
             The derivative of atomic density on the grid points.
         """
-        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=True)
+        factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=1)
         derivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
         return derivative
 
+    def eval_radial_dd_density(self, points):
+        r"""
+        Return the second derivative of the atomic density on a set of points.
 
-def load_slater_wfn(element, anion=False, cation=False):
+        Parameters
+        ----------
+        points : ndarray,(N,)
+            The radial grid points.
+
+        Returns
+        -------
+        deriv : ndarray, (N,)
+            The derivative of atomic density on the grid points.
+        """
+        factor = (
+            self.phi_matrix(points) * self.phi_matrix(points, deriv=2)
+            + self.phi_matrix(points, deriv=1) ** 2
+        )
+        dderivative = np.dot(2.0 * factor, self.orbitals_occupation).ravel() / (4 * np.pi)
+        return dderivative
+
+
+def get_cs_occupations(configuration):
+    """
+    Get the alpha and beta occupation numbers for each contracted shell.
+
+    Parameters
+    ----------
+    configuration : str
+        The electron configuration.
+
+    Returns
+    --------
+    a_occ, b_occ, max_occ : dict, dict, dict
+        Dictionaries containing the alpha, beta, and maximum occupation numbers for each
+        contracted shell. Keys are the contracted shells (e.g. 1S, 2S, 2P, 3D) and values are
+        the occupation numbers.
+
+    """
+    # alpha and beta occupation numbers for each contracted shell
+    a_occ = {}
+    b_occ = {}
+
+    # fill in the occupation numbers for the K, L, M, N shells if they are present
+    for cs in ["K", "L", "M", "N"]:
+        if cs in configuration:
+            if cs == "K":
+                a_occ["1S"], b_occ["1S"] = 1, 1
+            elif cs == "L":
+                a_occ["2S"], b_occ["2S"] = 1, 1
+                a_occ["2P"], b_occ["2P"] = 3, 3
+            elif cs == "M":
+                a_occ["3S"], b_occ["3S"] = 1, 1
+                a_occ["3P"], b_occ["3P"] = 3, 3
+                a_occ["3D"], b_occ["3D"] = 5, 5
+            elif cs == "N":
+                a_occ["4S"], b_occ["4S"] = 1, 1
+                a_occ["4P"], b_occ["4P"] = 3, 3
+                a_occ["4D"], b_occ["4D"] = 5, 5
+                a_occ["4F"], b_occ["4F"] = 7, 7
+
+    # create possible contracted shells and their max occupation numbers for alpha or beta
+    contractions = [
+        *[str(x) + "S" for x in range(1, 8)],
+        *[str(x) + "P" for x in range(2, 8)],
+        *[str(x) + "D" for x in range(3, 8)],
+        *[str(x) + "F" for x in range(4, 8)],
+    ]
+
+    # maximum occupation numbers for each contracted shell (alpha or beta only)
+    max_occ = {"S": 1, "P": 3, "D": 5, "F": 7}
+
+    # for each possible contracted shell
+    for cs in contractions:
+        # check if the contracted shell is the configuration
+        if cs in configuration:
+            # get the total number of electrons in the contracted shell
+            n_elec = re.search(cs + r"\((.*?)\)", configuration).group(1)
+            n_elec = int(n_elec)
+
+            # fill alpha and beta occupations for the contracted shell following Hund's rule
+            if n_elec > max_occ[cs[-1]]:
+                a_occ[cs], b_occ[cs] = max_occ[cs[-1]], n_elec - max_occ[cs[-1]]
+            else:
+                a_occ[cs], b_occ[cs] = n_elec, 0
+    return a_occ, b_occ, max_occ
+
+
+def load_slater_wfn(element, anion=False, cation=False, data_path=None):
     """
     Return the data recorded in the atomic Slater wave-function file as a dictionary.
 
     Parameters
     ----------
-    file_name : str
-        The path to the Slater atomic file.
+    element : str
+        The element symbol.
     anion : bool
         If true, then the anion of element is used.
     cation : bool
         If true, then the cation of element is used.
+    data_path : str or Path or None
+        The path to the data folder.
 
     """
+    # set the data path
+    if data_path is None:
+        data_path = DATAPATH
+
     # Heavy atoms from atom cs to lr.
     heavy_atoms = [
         "cs",
@@ -579,87 +858,27 @@ def load_slater_wfn(element, anion=False, cation=False):
         "zr",
     ]
 
+    # select and open file containing the slater data
     is_heavy_element = element.lower() in heavy_atoms
     if (anion or cation) and is_heavy_element:
         raise ValueError("Both Anion & Cation Slater File for element %s does not exist." % element)
     if anion:
         if element.lower() in anion_atoms:
             # file_path = "./atomdb/data/anion/%s.an" % element.lower()
-            file_path = "raw/anion/%s.an" % element.lower()
+            file_path = "anion/%s.an" % element.lower()
         else:
             raise ValueError("Anion Slater File for element %s does not exist." % element)
     elif cation:
         if element.lower() in cation_atoms:
             # file_path = "./atomdb/data/cation/%s.cat" % element.lower()
-            file_path = "raw/cation/%s.cat" % element.lower()
+            file_path = "cation/%s.cat" % element.lower()
         else:
             raise ValueError("Cation Slater File for element %s does not exist." % element)
     else:
         # file_path = "./atomdb/data/neutral/%s.slater" % element.lower()
-        file_path = "raw/neutral/%s.slater" % element.lower()
+        file_path = "neutral/%s.slater" % element.lower()
 
-    file_name = os.path.join(os.path.dirname(__file__), file_path)
-
-    def get_number_of_electrons_per_orbital(configuration):
-        """
-        Get the Occupation Number for all orbitals of an _element returing an dictionary.
-
-        Parameters
-        ----------
-        configuration : str
-            The electron configuration.
-
-        Returns
-        --------
-        dict
-            a dict containing the number and orbital.
-
-        """
-        electron_config_list = configuration
-
-        shells = ["K", "L", "M", "N"]
-
-        out = {}
-        orbitals = (
-            [str(x) + "S" for x in range(1, 8)]
-            + [str(x) + "P" for x in range(2, 8)]
-            + [str(x) + "D" for x in range(3, 8)]
-            + [str(x) + "F" for x in range(4, 8)]
-        )
-        for orb in orbitals:
-            # Initialize all atomic orbitals to zero electrons
-            out[orb] = 0
-
-        for x in shells:
-            if x in electron_config_list:
-                if x == "K":
-                    out["1S"] = 2
-                elif x == "L":
-                    out["2S"] = 2
-                    out["2P"] = 6
-                elif x == "M":
-                    out["3S"] = 2
-                    out["3P"] = 6
-                    out["3D"] = 10
-                elif x == "N":
-                    out["4S"] = 2
-                    out["4P"] = 6
-                    out["4D"] = 10
-                    out["4F"] = 14
-
-        for x in orbitals:
-            if x in electron_config_list:
-                index = electron_config_list.index(x)
-                orbital = electron_config_list[index : index + 2]
-
-                if orbital[1] == "D" or orbital[1] == "F":
-                    # num_electrons = re.sub('[(){}<>,]', "", electron_config_list.split(orbital)[1])
-                    num_electrons = re.search(orbital + r"\((.*?)\)", electron_config_list).group(1)
-                    out[orbital] = int(num_electrons)
-                else:
-                    out[orbital] = int(electron_config_list[index + 3 : index + 4])
-
-        return {key: value for key, value in out.items() if value != 0}
+    file_name = os.path.join(data_path, file_path)
 
     def get_column(t_orbital):
         """
@@ -708,147 +927,141 @@ def load_slater_wfn(element, anion=False, cation=False):
         return true_configuration
 
     with open(file_name, "r") as f:
-        line = f.readline()
-        configuration = line.split()[1].replace(",", "")
+        next_line = f.readline()
+        configuration = next_line.split()[1].replace(",", "")
         if is_heavy_element:
             configuration = configuration_exact_for_heavy_elements(configuration)
 
-        next_line = f.readline()
-        # Sometimes there are blank lin es.
-        while len(next_line.strip()) == 0:
-            next_line = f.readline()
+        # in light atoms, the energy is the next line with data
+        next_line = f.readline().strip()
+        # some cases have empty lines before the energy (remove them)
+        while not next_line:
+            next_line = f.readline().strip()
 
+        # heavy atoms have 6 lines of redundant data before the energy (skip them)
         if is_heavy_element:
-            # Heavy element slater files has extra redundant information of 5 lines.
-            for i in range(0, 6):
-                f.readline()
+            for _ in range(0, 6):
+                next_line = f.readline().strip()
+        # read total energy
+        energy = [float(next_line.split("=")[1])]
 
-        next_line = f.readline()
-        energy = [float(next_line.split()[2])] + [
-            float(x) for x in (re.findall(r"[= -]\d+.\d+", f.readline()))[:-1]
-        ]
+        # declare containers for orbitals, orbital basis, cusp, energy, exponents, and coefficients
+        cs = []
+        cs_basis = {}
+        cs_cusp = []
+        cs_energy = []
+        cs_exp = {}
+        cs_coeff = {}
 
-        orbitals = []
-        orbitals_basis = {"S": [], "P": [], "D": [], "F": []}
-        orbitals_cusp = []
-        orbitals_energy = []
-        orbitals_exp = {"S": [], "P": [], "D": [], "F": []}
-        orbitals_coeff = {}
+        # ignore next line, has no useful information T, V and V/T
+        f.readline()
+        # some files have empty lines before the first sub-shell
+        while not f.readline().strip():
+            pass
 
-        line = f.readline()
-        while line.strip() != "":
-            # If line has ___S___ or P or D where _ = " ".
-            if re.search(r"  [S|P|D|F]  ", line):
-                # Get All The Orbitals
-                subshell = line.split()[0]
-                list_of_orbitals = line.split()[1:]
-                orbitals += list_of_orbitals
-                for x in list_of_orbitals:
-                    orbitals_coeff[x] = []  # Initilize orbitals inside coefficient dictionary
+        while next_line:
+            # If line has ___S___ or P or D where _ = " ". This is the start of a new sub-shell
+            if re.search(r"  [S|P|D|F]  ", next_line):
+                # read sub-shell (e.g S) and contractions (e.g 1S, 2S, 3S) for that sub-shell
+                subshell = next_line.split()[0]
+                list_of_orbitals = next_line.split()[1:]
+                # add sub-shell contractions to the list of contractions
+                cs += list_of_orbitals
 
-                # Get Energy, Cusp Levels
-                line = f.readline()
-                orbitals_energy.extend([float(x) for x in line.split()[1:]])
+                # read contractions energies from next line and store them following the
+                # contractions list order
+                next_line = f.readline().strip()
+                cs_energy.extend([float(x) for x in next_line.split()[1:]])
+
+                # save cusp values, for heavy atoms this is not present
                 if not is_heavy_element:
-                    # Heavy atoms slater files, doesn't have cusp values,.
-                    line = f.readline()
-                    orbitals_cusp.extend([float(x) for x in line.split()[1:]])
-                line = f.readline()
+                    next_line = f.readline()
+                    cs_cusp.extend([float(x) for x in next_line.split()[1:]])
+                # read lines until next sub-shell and get the exponents and coefficients
 
-                # Get Exponents, Coefficients, Orbital Basis
-                while re.match(r"\A^\d" + subshell, line.lstrip()):
+                for next_line in f:
+                    # break if next line is not an integer followed by a sub-shell (e.g 1S, 2S)
+                    if not re.match(r"\A^\d" + subshell, next_line.lstrip()):
+                        break
 
-                    list_words = line.split()
-                    orbitals_exp[subshell] += [float(list_words[1])]
-                    orbitals_basis[subshell] += [list_words[0]]
+                    list_words = next_line.split()
+                    # read orbital basis from first column, save basis list for each sub-shell
+                    cs_basis.setdefault(subshell, []).append(list_words[0])
+                    # read basis exponents from second column and save as basis list (same order)
+                    cs_exp.setdefault(subshell, []).append(float(list_words[1]))
 
+                    # read orbital basis coefficients from the correct column.
+                    # for each orbital, the coefficients are saved in same order as basis list
                     for x in list_of_orbitals:
-                        orbitals_coeff[x] += [float(list_words[get_column(x)])]
-                    line = f.readline()
+                        coeff = float(list_words[get_column(x)])
+                        cs_coeff.setdefault(x, []).append(coeff)
             else:
-                line = f.readline()
+                next_line = f.readline()
+
+    # create dictionaries with energy and cusps for each contracted shell
+    cs_energy_dict = {i: j for i, j in zip(cs, cs_energy)}
+    cs_cusp_dict = {i: j for i, j in zip(cs, cs_cusp)}
+
+    # compute alpha, beta and max occupation numbers for each contracted shell
+    a_occ_dict, b_occ_dict, max_occ_dict = get_cs_occupations(configuration)
+
+    # list of orbital occupations
+    a_occ = []
+    b_occ = []
+    # list of orbitals energies and cusps
+    orbitals = []
+    orb_energy = []
+    orb_cusp = []
+
+    # for each contracted shell, in order of increasing energy
+    for _, contraction in sorted(zip(cs_energy, cs)):
+        # for each orbital in the contracted shell
+        for i in range(max_occ_dict[contraction[-1]]):
+            # append the orbital to the list
+            orbitals.append(contraction)
+            # compute alpha and beta occupation numbers for the orbital
+            a_occ_val = 1 if i < a_occ_dict[contraction] else 0
+            b_occ_val = 1 if i < b_occ_dict[contraction] else 0
+            # add orbital occupation numbers to the list
+            a_occ.append(a_occ_val)
+            b_occ.append(b_occ_val)
+            # get orbital energy, exponent, and coefficient
+            orb_energy.append(cs_energy_dict[contraction])
+            # get orbital cusp
+            if cs_cusp_dict:
+                orb_cusp.append(cs_cusp_dict[contraction])
+
+    # construct the total orbital list, occupation list, energy list, cusp list
+    orbitals += orbitals
+    orb_occ = np.array(a_occ + b_occ)
+    orb_energy = np.array(orb_energy + orb_energy)
+    orb_cusp = np.array(orb_cusp + orb_cusp)
 
     data = {
         "configuration": configuration,
         "energy": energy,
         "orbitals": orbitals,
-        "orbitals_energy": np.array(orbitals_energy)[:, None],
-        "orbitals_cusp": np.array(orbitals_cusp)[:, None],
-        "orbitals_basis": orbitals_basis,
+        "orbitals_energy": orb_energy[:, None],
+        "orbitals_cusp": orb_cusp[:, None],
+        "orbitals_basis": cs_basis,
         "orbitals_exp": {
             key: np.asarray(value).reshape(len(value), 1)
-            for key, value in orbitals_exp.items()
+            for key, value in cs_exp.items()
             if value != []
         },
         "orbitals_coeff": {
             key: np.asarray(value).reshape(len(value), 1)
-            for key, value in orbitals_coeff.items()
+            for key, value in cs_coeff.items()
             if value != []
         },
-        "orbitals_occupation": np.array(
-            [get_number_of_electrons_per_orbital(configuration)[k] for k in orbitals]
-        )[:, None],
+        "orbitals_occupation": orb_occ[:, None],
         "basis_numbers": {
             key: np.asarray([[int(x[0])] for x in value])
-            for key, value in orbitals_basis.items()
+            for key, value in cs_basis.items()
             if len(value) != 0
         },
     }
-
     return data
-
-
-def split_configuration(orbitals, occupations):
-    r"""Split electronic configuration into alpha and beta components following Hund's rule
-
-    Returns
-    -------
-    occs_a : list
-        alpha electronic configuration for each orbital (M values)
-    occs_b : list
-        beta electronic configuration for each orbital (M values)
-    """
-    subshell_alphas = {"S": 1, "P": 3, "D": 5, "F": 7}
-    occs_a = []
-    occs_b = []
-    for i, orb in enumerate(orbitals):
-        n_el = occupations[i] - 1  # N electrons in sub shell - 1
-        na_sshell = subshell_alphas[orb[-1]]  # N alpha electrons in sub shell
-        row = n_el // na_sshell
-        col = n_el % na_sshell
-        if row == 0:
-            na = (row * na_sshell + col) + 1
-            nb = 0
-        else:
-            na = na_sshell
-            nb = (row * na_sshell + col) - na + 1
-        occs_a.append(na)
-        occs_b.append(nb)
-
-    return np.array(occs_a, dtype=float), np.array(occs_b, dtype=float)
-
-
-def eval_multiplicity(orbitals, occupations):
-    r"""Evaluate multiplicity
-
-    Parameters
-    ----------
-    orbitals : list, (M,)
-        List of strings representing each of the orbitals in the electron configuration.
-        Ordered based on "S", "P", "D", etc. For example, Beryllium has ["1S", "2S"] in its electron
-        configuration.
-    occupations : ndarray, (M,)
-        Number of electrons in each of the orbitals in the electron configuration.
-
-    Returns
-    -------
-    Spin multiplicity : int
-
-    """
-    occs_a, occs_b = split_configuration(orbitals, occupations)
-    na = sum(occs_a)
-    nb = sum(occs_b)
-    return int((na - nb)) + 1
 
 
 DOCSTRING = """Slater Dataset
@@ -875,82 +1088,118 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     if charge != 0 and abs(charge) > 1:
         raise ValueError(f"`charge` must be one of -1, 0 or 1")
 
+    # Set up internal variables
+    elem = atomdb.element_symbol(elem)
+    atnum = atomdb.element_number(elem)
+    nelec = atnum - charge
+    nspin = mult - 1
+
+    # Retrieve Slater data
+    if charge == 0:
+        species = AtomicDensity(elem, anion=False, cation=False, data_path=datapath)
+    elif charge > 0:
+        species = AtomicDensity(elem, anion=False, cation=True, data_path=datapath)
+    else:
+        species = AtomicDensity(elem, anion=True, cation=False, data_path=datapath)
+
+    # Check multiplicity value
+    mo_occ = species.orbitals_occupation.ravel()
+    multiplicity = int(np.sum(mo_occ[: len(mo_occ) // 2] - mo_occ[len(mo_occ) // 2 :])) + 1
+    if mult != multiplicity:
+        raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
+
+    # Get electronic structure data
+    energy = species.energy
+    norba = len(mo_occ) // 2
+    # Get MO energies and occupations
+    mo_e_up = species.orbitals_energy.ravel()[:norba]
+    mo_e_dn = species.orbitals_energy.ravel()[norba:]
+    occs_up, occs_dn = mo_occ[:norba], mo_occ[norba:]
+
+    # Make grid
+    onedg = UniformInteger(NPOINTS)  # number of uniform grid points.
+    rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg)  # radial grid
+
+    # Evaluate properties on the grid:
+    # --------------------------------
+    rs = rgrid.points
+
+    # total and spin-up orbital, and spin-down orbital densities
+    orb_dens_up = species.eval_orbs_density(rs)[:norba, :]
+    orb_dens_dn = species.eval_orbs_density(rs)[norba:, :]
+    dens_tot = species.eval_density(rs, mode="total")
+
+    # total, spin-up orbital, and spin-down orbital first (radial) derivatives of the density
+    d_dens_tot = species.eval_radial_d_density(rs)
+    orb_d_dens_up = species.eval_orbs_radial_d_density(rs)[:norba, :]
+    orb_d_dens_dn = species.eval_orbs_radial_d_density(rs)[norba:, :]
+
+    # total, spin-up orbital, and spin-down orbital second (radial) derivatives of the density
+    dd_dens_tot = species.eval_radial_dd_density(rs)
+    orb_dd_dens_up = species.eval_orbs_radial_dd_density(rs)[:norba, :]
+    orb_dd_dens_dn = species.eval_orbs_radial_dd_density(rs)[norba:, :]
+
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
+    ked_tot = species.eval_ked_positive_definite(rs)
+    mo_ked_a = species.eval_orbs_ked_positive_definite(rs)[:norba, :]
+    mo_ked_b = species.eval_orbs_ked_positive_definite(rs)[:norba, :]
+
     # Get information about the element
     atom = Element(elem)
     atmass = atom.mass["stb"]
     cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
         None,
     ] * 5
+    # overwrite values for neutral atomic species
     if charge == 0:
-        # overwrite values for neutral atomic species
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
         polarizability = atom.pold
         dispersion_c6 = atom.c6
 
-    # Set up internal variables
-    elem = atomdb.element_symbol(elem)
-    atnum = atomdb.element_number(elem)
-    nelec = atnum - charge
-    nspin = mult - 1
-    obasis_name = None
-
-    # Retrieve Slater data
-    if charge == 0:
-        species = AtomicDensity(elem, anion=False, cation=False)
-    elif charge > 0:
-        species = AtomicDensity(elem, anion=False, cation=True)
-    else:
-        species = AtomicDensity(elem, anion=True, cation=False)
-
-    # Check multiplicity value
-    mo_occ = species.orbitals_occupation.ravel()  # these are configurations not occupations
-    multiplicity = eval_multiplicity(species.orbitals, mo_occ)
-    if mult != multiplicity:
-        raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
-
-    # Get electronic structure data
-    # FIXME:sign error in parsed energy value (looks like T value instead of E was parsed from raw file).
-    # This is a temporal fix until the parsing code for Slater's data gets updated from BFit.
-    energy = -species.energy[0]
-    mo_energies_a = species.orbitals_energy.ravel()  # assuming same alpha and beta energies
-    mo_occ_a, mo_occ_b = split_configuration(species.orbitals, mo_occ)
-
-    # Make grid
-    points = np.linspace(*BOUND, NPOINTS)
-
-    # Compute densities and derivatives
-    dens_orbs = species.phi_matrix(points) ** 2 / (4 * np.pi)
-    dens_tot = species.atomic_density(points, "total")
-    # dens_core = species.atomic_density(points, "core")
-    # dens_valence = species.atomic_density(points, "valence")
-    d_dens_tot = species.derivative_density(points)
-
-    # Compute laplacian and kinetic energy density
-    # lapl_tot = None
-    ked_tot = species.lagrangian_kinetic_energy(points)
+    # Conceptual-DFT properties (WIP)
+    ip = -mo_e_up[np.sum(occs_up) - 1]  # - energy of HOMO
+    # ea = -mo_e_dn[np.sum(occs_dn)] if np.sum(occs_dn) < np.sum(occs_up) else None  # - LUMO energy
+    mu = None
+    eta = None
 
     # Return Species instance
-    fields = dict(
-        elem=elem,
-        atnum=atnum,
-        obasis_name=obasis_name,
-        nelec=nelec,
-        nspin=nspin,
-        nexc=nexc,
-        atmass=atmass,
-        cov_radius=cov_radius,
-        vdw_radius=vdw_radius,
-        at_radius=at_radius,
-        polarizability=polarizability,
-        dispersion_c6=dispersion_c6,
-        energy=energy,
-        mo_energy_a=mo_energies_a,
-        mo_energy_b=mo_energies_a,
-        mo_occs_a=mo_occ_a,
-        mo_occs_b=mo_occ_b,
-        rs=points,
+    return atomdb.Species(
+        dataset,
+        elem,
+        atnum,
+        "Slater",
+        nelec,
+        nspin,
+        nexc,
+        atmass,
+        cov_radius,
+        vdw_radius,
+        at_radius,
+        polarizability,
+        dispersion_c6,
+        energy,
+        mo_e_up,
+        mo_e_dn,
+        occs_up,
+        occs_dn,
+        ip,
+        mu,
+        eta,
+        rs=rs,
+        # Density
+        mo_dens_a=orb_dens_up.flatten(),
+        mo_dens_b=orb_dens_dn.flatten(),
         dens_tot=dens_tot,
+        # Density gradient
+        mo_d_dens_a=orb_d_dens_up.flatten(),
+        mo_d_dens_b=orb_d_dens_dn.flatten(),
         d_dens_tot=d_dens_tot,
+        # Density laplacian
+        mo_dd_dens_a=orb_dd_dens_up.flatten(),
+        mo_dd_dens_b=orb_dd_dens_dn.flatten(),
+        dd_dens_tot=dd_dens_tot,
+        # KED
+        mo_ked_a=mo_ked_a,
+        mo_ked_b=mo_ked_b,
         ked_tot=ked_tot,
     )
-    return atomdb.Species(dataset, fields)
