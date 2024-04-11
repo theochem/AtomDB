@@ -26,7 +26,8 @@ import h5py as h5
 import csv
 
 import atomdb
-from atomdb.utils import MODULE_DATAPATH, DEFAULT_DATAPATH, MULTIPLICITIES, CMINV, EV
+from atomdb.utils import MODULE_DATAPATH, MULTIPLICITIES, CMINV, EV
+from atomdb.periodic import Element
 
 
 __all__ = [
@@ -110,19 +111,20 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         raise ValueError(f"{elem} with charge {charge} and multiplicity {mult} not available.")
 
     print(f"Generating {elem} with charge {charge} and multiplicity {mult}.")
-    # #
-    # # Element properties
-    # #
-    # atom = Element(elem)
-    # atmass = atom.mass["stb"]
-    # cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
-    #     None,
-    # ] * 5
-    # if charge == 0:
-    #     # overwrite values for neutral atomic species
-    #     cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
-    #     polarizability = atom.pold
-    #     dispersion_c6 = atom.c6
+    #
+    # Element properties
+    #
+    atom = Element(elem)
+    atmass = atom.mass["stb"]
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+        None,
+    ] * 5
+    if charge == 0:
+        # overwrite values for neutral atomic species
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion_c6 = atom.c6
+    # print(atmass)
 
     #
     # Get the ground state energy from database_beta_1.3.0.h5.
@@ -158,30 +160,6 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     eta = float(table_etas[atnum][colid]) * EV if len(table_etas[atnum][colid]) > 1 else None
 
     # Return Species instance
-    # return atomdb.Species(
-    #     dataset,
-    #     elem,
-    #     atnum,
-    #     obasis_name,
-    #     nelec,
-    #     nspin,
-    #     nexc,
-    #     # atmass,
-    #     # cov_radius,
-    #     # vdw_radius,
-    #     # at_radius,
-    #     # polarizability,
-    #     # dispersion_c6,
-    #     energy,
-    #     ip=ip,
-    #     mu=mu,
-    #     eta=eta,
-    # )
-    # print(atom._data.elem, atom.charge, atom.mult)
-    # print(atom.energy, atom.ip, atom.mu, atom.nexc)
-    # print(atom.atmass)
-    # print(atom.spinpol)
-    # print(atom.polarizability)
     fields = dict(
         elem=elem,
         atnum=atnum,
@@ -189,6 +167,12 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         nelec=nelec,
         nspin=nspin,
         nexc=nexc,
+        atmass=atmass,
+        cov_radius=cov_radius,
+        vdw_radius=vdw_radius,
+        at_radius=at_radius,
+        polarizability=polarizability,
+        dispersion_c6=dispersion_c6,
         energy=energy,
         ip=ip,
         mu=mu,
