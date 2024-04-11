@@ -399,6 +399,36 @@ class Species:
         pass
 
     @spline
+    def d_dens_func(self):
+        """
+        Return a cubic spline of the first derivative of the electronic density.
+
+        The derivarive of the density as a function of the distance to the atomic center
+        (a set of points along a 1-D grid) is modeled by a cubic spline. The property can
+        be computed for the alpha, beta, alpha + beta, and alpha - beta components of the
+        electron density.
+
+        Parameters
+        ----------
+        spin : str, optional
+            Type of occupied spin orbitals which can be either "a" (for alpha), "b" (for
+            beta), "ab" (for alpha + beta), and, "m" (for alpha - beta), by default 'ab'
+        index : sequence of int, optional
+            Sequence of integers representing the spin orbitals which are indexed
+            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included
+        log : bool, optional
+            Whether the logarithm of the density property is used for interpolation
+
+        Returns
+        -------
+        Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
+            a callable function evaluating the derivative of the density given a set of radial
+            points (1-D array).
+
+        """
+        pass
+
+    @spline
     def dd_dens_func(self):
         r"""
         Return a cubic spline of the electronic density Laplacian.
