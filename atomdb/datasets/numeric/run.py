@@ -159,10 +159,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Compute densities and derivatives
     dens_tot = data["density"]
-    # d_dens_tot = data['gradient']
+    d_dens_tot = data['gradient']
 
     # Compute laplacian and kinetic energy density
-    # lapl_tot = data['laplacian']
+    lapl_tot = data['laplacian']
     ked_tot = None
 
     # Return Species instance
@@ -173,15 +173,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         nelec=nelec,
         nspin=nspin,
         nexc=nexc,
-        # atmass=atmass,
-        # cov_radius=cov_radius,
-        # vdw_radius=vdw_radius,
-        # at_radius=at_radius,
-        # polarizability=polarizability,
-        # dispersion_c6=dispersion_c6,
+        atmass=atmass,
+        cov_radius=cov_radius,
+        vdw_radius=vdw_radius,
+        at_radius=at_radius,
+        polarizability=polarizability,
+        dispersion_c6=dispersion_c6,
         energy=energy,
         rs=points,
         dens_tot=dens_tot,
+        d_dens_tot=d_dens_tot,
+        dd_dens_tot=lapl_tot,
         ked_tot=ked_tot,
     )
     return atomdb.Species(dataset, fields)
