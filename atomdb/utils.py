@@ -13,177 +13,105 @@
 # You should have received a copy of the GNU General Public License
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-r"""Tool functions."""
+r"""Constants and utility functions."""
+
+import csv
+
+from os import path, environ
 
 import numpy as np
 
-import os
 import h5py as h5
-import csv
 
-from importlib_resources import files
 from scipy import constants
 
-# get data path
-TEST_DATAPATH = files("atomdb.data")
-TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
+
+__all__ = [
+    "DEFAULT_DATASET",
+    "DEFAULT_DATAPATH",
+    "MODULE_DATAPATH",
+    "CONVERTOR_TYPES",
+    "MULTIPLICITIES",
+    "generate_mult_csv",
+]
 
 
-__all__ = ["multiplicities"]
+DEFAULT_DATASET = "slater"
+r"""Default dataset to query."""
 
 
-def _gs_mult_energy(atnum, nelec, datafile):
-    """Retrieve multiplicity and energy for the most stable electronic configuration of a species.
-
-    Parameters
-    ----------
-    atnum : int
-        Atomic number of the element
-    nelec : int
-        Number of electrons of the species
-    datafile : str
-        Path to the HDF5 file containing the data
-
-    Returns
-    -------
-    mult : int
-        Multiplicity of the most stable electronic configuration
-    energy : float
-        Energy (in Hartree) of the most stable electronic configuration
-    """
-    # initialize multiplicity to zero and energy to a large value
-    default_mult = 0
-    default_energy = 1e6
-
-    # set keys for the atomic number and number of electrons
-    z = str(atnum).zfill(3)
-    ne = str(nelec).zfill(3)
-
-    # in database_beta_1.3.0.h5
-    with h5.File(datafile, "r") as f:
-        # for specie with atomic number z and ne electrons retrieve all multiplicities and energies
-        mults = np.array(list(f[z][ne]["Multi"][...]), dtype=int)
-        energy = f[z][ne]["Energy"][...]
-
-    # sort the multiplicities and energies in ascending of energy
-    index_sorting = sorted(list(range(len(energy))), key=lambda k: energy[k])
-    mults = list(mults[index_sorting])
-    energy = list(energy[index_sorting])
-
-    # return multiplicity and energy of the most stable species or default values for missing data
-    mult = mults[0] if len(mults) != 0 else default_mult
-    energy = energy[0] if len(energy) != 0 else default_energy
-    # Convert energy to Hartree from cm^{-1}
-    energy *= 2 * constants.centi * constants.Rydberg
-    return mult, energy
+DEFAULT_DATAPATH = environ.get(
+    "ATOMDB_DATAPATH",
+    path.join(path.dirname(__file__), "datasets"),
+)
+r"""The path for AtomDB datasets."""
 
 
-def _make_mults_table(datafile, max_atnum=100):
-    """Creates Multiplicity Table for Neutral and Charged Species up to Atomic Number `max_atnum`
-
-    Values retrieved from 'database_beta_1.3.0.h5' are organized into a table, with rows
-    corresponding to atomic numbers and columns to charges. The maximum atomic number (`max_atnum`)
-    must not exceed 100, the database's limit. The charge range spans from -2 to `max_atnum`-1.
-    Missing combinations have multiplicities set to zero.
-
-    Parameters
-    ----------
-    datafile : str
-        Path to the HDF5 file containing the data
-    max_atnum : int, optional
-        Highest atomic number of the elements to be added to the table.
-
-    Returns
-    -------
-    mult_table : np.ndarray
-        Table of multiplicities
-
-    Raises
-    ------
-    ValueError
-        If the maximum allowed atomic number is greater than 100.
-    """
-    # set maximum limits for charge, get possible charges and count them
-    neg_charge, pos_charge = -2, max_atnum
-    charge_range = range(neg_charge, pos_charge)
-    num_species = len(charge_range)
-
-    # create multiplicity table (number of elements x number of charged species) with zeros
-    mult_table = np.zeros((max_atnum, num_species), dtype=int)
-
-    # check if the maximum atomic number is within the database's limit
-    if max_atnum > 100:
-        raise ValueError("The maximum allowed atomic number is 100.")
-
-    # for each atomic number between 1 and the maximum atomic number
-    for atnum in range(1, max_atnum + 1):
-        # for each charge in the charge range
-        for charge in charge_range:
-            nelec = atnum - charge
-            # if number of electrons is non-positive, go to the next atomic number
-            if nelec <= 0:
-                break
-
-            # case 1: neutral or cationic species
-            if charge >= 0:
-                mult, _ = _gs_mult_energy(atnum, nelec, datafile)
-            # case 2: anionic species, read multiplicity from neutral isoelectronic species
-            else:
-                # check if the neutral isoelectronic species is in the database, if not, skip case
-                if nelec >= 100:
-                    continue
-                mult, _ = _gs_mult_energy(nelec, nelec, datafile)
-
-            # column 0 corresponds to charge -2, column 1 to charge -1, and so on
-            mult_table[atnum - 1, charge + 2] = mult
-    return mult_table
+MODULE_DATAPATH = path.join(path.dirname(__file__), "data")
+r"""The path for AtomDB data files."""
 
 
-def _write_mults_table_to_csv(mults_table, csv_file):
-    """Write the table of multiplicities to a csv file.
-
-    Parameters
-    ----------
-    mults_table : np.ndarray
-        Table of multiplicities with dimension of number of elements and
-        number of charged species (Z x Q).
-    csv_file : str
-        Path to the csv file to save the table.
-    """
-
-    # get the maximum atomic number and maximum number of charged species
-    max_atnum, num_species = mults_table.shape
-    element_range = range(1, max_atnum + 1)
-    charge_range = range(-2, max_atnum)
-
-    # first column is for atomic numbers, the other columns are for charges
-    mult_table_with_atnum = np.zeros((max_atnum, num_species + 1), dtype=int)
-    mult_table_with_atnum[:, 0] = list(element_range)
-    mult_table_with_atnum[:, 1:] = mults_table
-
-    # Write the table to a csv file
-    with open(csv_file, "w", newline="") as file:
-        writer = csv.writer(file)
-        # write the header
-        charge_label = [f"Charge" if i == 3 else "" for i in range(num_species + 1)]
-        writer.writerow(charge_label)
-
-        # write column labels
-        colums_label = ["atnum"] + [f"{charge}" for charge in charge_range]
-        writer.writerow(colums_label)
-
-        # write table data
-        writer.writerows(mult_table_with_atnum)
+HDF5_NIST_FILE = path.join(MODULE_DATAPATH, "database_beta_1.3.0.h5")
+r"""The HDF5 file containing the raw NIST data."""
 
 
-def _make_mults_dict(csv_file, max_atnum=100):
-    """Create dictionary from the table of multiplicities for neutral and charged atomic species.
+MULT_TABLE_CSV = path.join(MODULE_DATAPATH, "multiplicities_table.csv")
+r"""The CSV file containing the multiplicities of species."""
 
-    The values are read from the table of multiplicities for neutral and charged atomic species
-    `multiplicities_table.csv`. The maximum atomic number supported is 100. The possible charges
-    for a given atom range from -2 to Z-1. The multiplicities are set to zero for cases where the
-    atomic numbers and charges were not present in the table. For the anions, the multiplicity is
-    taken from the neutral isoelectronic species.
+
+ANGSTROM = 100 * constants.pico * constants.m_e * constants.c * constants.alpha / constants.hbar
+r"""Angstrom (:math:`\text{Å}`)."""
+
+
+AMU = constants.gram / (constants.Avogadro * constants.m_e)
+r"""Atomic mass unit (:math:`\text{a.m.u.}`)."""
+
+
+CMINV = 2 * constants.centi * constants.Rydberg
+r"""Inverse centimetre (:math:`\text{cm}^{-1}`)."""
+
+
+EV = constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
+r"""Electron volt (:math:`\text{eV}`)"""
+
+
+NEWLINE = "\n"
+r"""Newline character for use in f-strings."""
+
+
+CONVERTOR_TYPES = {
+    "int": lambda s: int(s),
+    "float": lambda s: float(s),
+    "au": lambda s: float(s),  # atomic units,
+    "str": lambda s: s.strip(),
+    "angstrom": lambda s: float(s) * ANGSTROM,
+    "2angstrom": lambda s: float(s) * ANGSTROM / 2,
+    "angstrom**3": lambda s: float(s) * ANGSTROM**3,
+    "amu": lambda s: float(s) * AMU,
+}
+rf"""
+Unit conversion functions.
+
+It has the following keys:
+{NEWLINE.join(" * " + key for key in CONVERTOR_TYPES.keys())}
+
+"""
+
+
+def make_mult_dict(max_atnum=100):
+    r"""
+    Create dictionary from the table of multiplicities.
+
+    The values are read from the table of multiplicities for neutral
+    and charged atomic species ``multiplicities_table.csv``.
+
+    The maximum atomic number supported is 100.
+
+    The possible charges for a given atom range from ``-2`` to ``Z-1``.
+
+    The multiplicities are set to zero for cases where the atomic numbers
+    and charges were not present in the table. For the anions,
+    the multiplicity is taken from the neutral isoelectronic species.
 
     Parameters
     ----------
@@ -194,61 +122,113 @@ def _make_mults_dict(csv_file, max_atnum=100):
     -------
     mults_dict : dict
         Dictionary with the multiplicities for each atomic species.
-        The keys are tuples of the form (atomic number, charge) and the values are the multiplicities.
+        The keys are tuples of the form (atomic number, charge) and
+        the values are the multiplicities.
 
     Examples
     --------
-    To get the multiplicity of the neutral Hidrogen atom (atomic number 1, charge 0) do:
+    To get the multiplicity of the neutral hydrogen atom (atomic number 1,
+    charge 0), do:
     >>> mults_dict = _make_mults_dict()
     >>> mults_dict[(1, 0)]
     2
     """
-    mults_dict = {}
-
-    with open(csv_file, "r") as file:
+    # Read CSV file
+    with open(MULT_TABLE_CSV, "r") as file:
         reader = csv.reader(file)
-        # skip the header
+        # Skip the row header
         next(reader)
-        # read column labels
-        labels = next(reader)
-        # read table data
+        # Read column header
+        col_header = next(reader)
+        # Read table data
         table = list(reader)
 
-    # check table columns format
-    if labels[0] != "atnum" and not all(labels[1:] == [str(i) for i in range(-2, max_atnum)]):
-        raise ValueError("The provided multiplicities table does not have the expected format")
+    # Read charges from the labels, skip the first element which is for atomic numbers
+    charges = [int(charge) for charge in col_header[1:]]
 
-    # check table rows format
-    if len(table) != max_atnum:
-        raise ValueError(f"Expected {max_atnum} elements in multiplicities table, got {len(table)}")
-
-    # read charges from the column labels, skip the first column which is for atomic numbers
-    charges = labels[1:]
-
-    # store multiplicities in a dictionary, keys are tuples (atnum, charge)
+    # Store multiplicities in a dictionary; keys are tuples (atnum, charge)
+    mult_dict = {}
     for row in table:
-        atnum, mults = int(row[0]), row[1:]
+        atnum, mults = int(row[0]), [int(mult) for mult in row[1:]]
         for charge, mult in zip(charges, mults):
-            mults_dict[(atnum, int(charge))] = int(mult)
-    return mults_dict
+            if mult != 0:
+                mult_dict[(atnum, charge)] = mult
+
+    return mult_dict
 
 
-multiplicities = _make_mults_dict(os.path.join(TEST_DATAPATH, "multiplicities_table.csv"))
+MULTIPLICITIES = make_mult_dict()
+r"""
+Dictionary of species' ground state multiplicities.
+
+Has items ``(atnum, charge): Tuple[int, int]``.
+
+"""
 
 
-# set constants and utility dictionary  for unit conversion
-angstrom = 100 * constants.pico * constants.m_e * constants.c * constants.alpha / constants.hbar
-amu = constants.gram / (constants.Avogadro * constants.m_e)
-cminv = 2 * constants.centi * constants.Rydberg
-ev = constants.eV / (2 * constants.Rydberg * constants.h * constants.c)
+def generate_mult_csv(max_atnum=100):
+    r"""
+    Write a table of multiplicities to a CSV file.
 
-convertor_types = {
-    "int": (lambda s: int(s)),
-    "float": (lambda s: float(s)),
-    "au": (lambda s: float(s)),  # just for clarity, atomic units
-    "str": (lambda s: s.strip()),
-    "angstrom": (lambda s: float(s) * angstrom),
-    "2angstrom": (lambda s: float(s) * angstrom / 2),
-    "angstrom**3": (lambda s: float(s) * angstrom**3),
-    "amu": (lambda s: float(s) * amu),
-}
+    Values retrieved from ``database_beta_1.3.0.h5`` are organized into a
+    table, with rows corresponding to atomic numbers and columns to charges.
+
+    The maximum atomic number (``max_atnum``) must not exceed 100,
+    which is the database's limit.
+
+    The charge range spans from ``-2`` to ``max_atnum - 1``.
+
+    Missing entries have multiplicities set to zero.
+
+    Parameters
+    ----------
+    max_atnum : int, default=100
+        Highest atomic number of the elements to be added to the table.
+
+    Raises
+    ------
+    ValueError
+        If the maximum allowed atomic number is greater than 100.
+
+    """
+    if max_atnum > 100:
+        raise ValueError("The maximum allowed atomic number is 100.")
+
+    # Set limits for charge
+    min_charge, max_charge = -2, max_atnum
+
+    # Create multiplicity table
+    table = np.zeros((max_atnum, 1 + max_charge - min_charge), dtype=int)
+    table[:, 0] = np.arange(1, max_atnum + 1)
+    with h5.File(HDF5_NIST_FILE, "r") as f:
+        # For each atnum
+        for atnum, row in enumerate(table[:, 1:]):
+            # For each charge
+            for col, charge in enumerate(range(min_charge, max_charge)):
+                nelec = atnum - charge
+                # Skip zero or negative electron number
+                if nelec <= 0:
+                    break
+                # Check if the data exists in the H5 file
+                if charge >= 0 or nelec < 100:
+                    # Read multiplicity and energy from H5 data file
+                    elem = f[f"{atnum:03d}"][f"{nelec:03d}"]
+                    mults = elem["Multi"][...].astype(int)
+                    energies = elem["Energy"][...].astype(float)
+                    # Ensure that the data is not empty
+                    if len(mults) == 0 or len(energies) == 0:
+                        row[col] = 0
+                    else:
+                        # Write multiplicity and energy of most stable species
+                        row[col] = mults[np.argmin[energies]]
+
+    # Make header lines for CSV file
+    row_header = ["", "charge"] + [""] * table[:, 2:].shape[1]
+    col_header = ["atnum"] + list(map(str, range(min_charge, max_charge)))
+
+    # Write multiplicity table to CSV file
+    with open(MULT_TABLE_CSV, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(row_header)
+        writer.writerow(col_header)
+        writer.writerows(table)

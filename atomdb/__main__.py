@@ -15,43 +15,55 @@
 
 r"""AtomDB console script."""
 
-
 from argparse import ArgumentParser
 
-from sys import stderr
-
-import atomdb
+from atomdb import compile, load
 
 
 # Initialize command line argument parser
-parser = ArgumentParser(prog="python -m atomdb", description="Compile and/or query an AtomDB entry")
+#
+parser = ArgumentParser(prog="atomdb", description="Compile or query an AtomDB entry.")
+
+# Define subcommands
+#
+command = parser.add_argument_group("commands")
+
+command_group = command.add_mutually_exclusive_group(required=True)
+
+command_group.add_argument(
+    "-c", "--compile", action="store_true", help="compile a species into the database"
+)
+
+command_group.add_argument(
+    "-q", "--query", action="store_true", help="query a species from the database"
+)
 
 
-# Specify positional arguments and options
-parser.add_argument("-c", action="store_true", default=False, help="compile the specified entry")
-parser.add_argument("-q", action="store_true", default=False, help="query the specified entry")
-parser.add_argument("dataset", type=str, help="name of dataset")
-parser.add_argument("elem", type=str, help="element symbol")
-parser.add_argument("charge", type=int, help="charge")
-parser.add_argument("mult", type=int, help="multiplicity")
-parser.add_argument("-e", type=int, default=0, help="excitation level")
+# Add arguments
+#
+arg_group = parser.add_argument_group("arguments")
+
+arg_group.add_argument("dataset", type=str, help="name of dataset")
+
+arg_group.add_argument("elem", type=str, help="element symbol")
+
+arg_group.add_argument("charge", type=int, help="charge")
+
+arg_group.add_argument("mult", type=int, help="multiplicity")
+
+arg_group.add_argument("-e", "--exc", type=int, default=0, help="excitation level")
 
 
 if __name__ == "__main__":
 
-    # Parse arguments
     args = parser.parse_args()
 
-    # Exit if no commands are specified
-    if not (args.c or args.q):
-        print("No command specified. Exiting...", file=stderr)
-        exit(1)
+    if args.compile:
 
-    # Run specified command(s)
-    if args.c:
-        atomdb.compile(args.elem, args.charge, args.mult, args.e, args.dataset)
-    if args.q:
-        print(atomdb.load(args.elem, args.charge, args.mult, args.e, args.dataset).to_json())
+        compile(args.elem, args.charge, args.mult, args.exc, args.dataset)
 
-    # Exit successfully
-    exit(0)
+    elif args.query:
+
+        species = load(args.elem, args.charge, args.mult, args.exc, args.dataset)
+
+        print(species.to_json())

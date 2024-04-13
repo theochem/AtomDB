@@ -1,4 +1,7 @@
 #Property key,Property name,Source key,Property description,Reference,doi,Notes
+group,Group,,int,Element group on the periodic table,,
+period,Period,,int,Element period on the periodic table,,
+mult,Multiplicity,,int,Ground state multiplicity,,
 cov_radius,Covalent radius,cordero,Covalent radius (derived from crystallographic data),"B. Cordero, V. Gomez, A. E. Platero-Prats, M. Reves, J. Echeverria,E. Cremades,\nF. Barragan, and S. Alvarez, Dalton Trans. pp. 2832--2838 (2008)",http://dx.doi.org/10.1039/b801115j,"For carbon the number is a weighted average over the data for different hybridizations.\nFor Mn, Fe, and Co, the number is a weighted average over the data for different spins\n(high spin and low spin)"
 cov_radius,Covalent radius,bragg,"Bragg radius (covalent, metallic and ionic bonds, derived from crystallographic data)","W. L. Bragg, Phil. Mag. 40, 169 (1920)",http://dx.doi.org/10.1080/14786440808636111,
 cov_radius,Covalent radius,slater,"Slater radius (covalent, metallic and ionic bonds, derived from crystallographic data)","J. C. Slater, J. Chem. Phys. 41, 3199 (1964)",http://dx.doi.org/10.1063/1.1725697,

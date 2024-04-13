@@ -24,7 +24,9 @@
 #
 
 import pytest
-from atomdb.utils import multiplicities
+
+from atomdb.utils import MULTIPLICITIES
+
 
 # Mark all tests in this file with the 'dev' flag
 pytestmark = pytest.mark.dev
@@ -45,4 +47,4 @@ def test_mults_table():
         [30, -1, 2],  # Zn-
     ]
     for atnum, charge, mult in species:
-        assert multiplicities[(atnum, charge)] == mult
+        assert MULTIPLICITIES[(atnum, charge)] == mult
