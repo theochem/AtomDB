@@ -112,14 +112,23 @@ def spline(method):
             arr = getattr(self._data, name_tot)
         elif spin == "t":
             arr = getattr(self._data, name_a) + getattr(self._data, name_b)
+            # FIXME: This is a hack to change the array to the correct 2D shape
+            arr = arr.reshape(self.ao.nbasis, -1)
         elif spin == "a":
             arr = getattr(self._data, name_a)
+            arr = arr.reshape(self.ao.nbasis, -1)
         elif spin == "b":
             arr = getattr(self._data, name_b)
+            arr = arr.reshape(self.ao.nbasis, -1)
         elif spin == "m":
             arr = getattr(self._data, name_a) - getattr(self._data, name_b)
-        if index is not None:
-            arr = arr[index].sum(axis=0)
+            arr = arr.reshape(self.ao.nbasis, -1)
+        # Select specific orbitals
+        arr = arr[index]
+        # Colapse the orbital dimension to get total density values
+        if arr.ndim > 1:
+            arr = arr.sum(axis=0)  # (N,)
+        
         # Return cubic spline
         return DensitySpline(self._data.rs, arr)
 
@@ -186,6 +195,18 @@ class JSONEncoder(json.JSONEncoder):
             return JSONEncoder.default(self, obj)
 
 
+class _AtomicOrbitals(object):
+    """Atomic orbitals class."""
+    def __init__(self, data) -> None:
+        self.occs_a = data.mo_occs_a
+        self.occs_b = data.mo_occs_b
+        self.energy_a = data.mo_energy_a
+        self.energy_b = data.mo_energy_b
+        self.norba = len(self.energy_a) if self.energy_a is not None else None
+        self.norbb = len(self.energy_b) if self.energy_a is not None else None
+        self.nbasis = self.norba  # number of spatial basis functions
+
+
 @dataclass(eq=False, order=False)
 class SpeciesData:
     r"""Database entry fields for atomic and ionic species."""
@@ -203,7 +224,7 @@ class SpeciesData:
     vdw_radius: float = field(default=None)
     at_radius: float = field(default=None)
     polarizability: float = field(default=None)
-    dispersion_c6: float = field(default=None)
+    dispersion: float = field(default=None)
 
     # Scalar energy and CDFT-related properties
     energy: float = field(default=None)
@@ -254,6 +275,7 @@ class Species:
         self._dataset = dataset.lower()
         self._data = SpeciesData(**fields)
         self.spinpol = spinpol
+        self.ao = _AtomicOrbitals(self._data)
 
     def get_docstring(self):
         r"""Docstring of the species' dataset."""
@@ -340,10 +362,10 @@ class Species:
         r"""Isolated atom dipole polarizability."""
         pass
 
-    @scalar
+    @property
     def dispersion_c6(self):
         r"""Isolated atom C6 dispersion coefficients."""
-        pass
+        return self._data.dispersion["C6"]
 
     @scalar
     def nexc(self):
