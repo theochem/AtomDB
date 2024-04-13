@@ -128,7 +128,7 @@ def spline(method):
         # Colapse the orbital dimension to get total density values
         if arr.ndim > 1:
             arr = arr.sum(axis=0)  # (N,)
-        
+
         # Return cubic spline
         return DensitySpline(self._data.rs, arr)
 
@@ -197,6 +197,7 @@ class JSONEncoder(json.JSONEncoder):
 
 class _AtomicOrbitals(object):
     """Atomic orbitals class."""
+
     def __init__(self, data) -> None:
         self.occs_a = data.mo_occs_a
         self.occs_b = data.mo_occs_b
@@ -529,7 +530,9 @@ def compile(
 def dump(*species, datapath=DEFAULT_DATAPATH):
     r"""Dump the Species instance(s) to a MessagePack file in the database."""
     for s in species:
-        fn = datafile(s._data.elem, s.charge, s.mult, nexc=s.nexc, dataset=s.dataset, datapath=datapath)
+        fn = datafile(
+            s._data.elem, s.charge, s.mult, nexc=s.nexc, dataset=s.dataset, datapath=datapath
+        )
         with open(fn, "wb") as f:
             f.write(packb(asdict(s._data), default=encode))
 

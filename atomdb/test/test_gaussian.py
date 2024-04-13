@@ -59,7 +59,7 @@ def test_compiled_gaussian_hf_data():
     assert grid.shape == (1000,)
     assert dens.shape == grid.shape
     ##FIXME: orbital density arrays must be to 2D arrays
-    assert orb_dens_a.reshape(len(energy_a),-1).shape == (12, 1000)
+    assert orb_dens_a.reshape(len(energy_a), -1).shape == (12, 1000)
 
     # check array elements
     # all R and density values are positive

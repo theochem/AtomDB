@@ -159,10 +159,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Compute densities and derivatives
     dens_tot = data["density"]
-    d_dens_tot = data['gradient']
+    d_dens_tot = data["gradient"]
 
     # Compute laplacian and kinetic energy density
-    lapl_tot = data['laplacian']
+    lapl_tot = data["laplacian"]
     ked_tot = None
 
     # Return Species instance
