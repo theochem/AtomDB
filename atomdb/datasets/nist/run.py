@@ -81,10 +81,12 @@ def load_nist_spectra_data(atnum, nelec, datafile):
     # energy = list(energy[index_sorting])
 
     # sort and store the mults, energies, configurations & J values in ascending order of energy
-    output = {"mult": list(mults[index_sorting]),
-            "energy": list(energy[index_sorting]),
-            "config": list(config[index_sorting]),
-            "j_vals": list(j_vals[index_sorting])}
+    output = {
+        "mult": list(mults[index_sorting]),
+        "energy": list(energy[index_sorting]),
+        "config": list(config[index_sorting]),
+        "j_vals": list(j_vals[index_sorting]),
+    }
 
     return output
 
@@ -132,7 +134,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Set an energy default value since there is no data for anions in database_beta_1.3.0.h5.
     energy = None
     h5path = os.path.join(MODULE_DATAPATH, "database_beta_1.3.0.h5")
-    if charge >= 0: # neutral or cationic species
+    if charge >= 0:  # neutral or cationic species
         spectra_data = load_nist_spectra_data(atnum, nelec, h5path)
         energies = spectra_data["energy"]
         # Convert energy to Hartree from cm^{-1} if available

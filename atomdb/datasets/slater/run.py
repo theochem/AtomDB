@@ -22,6 +22,7 @@ import atomdb
 from atomdb.periodic import Element
 from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
+
 # from importlib_resources import files
 from atomdb.utils import DEFAULT_DATAPATH
 from scipy.special import factorial
@@ -1097,7 +1098,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         raise ValueError(f"Multiplicity {mult} is not available for {elem} with charge {charge}")
 
     # Get electronic structure data
-    energy = species.energy[0] # get energy from list
+    energy = species.energy[0]  # get energy from list
     norba = len(mo_occ) // 2
     # Get MO energies and occupations
     mo_e_up = species.orbitals_energy.ravel()[:norba]

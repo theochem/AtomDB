@@ -214,7 +214,11 @@ def test_slater_orbitals_ne():
     assert len(sp._data.mo_occs_a) == 5
     assert len(sp._data.mo_occs_a) == len(sp._data.mo_occs_b)
     # check array elements
-    assert np.allclose(sp._data.mo_energy_a, np.array([-32.7724425, -1.9303907, -0.8504095, -0.8504095, -0.8504095]), atol=1e-6)
+    assert np.allclose(
+        sp._data.mo_energy_a,
+        np.array([-32.7724425, -1.9303907, -0.8504095, -0.8504095, -0.8504095]),
+        atol=1e-6,
+    )
     assert np.allclose(sp._data.mo_energy_a, sp._data.mo_energy_b, atol=1e-6)
     assert np.allclose(sp._data.mo_occs_a, np.array([1.0, 1.0, 1.0, 1.0, 1.0]), atol=1e-6)
     assert np.allclose(sp._data.mo_occs_a, sp._data.mo_occs_b, atol=1e-6)
