@@ -424,14 +424,14 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Get information about the element
     atom = Element(elem)
     atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
         None,
     ] * 5
     # overwrite values for neutral atomic species
     if charge == 0:
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
         polarizability = atom.pold
-        dispersion_c6 = atom.c6
+        dispersion = {"C6": atom.c6}
 
     # Conceptual-DFT properties (WIP)
     # NOTE: Only the alpha component of the MOs is used bellow
@@ -450,17 +450,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         nelec=nelec,
         nspin=nspin,
         nexc=nexc,
-        # atmass=atmass,
-        # cov_radius=cov_radius,
-        # vdw_radius=vdw_radius,
-        # at_radius=at_radius,
-        # polarizability=polarizability,
-        # dispersion_c6=dispersion_c6,
+        atmass=atmass,
+        cov_radius=cov_radius,
+        vdw_radius=vdw_radius,
+        at_radius=at_radius,
+        polarizability=polarizability,
+        dispersion=dispersion,
         energy=energy,
-        mo_e_up=mo_e_up,
-        mo_e_dn=mo_e_dn,
-        occs_up=occs_up,
-        occs_dn=occs_dn,
+        mo_energy_a=mo_e_up,
+        mo_energy_b=mo_e_dn,
+        mo_occs_a=occs_up,
+        mo_occs_b=occs_dn,
         ip=ip,
         mu=mu,
         eta=eta,
