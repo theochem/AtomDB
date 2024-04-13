@@ -142,14 +142,14 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     #
     atom = Element(elem)
     atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
         None,
     ] * 5
     if charge == 0:
         # overwrite values for neutral atomic species
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
         polarizability = atom.pold
-        dispersion_c6 = atom.c6
+        dispersion = {"C6": atom.c6}
 
     # Get electronic structure data
     energy = data["energy_components"]["E"]
@@ -178,7 +178,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         vdw_radius=vdw_radius,
         at_radius=at_radius,
         polarizability=polarizability,
-        dispersion_c6=dispersion_c6,
+        dispersion=dispersion,
         energy=energy,
         rs=points,
         dens_tot=dens_tot,

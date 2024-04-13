@@ -1135,14 +1135,14 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Get information about the element
     atom = Element(elem)
     atmass = atom.mass["stb"]
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion_c6 = [
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
         None,
     ] * 5
     # overwrite values for neutral atomic species
     if charge == 0:
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
         polarizability = atom.pold
-        dispersion_c6 = atom.c6
+        dispersion = {"C6": atom.c6}
 
     # Conceptual-DFT properties (WIP)
     ip = -mo_e_up[np.sum(occs_up) - 1]  # - energy of HOMO
@@ -1163,7 +1163,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         vdw_radius=vdw_radius,
         at_radius=at_radius,
         polarizability=polarizability,
-        dispersion_c6=dispersion_c6,
+        dispersion=dispersion,
         energy=energy,
         mo_energy_a=mo_e_up,
         mo_energy_b=mo_e_dn,
