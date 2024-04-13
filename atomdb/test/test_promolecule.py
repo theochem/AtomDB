@@ -21,11 +21,14 @@
 #
 # --
 
-import numpy as np
-import numpy.testing as npt
 import pytest
 
-from atomdb.promolecule import make_promolecule
+import numpy as np
+
+import numpy.testing as npt
+
+from atomdb import make_promolecule
+
 
 TEST_CASES_MAKE_PROMOLECULE = [
     pytest.param(

@@ -1,9 +1,11 @@
-import pytest
+from importlib.resources import files
+
 import os
-import numpy as np
-from importlib_resources import files
-from atomdb.api import load
-from atomdb.utils import angstrom, amu, cminv, ev
+
+import pytest
+
+from atomdb import load
+from atomdb.utils import ANGSTROM, AMU, CMINV, EV
 
 # get test data path
 TEST_DATAPATH = files("atomdb.test.data")
@@ -20,7 +22,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "nelec": 1,
             "nspin": 1,
             "nexc": 0,
-            "atmass": 1.007975 * amu,
+            "atmass": 1.007975 * AMU,
             # "cov_radius": {"cordero": 0.31 * angstrom, "bragg": np.nan, "slater": 0.25 * angstrom},
             # "vdw_radius": {
             #     "bondi": 1.2 * angstrom,
@@ -31,13 +33,13 @@ TEST_CASES_MAKE_PROMOLECULE = [
             #     "uff": 2.886 * angstrom / 2,
             #     "mm3": 1.62 * angstrom,
             # },
-            "at_radius": {"wc": 0.529192875 * angstrom, "cr": 0.53 * angstrom},
-            "polarizability": {"crc": 0.666793 * angstrom**3, "chu": 4.5},
+            "at_radius": {"wc": 0.529192875 * ANGSTROM, "cr": 0.53 * ANGSTROM},
+            "polarizability": {"crc": 0.666793 * ANGSTROM**3, "chu": 4.5},
             "dispersion_c6": {"chu": 6.499026705},
-            "energy": -109678.77174307 * cminv,
-            "ip": 13.598443 * ev,
-            "mu": -7.18 * ev,
-            "eta": 12.84 * ev,
+            "energy": -109678.77174307 * CMINV,
+            "ip": 13.598443 * EV,
+            "mu": -7.18 * EV,
+            "eta": 12.84 * EV,
         },
         id="H neutral",
     ),
@@ -50,11 +52,11 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "nelec": 6,
             "nspin": 2,
             "nexc": 0,
-            "atmass": 12.0106 * amu,
+            "atmass": 12.0106 * AMU,
             "cov_radius": {
-                "cordero": 0.7445337366 * angstrom,
-                "bragg": 0.77 * angstrom,
-                "slater": 0.7 * angstrom,
+                "cordero": 0.7445337366 * ANGSTROM,
+                "bragg": 0.77 * ANGSTROM,
+                "slater": 0.7 * ANGSTROM,
             },
             # "vdw_radius": {
             #     "bondi": 1.7 * angstrom,
@@ -65,13 +67,13 @@ TEST_CASES_MAKE_PROMOLECULE = [
             #     "uff": 3.851 * angstrom / 2,
             #     "mm3": 2.04 * angstrom,
             # },
-            "at_radius": {"wc": 0.62 * angstrom, "cr": 0.67 * angstrom},
-            "polarizability": {"crc": 1.76 * angstrom**3, "chu": 12.0},
+            "at_radius": {"wc": 0.62 * ANGSTROM, "cr": 0.67 * ANGSTROM},
+            "polarizability": {"crc": 1.76 * ANGSTROM**3, "chu": 12.0},
             "dispersion_c6": {"chu": 46.6},
-            "energy": -8308396.1899999995 * cminv,
-            "ip": 11.2603 * ev,
-            "mu": -6.26 * ev,
-            "eta": 10 * ev,
+            "energy": -8308396.1899999995 * CMINV,
+            "ip": 11.2603 * EV,
+            "mu": -6.26 * EV,
+            "eta": 10 * EV,
         },
         id="C neutral",
     ),
@@ -84,16 +86,16 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "nelec": 5,
             "nspin": 1,
             "nexc": 0,
-            "atmass": 12.0106 * amu,
+            "atmass": 12.0106 * AMU,
             "cov_radius": None,
             "vdw_radius": None,
             "at_radius": None,
             "polarizability": None,
             "dispersion_c6": None,
-            "energy": -8217575.77 * cminv,
-            "ip": 24.3833 * ev,
-            "mu": -17.82 * ev,
-            "eta": 13.12 * ev,
+            "energy": -8217575.77 * CMINV,
+            "ip": 24.3833 * EV,
+            "mu": -17.82 * EV,
+            "eta": 13.12 * EV,
         },
         id="C cation",
     ),
@@ -106,16 +108,16 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "nelec": 7,
             "nspin": 3,
             "nexc": 0,
-            "atmass": 12.0106 * amu,
+            "atmass": 12.0106 * AMU,
             "cov_radius": None,
             "vdw_radius": None,
             "at_radius": None,
             "polarizability": None,
             "dispersion_c6": None,
             "energy": None,
-            "ip": 1.262118 * ev,
-            "mu": 2.08 * ev,
-            "eta": 8.02 * ev,
+            "ip": 1.262118 * EV,
+            "mu": 2.08 * EV,
+            "eta": 8.02 * EV,
         },
         id="C anion",
     ),

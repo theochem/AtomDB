@@ -22,14 +22,17 @@
 #
 # --
 
+from importlib.resources import files
+
+import os
+
 import pytest
+
+import numpy as np
 
 from scipy.interpolate import CubicSpline
 
-import numpy as np
-from atomdb.api import load
-from importlib_resources import files
-import os
+from atomdb import load
 
 
 # get test data path
