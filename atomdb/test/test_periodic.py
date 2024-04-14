@@ -54,8 +54,8 @@ def test_get_attributes():
     # Hydrogen data
     h_data = {
         "atnum": 1,
-        "atsym": "H",
-        "atname": "Hydrogen",
+        "symbol": "H",
+        "name": "Hydrogen",
         "group": 1,
         "period": 1,
         "cov_radius": {
@@ -82,8 +82,8 @@ def test_get_attributes():
     # Carbon data
     c_data = {
         "atnum": 6,
-        "atsym": "C",
-        "atname": "Carbon",
+        "symbol": "C",
+        "name": "Carbon",
         "group": 14,
         "period": 2,
         "cov_radius": {
