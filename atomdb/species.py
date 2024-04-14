@@ -330,18 +330,28 @@ class Species:
         self._spinpol = spinpol
 
     @scalar
+    def elem(self):
+        r"""Element symbol."""
+        pass
+
+    @scalar
+    def obasis_name(self):
+        r"""Basis name."""
+        pass
+
+    @scalar
     def atnum(self):
-        r"""Atomic mass."""
+        r"""Atomic number."""
         pass
 
     @scalar
     def nelec(self):
-        r"""Atomic mass."""
+        r"""Number of electrons."""
         pass
 
     @scalar
     def atmass(self):
-        r"""Atomic mass."""
+        r"""Atomic mass in atomic units."""
         pass
 
     @scalar
@@ -367,6 +377,8 @@ class Species:
     @property
     def dispersion_c6(self):
         r"""Isolated atom C6 dispersion coefficients."""
+        if self._data.dispersion is None:
+            return None
         return self._data.dispersion["C6"]
 
     @scalar
