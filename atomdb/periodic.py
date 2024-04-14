@@ -31,7 +31,13 @@ def setup_element():
             "atnum : int\n"
             "    Atomic number.\n"
         )
-        return str2num[elem] if isinstance(elem, str) else int(elem)
+        if isinstance(elem, str):
+            return str2num[elem]
+        else:
+            atnum = int(elem)
+            if atnum not in num2str:
+                raise ValueError(f"Invalid element number: {atnum}")
+            return atnum
 
     def element_symbol(elem):
         (
@@ -80,6 +86,10 @@ def setup_element():
     def atnum(self):
         return self._atnum
 
+    @property
+    def atsym(self):
+        return element_symbol(self._atnum)
+
     atnum.__doc__ = "Atomic number of the element.\n" "\n" "Returns\n" "-------\n" "atnum : int\n"
 
     @property
@@ -118,7 +128,6 @@ def setup_element():
 
     # Autocomplete class docstring with data from the CSV files
     for prop, name in prop2name.items():
-
         # Add signature, description, sources, units, urls, and notes
         short = f"{name} of the element."
         if len(prop2col[prop]) == 1 and "" in prop2col[prop]:
@@ -196,6 +205,8 @@ def get_data():
         num2str[atnum] = (symbol, name)
         str2num[symbol] = atnum
         str2num[name] = atnum
+        # add support for all lowercase names
+        str2num[name.lower()] = atnum
         # Convert the rest of the data to numbers
         for i, (unit, val) in enumerate(zip(units, row)):
             row[i] = CONVERTOR_TYPES[unit](val) if val else None
