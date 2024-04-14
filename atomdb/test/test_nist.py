@@ -1,4 +1,4 @@
-from importlib.resources import files
+from importlib_resources import files
 
 import os
 
@@ -135,4 +135,9 @@ def test_nist_data(case):
     sp = load(elem, charge, mult, dataset="nist", datapath=TEST_DATAPATH)
 
     for attr, value in case.items():
-        assert getattr(sp, attr) == value, f"{elem} {attr} is not as expected."
+        data_value = getattr(sp, attr)
+        # try:
+        #     data_value = getattr(sp, attr)
+        # except AttributeError:
+        #     data_value = getattr(sp._data, attr)
+        assert data_value == value, f"{elem} {attr} is not as expected."
