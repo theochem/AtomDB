@@ -92,7 +92,7 @@ def spline(method):
     r"""Expose a SpeciesData field via the ``DensitySpline`` interface."""
     name = _remove_suffix(method.__name__, "_func")
 
-    def wrapper(self, spin="t", index=None):
+    def wrapper(self, spin="t", index=None, log=False):
         rf"""{method.__doc__}"""
         # Validate `spin` variable
         if spin not in ("t", "a", "b", "m"):
@@ -124,13 +124,14 @@ def spline(method):
             arr = getattr(self._data, name_a) - getattr(self._data, name_b)
             arr = arr.reshape(self.ao.nbasis, -1)
         # Select specific orbitals
-        arr = arr[index]
+        if index is not None:
+            arr = arr[index]
         # Colapse the orbital dimension to get total density values
         if arr.ndim > 1:
             arr = arr.sum(axis=0)  # (N,)
 
         # Return cubic spline
-        return DensitySpline(self._data.rs, arr)
+        return DensitySpline(self._data.rs, arr, log=log)
 
     return wrapper
 
