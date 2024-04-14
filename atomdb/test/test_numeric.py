@@ -51,9 +51,13 @@ def test_numerical_hf_data_h():
     # check radial grid and total density arrays values
     assert all(sp._data.rs >= 0.0)
     assert all(sp._data.dens_tot >= 0.0)
-    assert np.allclose(sp._data.rs[:3], [0.0, 0.183156388887342e-01, 0.194968961085980e-01], atol=1e-10)
     assert np.allclose(
-        sp._data.rs[-3:], [0.292242837812349e2, 0.311090881509677e2, 0.331154519586923e2], atol=1e-10
+        sp._data.rs[:3], [0.0, 0.183156388887342e-01, 0.194968961085980e-01], atol=1e-10
+    )
+    assert np.allclose(
+        sp._data.rs[-3:],
+        [0.292242837812349e2, 0.311090881509677e2, 0.331154519586923e2],
+        atol=1e-10,
     )
     assert np.allclose(sp._data.dens_tot[:2], [0.318309887124870, 0.306860767394852], atol=1e-10)
     assert np.allclose(sp._data.dens_tot[4:6], [0.304551328899830, 0.303684673354233], atol=1e-10)
