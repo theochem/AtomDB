@@ -401,7 +401,7 @@ class Species:
 
         Parameters
         ----------
-        spin : str, default="ab"
+        spin : str, default="t"
             Type of occupied spin orbitals.
             Can be either "t" (for alpha + beta), "a" (for alpha),
             "b" (for beta), or "m" (for alpha - beta).
@@ -459,7 +459,7 @@ class Species:
 
         Parameters
         ----------
-        spin : str, default="ab"
+        spin : str, default="t"
             Type of occupied spin orbitals.
             Can be either "t" (for alpha + beta), "a" (for alpha),
             "b" (for beta), or "m" (for alpha - beta).
@@ -487,7 +487,7 @@ class Species:
 
         Parameters
         ----------
-        spin : str, default="ab"
+        spin : str, default="t"
             Type of occupied spin orbitals.
             Can be either "t" (for alpha + beta), "a" (for alpha),
             "b" (for beta), or "m" (for alpha - beta).
