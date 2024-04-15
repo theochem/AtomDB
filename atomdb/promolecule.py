@@ -120,7 +120,7 @@ class Promolecule:
         self.coords.extend(np.asarray(coord, dtype=float) for coord in coords)
         self.coeffs.extend(coeffs)
 
-    def density(self, points, spin="ab", log=False):
+    def density(self, points, spin="t", log=False):
         r"""
         Compute the electron density of the promolecule at the desired points.
 
@@ -128,7 +128,7 @@ class Promolecule:
         ----------
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
-        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+        spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
@@ -138,7 +138,7 @@ class Promolecule:
         """
 
         def f(atom):
-            return atom.density_func(spin=spin, log=log)
+            return atom.dens_func(spin=spin, log=log)
 
         return sum(
             _extensive_local_property(
@@ -150,14 +150,14 @@ class Promolecule:
             )
         )
 
-    def ked(self, points, spin="ab", log=False):
+    def ked(self, points, spin="t", log=False):
         r"""
         Compute the kinetic energy density of the promolecule at the desired
         points.
 
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
-        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+        spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
@@ -271,7 +271,7 @@ class Promolecule:
 
         return _intensive_property(self.atoms, self.coeffs, f, p=p)
 
-    def gradient(self, points, spin="ab", log=False):
+    def gradient(self, points, spin="t", log=False):
         r"""
         Compute the electron density gradient of the promolecule at the
         desired points.
@@ -296,7 +296,7 @@ class Promolecule:
         ----------
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
-        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+        spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
@@ -310,7 +310,7 @@ class Promolecule:
         """
 
         def f(atom):
-            return atom.ddens_func(spin=spin, log=log)
+            return atom.d_dens_func(spin=spin, log=log)
 
         atoms_ddens = _extensive_local_property(
             self.atoms,
@@ -340,7 +340,7 @@ class Promolecule:
         ]
         return sum(gradients_atoms)
 
-    def hessian(self, points, spin="ab", log=False):
+    def hessian(self, points, spin="t", log=False):
         r"""
         Compute the promolecule's electron density Hessian at the
         desired points.
@@ -349,7 +349,7 @@ class Promolecule:
         ----------
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
-        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+        spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
@@ -359,10 +359,10 @@ class Promolecule:
         """
 
         def df(atom):
-            return atom.ddens_func(spin=spin, log=log)
+            return atom.d_dens_func(spin=spin, log=log)
 
         def d2f(atom):
-            return atom.d2dens_func(spin=spin, log=log)
+            return atom.dd_dens_func(spin=spin, log=log)
 
         atoms_ddens = _extensive_local_property(
             self.atoms,
@@ -408,7 +408,7 @@ class Promolecule:
             hess[p] = hess[p] - np.diag(np.diag(hess[p]) / 2)
         return hess
 
-    def laplacian(self, points, spin="ab", log=False):
+    def laplacian(self, points, spin="t", log=False):
         r"""
         Compute the promolecule's electron density Laplacian at the
         desired points.
@@ -417,7 +417,7 @@ class Promolecule:
         ----------
         points: np.ndarray((N, 3), dtype=float)
             Points at which to compute the density.
-        spin: ('ab' | 'a' | 'b' | 'm'), default='ab'
+        spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
@@ -427,10 +427,10 @@ class Promolecule:
         """
 
         def df(atom):
-            return atom.ddens_func(spin=spin, log=log)
+            return atom.d_dens_func(spin=spin, log=log)
 
         def d2f(atom):
-            return atom.d2dens_func(spin=spin, log=log)
+            return atom.dd_dens_func(spin=spin, log=log)
 
         def shift(dens, radii):
             return 3 * dens / np.linalg.norm(radii)
@@ -507,10 +507,7 @@ def make_promolecule(
     # Handle default multiplicity parameters
     if mults is None:
         # Force non-int charge to be integer here; will be overwritten below.
-        mults = [
-            MULTIPLICITIES[max(1, int(np.round(atnum - charge)))]
-            for (atnum, charge) in zip(atnums, charges)
-        ]
+        mults = [MULTIPLICITIES[(atnum, charge)] for (atnum, charge) in zip(atnums, charges)]
 
     # Construct linear combination of species
     promol = Promolecule()

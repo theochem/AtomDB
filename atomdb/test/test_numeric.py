@@ -22,7 +22,7 @@
 #
 # --
 
-from importlib.resources import files
+from importlib_resources import files
 
 import os
 
@@ -45,23 +45,27 @@ def test_numerical_hf_data_h():
     sp = load("H", 0, 2, dataset="numeric", datapath=TEST_DATAPATH)
 
     # check shape radial grid and total density arrays
-    assert sp.rs.shape == (122,)
-    assert sp.dens_tot.shape == sp.rs.shape
+    assert sp._data.rs.shape == (122,)
+    assert sp._data.dens_tot.shape == sp._data.rs.shape
 
     # check radial grid and total density arrays values
-    assert all(sp.rs >= 0.0)
-    assert all(sp.dens_tot >= 0.0)
-    assert np.allclose(sp.rs[:3], [0.0, 0.183156388887342e-01, 0.194968961085980e-01], atol=1e-10)
+    assert all(sp._data.rs >= 0.0)
+    assert all(sp._data.dens_tot >= 0.0)
     assert np.allclose(
-        sp.rs[-3:], [0.292242837812349e2, 0.311090881509677e2, 0.331154519586923e2], atol=1e-10
+        sp._data.rs[:3], [0.0, 0.183156388887342e-01, 0.194968961085980e-01], atol=1e-10
     )
-    assert np.allclose(sp.dens_tot[:2], [0.318309887124870, 0.306860767394852], atol=1e-10)
-    assert np.allclose(sp.dens_tot[4:6], [0.304551328899830, 0.303684673354233], atol=1e-10)
-    assert np.allclose(sp.dens_tot[-2:], [0.0, 0.0], atol=1e-10)
+    assert np.allclose(
+        sp._data.rs[-3:],
+        [0.292242837812349e2, 0.311090881509677e2, 0.331154519586923e2],
+        atol=1e-10,
+    )
+    assert np.allclose(sp._data.dens_tot[:2], [0.318309887124870, 0.306860767394852], atol=1e-10)
+    assert np.allclose(sp._data.dens_tot[4:6], [0.304551328899830, 0.303684673354233], atol=1e-10)
+    assert np.allclose(sp._data.dens_tot[-2:], [0.0, 0.0], atol=1e-10)
 
     # evaluate radial density gradient (first derivative of density spline)
-    dens = sp.density_func(spin="ab", log=True)
-    gradient = dens(sp.rs, deriv=1)
+    dens = sp.dens_func(spin="t", log=True)
+    gradient = dens(sp._data.rs, deriv=1)
 
     # load gradient reference values from numerical HF raw files
     fname = "001_q000_m02_numeric_gradient.npy"
@@ -82,8 +86,8 @@ def test_numerical_hf_data_h_anion():
     assert_almost_equal(sp.energy, -0.487929734301232, decimal=10)
 
     # check shape radial grid and total density arrays
-    assert sp.rs.shape == (139,)
-    assert sp.dens_tot.shape == sp.rs.shape
+    assert sp._data.rs.shape == (139,)
+    assert sp._data.dens_tot.shape == sp._data.rs.shape
 
     # reference radial values sample and corresponding indices
     ref_rs = np.array(
@@ -99,21 +103,21 @@ def test_numerical_hf_data_h_anion():
     ref_rs_idx = np.array([0, 1, 2, 10, -2, -1])
 
     # check radial grid array values using reference sample
-    assert all(sp.rs >= 0.0)
-    assert np.allclose(sp.rs[ref_rs_idx], ref_rs, atol=1e-10)
+    assert all(sp._data.rs >= 0.0)
+    assert np.allclose(sp._data.rs[ref_rs_idx], ref_rs, atol=1e-10)
 
     # reference density values sample and corresponding indices
     ref_dens_tot = [0.309193381788357, 0.298087713771564, 0.293177850175325, 0.292176126765437]
     ref_dens_tot_idx = np.array([0, 1, 7, 8])
 
     # check total density array values using reference sample
-    assert all(sp.dens_tot >= 0.0)
-    assert np.allclose(sp.dens_tot[ref_dens_tot_idx], ref_dens_tot, atol=1e-10)
-    assert np.allclose(sp.dens_tot[-20:], 0.0, atol=1e-10)
+    assert all(sp._data.dens_tot >= 0.0)
+    assert np.allclose(sp._data.dens_tot[ref_dens_tot_idx], ref_dens_tot, atol=1e-10)
+    assert np.allclose(sp._data.dens_tot[-20:], 0.0, atol=1e-10)
 
     # evaluate radial density gradient (first derivative of density spline)
-    dens = sp.density_func(spin="ab", log=True)
-    gradient = dens(sp.rs, deriv=1)
+    dens = sp.dens_func(spin="t", log=True)
+    gradient = dens(sp._data.rs, deriv=1)
 
     # load gradient reference values from numerical HF raw files
     fname = "001_q-01_m01_numeric_gradient.npy"
@@ -148,21 +152,21 @@ def test_numerical_hf_atomic_density(atom, mult, npoints, nelec):
     # load atomic and density data
     sp = load(atom, 0, mult, dataset="numeric", datapath=TEST_DATAPATH)
     # load radial grid and total density arrays
-    grid, dens = sp.rs, sp.dens_tot
+    grid, dens = sp._data.rs, sp._data.dens_tot
 
     # check shape of arrays
-    assert sp.rs.shape == (npoints,)
+    assert sp._data.rs.shape == (npoints,)
     assert dens.shape == grid.shape
 
     # check radial grid and total density arrays values
-    assert all(sp.rs >= 0.0)
-    assert all(sp.dens_tot >= 0.0)
+    assert all(sp._data.rs >= 0.0)
+    assert all(sp._data.dens_tot >= 0.0)
 
     # check the density integrates to the correct number of electrons
     assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), nelec, decimal=2)
 
     # get density spline and check its values
-    spline = sp.density_func(spin="ab", log=True)
+    spline = sp.dens_func(spin="t", log=True)
     assert np.allclose(spline(grid), dens, atol=1e-6)
 
 
@@ -172,7 +176,7 @@ def test_numerical_hf_atomic_density(atom, mult, npoints, nelec):
 def test_numerical_hf_density_gradient(atom, charge, mult):
     # load density and radial gradient (spline derivative) evaluated the radial grid
     sp = load(atom, charge, mult, dataset="numeric", datapath=TEST_DATAPATH)
-    grid, spline = sp.rs, sp.density_func(spin="ab", log=True)
+    grid, spline = sp._data.rs, sp.dens_func(spin="t", log=True)
     gradient = spline(grid, deriv=1)
 
     # check shape of arrays
@@ -200,8 +204,8 @@ def test_numerical_hf_density_laplacian(atom, charge, mult):
     sp = load(atom, charge, mult, dataset="numeric", datapath=TEST_DATAPATH)
 
     # evaluate density and laplacian (second derivative of density spline) on the radial grid
-    grid = sp.rs
-    spline = sp.density_func(spin="ab", log=False)
+    grid = sp._data.rs
+    spline = sp.dens_func(spin="t", log=False)
     lapl = spline(grid, deriv=2)
 
     # check shape of arrays
