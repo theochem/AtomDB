@@ -23,11 +23,15 @@
 
 import pytest
 
+import os
+
 import numpy as np
 
 import numpy.testing as npt
 
 from atomdb import make_promolecule
+
+TEST_DATAPATH = os.path.join(os.path.dirname(__file__), "data")
 
 
 TEST_CASES_MAKE_PROMOLECULE = [
@@ -159,6 +163,7 @@ def test_make_promolecule(case):
         mults=mults,
         units=units,
         dataset=dataset,
+        datapath=TEST_DATAPATH,
     )
 
     # Check that coefficients add up to (# centers)

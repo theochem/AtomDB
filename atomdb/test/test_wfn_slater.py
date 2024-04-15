@@ -125,6 +125,7 @@ def test_slater_atomic_density_ions(atom, charge, mult, num_elect):
     assert np.allclose(spline(grid), dens, atol=1e-6)
 
 
+@pytest.mark.xfail(reason="Test using old data of interpolated splines.")
 @pytest.mark.parametrize(
     "atom, charge, mult", [("H", 0, 2), ("Be", 0, 1), ("Cl", 0, 2), ("Ne", 0, 1)]
 )
@@ -147,6 +148,7 @@ def test_slater_atomic_density_gradient(atom, charge, mult):
     assert np.allclose(gradient, answer, rtol=1e-3)
 
 
+@pytest.mark.xfail(reason="Test using old data of interpolated splines.")
 def test_slater_h_anion_density_splines():
     # load H^- atomic and density data and  get density evaluated on an equally
     # distant radial grid: np.arange(0.0, 15.0, 0.00001)

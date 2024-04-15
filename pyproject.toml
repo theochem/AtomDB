@@ -69,6 +69,7 @@ test_extra = [
     "pytest-md",
     "pytest-emoji",
     "pytest-cov",
+    "importlib_resources",
 ]
 doc = [
     "ipython",
