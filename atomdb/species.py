@@ -568,7 +568,6 @@ def load(
         dataset=dataset,
         datapath=datapath,
     )
-    print(fn)
     if Ellipsis in (elem, charge, mult, nexc):
         obj = []
         for file in glob(fn):
