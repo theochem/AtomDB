@@ -451,7 +451,8 @@ class Species:
             beta), "ab" (for alpha + beta), and, "m" (for alpha - beta), by default 'ab'
         index : sequence of int, optional
             Sequence of integers representing the spin orbitals which are indexed
-            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included
+            from 1 to the number basis functions. If ``None``, all orbitals of the given
+            spin(s) are included
         log : bool, optional
             Whether the logarithm of the density property is used for interpolation
 
