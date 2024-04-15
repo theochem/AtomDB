@@ -22,7 +22,7 @@
 #
 # --
 
-from importlib.resources import files
+from importlib_resources import files
 
 import os
 
@@ -49,50 +49,58 @@ TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
         ("numeric", "ab", [0, 1], False, ValueError),  # no property per orbital
     ],
 )
-def test_ddens_func_raised_errors(dataset, spin, index, log, error):
+def test_d_dens_func_raised_errors(dataset, spin, index, log, error):
     # load Be atomic data and try to calculate the gradient of the density
     sp = load("Be", 0, 1, dataset=dataset, datapath=TEST_DATAPATH)
 
     with pytest.raises(error):
-        sp.ddens_func(spin=spin, index=index, log=log)
+        sp.d_dens_func(spin=spin, index=index, log=log)
 
 
-def test_ddens_func():
+def test_d_dens_func():
     # Make a spline of the density derivative and evaluate it at the grid points.
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
     points = np.linspace(0, 5, 20)
 
     # A) Check that the sum of the interpolated density derivatives for the alpha and
     # beta spin orbitals is consistent with the total density derivative.
-    spline_d_dens_ab = sp.ddens_func(spin="ab")
-    spline_d_dens_up = sp.ddens_func(spin="a")
-    spline_d_dens_dn = sp.ddens_func(spin="b")
+    spline_d_dens_ab = sp.d_dens_func(spin="t")
+    spline_d_dens_up = sp.d_dens_func(spin="a")
+    spline_d_dens_dn = sp.d_dens_func(spin="b")
 
-    expected_ddens = spline_d_dens_ab(points)
-    test_ddens = spline_d_dens_up(points) + spline_d_dens_dn(points)
-    assert np.allclose(test_ddens, expected_ddens, rtol=1e-6)
+    expected_d_dens = spline_d_dens_ab(points)
+    test_d_dens = spline_d_dens_up(points) + spline_d_dens_dn(points)
+    assert np.allclose(test_d_dens, expected_d_dens, rtol=1e-6)
 
     # B) Check the interpolated derivative of the spin density from the 2nd and 3rd
     # molecular orbitals.
-    d_dens_m_12 = np.sum(sp.mo_d_dens_a[[1, 2]], axis=0) - np.sum(sp.mo_d_dens_b[[1, 2]], axis=0)
-    spline_ddens_m = CubicSpline(sp.rs, d_dens_m_12)
-    spline_d_dens_m = sp.ddens_func(spin="m", index=[1, 2])
+    # 1. get the density derivative values in the right shape (nbasis, ngrid)
+    mo_d_dens_data_a = sp._data.mo_d_dens_a.reshape(sp.ao.nbasis, -1)
+    mo_d_dens_data_b = sp._data.mo_d_dens_b.reshape(sp.ao.nbasis, -1)
+    # 2. get the density derivative values for the 2nd and 3rd molecular orbitals and sum them
+    mo_d_dens_a_12 = mo_d_dens_data_a[[2, 3]].sum(axis=0)
+    mo_d_dens_b_12 = mo_d_dens_data_b[[2, 3]].sum(axis=0)
+    # 3. find difference in density derivative values between alpha and beta spin orbitals
+    d_dens_m_12 = mo_d_dens_a_12 - mo_d_dens_b_12
+    # 4. create a spline of the density derivative values using CubicSpline and d_dens_func
+    spline_d_dens_m_ref = CubicSpline(sp._data.rs, d_dens_m_12)
+    spline_d_dens_m = sp.d_dens_func(spin="m", index=[1, 2])
+    # reference spline at the grid points and compare with d_dens_func values at the grid points
+    expected_d_dens = spline_d_dens_m_ref(points)
+    test_d_dens = spline_d_dens_m(points)
+    assert np.allclose(test_d_dens, expected_d_dens, rtol=1e-6)
 
-    expected_ddens = spline_ddens_m(points)
-    test_ddens = spline_d_dens_m(points)
-    assert np.allclose(test_ddens, expected_ddens, rtol=1e-6)
 
-
-def test_d2dens_func():
+def test_dd_dens_func():
     # Make a spline of the second derivative of density and evaluate it at the grid points.
     sp = load("Be", 0, 1, dataset="gaussian", datapath=TEST_DATAPATH)
     points = np.linspace(0, 5, 20)
 
     # A) Check that the sum of the interpolated order 2 density derivatives for the alpha and
     # beta spin orbitals is consistent with the total second derivative of density.
-    spline_dd_dens_ab = sp.d2dens_func(spin="ab")
-    spline_dd_dens_up = sp.d2dens_func(spin="a")
-    spline_dd_dens_dn = sp.d2dens_func(spin="b")
+    spline_dd_dens_ab = sp.dd_dens_func(spin="t")
+    spline_dd_dens_up = sp.dd_dens_func(spin="a")
+    spline_dd_dens_dn = sp.dd_dens_func(spin="b")
 
     expected_d2dens = spline_dd_dens_ab(points)
     test_d2dens = spline_dd_dens_up(points) + spline_dd_dens_dn(points)
@@ -100,10 +108,19 @@ def test_d2dens_func():
 
     # B) Check the interpolated order 2 derivative of the spin density from the 2nd and 3rd
     # molecular orbitals.
-    d2dens_m_12 = np.sum(sp.mo_d_dens_a[[1, 2]], axis=0) - np.sum(sp.mo_d_dens_b[[1, 2]], axis=0)
-    spline_d2dens_m = CubicSpline(sp.rs, d2dens_m_12)
-    spline_dd_dens_m = sp.d2dens_func(spin="m", index=[1, 2])
+    # 1. get the density 2 derivative values in the right shape (nbasis, ngrid)
+    mo_dd_dens_data_a = sp._data.mo_dd_dens_a.reshape(sp.ao.nbasis, -1)
+    mo_dd_dens_data_b = sp._data.mo_dd_dens_b.reshape(sp.ao.nbasis, -1)
+    # 2. get the density 2 derivative values for the 2nd and 3rd molecular orbitals and sum them
+    mo_dd_dens_a_12 = mo_dd_dens_data_a[[2, 3]].sum(axis=0)
+    mo_dd_dens_b_12 = mo_dd_dens_data_b[[2, 3]].sum(axis=0)
+    # 3. find difference in density 2 derivative values between alpha and beta spin orbitals
+    dd_dens_m_12 = mo_dd_dens_a_12 - mo_dd_dens_b_12
+    # 4. create a spline of the density derivative values using CubicSpline and d_dens_func
+    spline_dd_dens_m_ref = CubicSpline(sp._data.rs, dd_dens_m_12)
+    spline_dd_dens_m = sp.d_dens_func(spin="m", index=[1, 2])
+    # reference spline at the grid points and compare with d_dens_func values at the grid points
+    expected_dd_dens = spline_dd_dens_m_ref(points)
+    test_dd_dens = spline_dd_dens_m(points)
 
-    expected_d2dens = spline_d2dens_m(points)
-    test_d2dens = spline_dd_dens_m(points)
-    assert np.allclose(test_d2dens, expected_d2dens, rtol=1e-6)
+    assert np.allclose(test_dd_dens, expected_dd_dens, rtol=1e-6)

@@ -92,7 +92,7 @@ def spline(method):
     r"""Expose a SpeciesData field via the ``DensitySpline`` interface."""
     name = _remove_suffix(method.__name__, "_func")
 
-    def wrapper(self, spin="t", index=None):
+    def wrapper(self, spin="t", index=None, log=False):
         rf"""{method.__doc__}"""
         # Validate `spin` variable
         if spin not in ("t", "a", "b", "m"):
@@ -124,13 +124,14 @@ def spline(method):
             arr = getattr(self._data, name_a) - getattr(self._data, name_b)
             arr = arr.reshape(self.ao.nbasis, -1)
         # Select specific orbitals
-        arr = arr[index]
+        if index is not None:
+            arr = arr[index]
         # Colapse the orbital dimension to get total density values
         if arr.ndim > 1:
             arr = arr.sum(axis=0)  # (N,)
 
         # Return cubic spline
-        return DensitySpline(self._data.rs, arr)
+        return DensitySpline(self._data.rs, arr, log=log)
 
     return wrapper
 
@@ -329,18 +330,28 @@ class Species:
         self._spinpol = spinpol
 
     @scalar
+    def elem(self):
+        r"""Element symbol."""
+        pass
+
+    @scalar
+    def obasis_name(self):
+        r"""Basis name."""
+        pass
+
+    @scalar
     def atnum(self):
-        r"""Atomic mass."""
+        r"""Atomic number."""
         pass
 
     @scalar
     def nelec(self):
-        r"""Atomic mass."""
+        r"""Number of electrons."""
         pass
 
     @scalar
     def atmass(self):
-        r"""Atomic mass."""
+        r"""Atomic mass in atomic units."""
         pass
 
     @scalar
@@ -366,6 +377,8 @@ class Species:
     @property
     def dispersion_c6(self):
         r"""Isolated atom C6 dispersion coefficients."""
+        if self._data.dispersion is None:
+            return None
         return self._data.dispersion["C6"]
 
     @scalar
@@ -400,7 +413,7 @@ class Species:
 
         Parameters
         ----------
-        spin : str, default="ab"
+        spin : str, default="t"
             Type of occupied spin orbitals.
             Can be either "t" (for alpha + beta), "a" (for alpha),
             "b" (for beta), or "m" (for alpha - beta).
@@ -438,7 +451,8 @@ class Species:
             beta), "ab" (for alpha + beta), and, "m" (for alpha - beta), by default 'ab'
         index : sequence of int, optional
             Sequence of integers representing the spin orbitals which are indexed
-            from 1 to the number basis functions. If ``None``, all orbitals of the given spin(s) are included
+            from 1 to the number basis functions. If ``None``, all orbitals of the given
+            spin(s) are included
         log : bool, optional
             Whether the logarithm of the density property is used for interpolation
 
@@ -458,7 +472,7 @@ class Species:
 
         Parameters
         ----------
-        spin : str, default="ab"
+        spin : str, default="t"
             Type of occupied spin orbitals.
             Can be either "t" (for alpha + beta), "a" (for alpha),
             "b" (for beta), or "m" (for alpha - beta).
@@ -486,7 +500,7 @@ class Species:
 
         Parameters
         ----------
-        spin : str, default="ab"
+        spin : str, default="t"
             Type of occupied spin orbitals.
             Can be either "t" (for alpha + beta), "a" (for alpha),
             "b" (for beta), or "m" (for alpha - beta).
@@ -554,7 +568,6 @@ def load(
         dataset=dataset,
         datapath=datapath,
     )
-    print(fn)
     if Ellipsis in (elem, charge, mult, nexc):
         obj = []
         for file in glob(fn):
