@@ -48,6 +48,7 @@ dependencies = [
     "msgpack",
     "msgpack-numpy",
     "h5py",
+    "importlib_resources",
 ]
 dynamic = ["version"]
 
@@ -69,7 +70,6 @@ test_extra = [
     "pytest-md",
     "pytest-emoji",
     "pytest-cov",
-    "importlib_resources",
 ]
 doc = [
     "ipython",
