@@ -180,6 +180,23 @@ def test_slater_h_anion_density_splines():
     assert np.allclose(spline_dens(grid, deriv=2), d2dens, atol=1e-2)
 
 
+@pytest.mark.parametrize(
+    "atom, charge, mult", [("H", 0, 2), ("Be", 0, 1), ("Cl", 0, 2), ("Ne", 0, 1)]
+)
+def test_slater_density_gradient_spin(atom, charge, mult):
+    # load atomic and density data and get density derivative evaluated on a radial grid
+    sp = load(atom, charge, mult, dataset="slater", datapath=TEST_DATAPATH)
+    grid = np.arange(1e-5, 15.0, 0.05)
+    spline = sp.d_dens_func(spin="t")
+    splinea = sp.d_dens_func(spin="a")
+    splineb = sp.d_dens_func(spin="b")
+    gradient_t = spline(grid)
+    gradient_ab = splinea(grid) + splineb(grid)
+
+    # check interpolated density gradient values compared to reference values
+    assert np.allclose(gradient_t, gradient_ab, rtol=1e-3)
+
+
 def test_slater_missing_attributes():
     # load He data
     sp = load("He", 0, 1, dataset="slater", datapath=TEST_DATAPATH)
