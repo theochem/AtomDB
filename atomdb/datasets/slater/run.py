@@ -351,7 +351,7 @@ class AtomicDensity:
 
         factor = self.phi_matrix(points) * self.phi_matrix(points, deriv=1)
         orb_derivative = 2.0 * factor * self.orbitals_occupation.ravel() / (4 * np.pi)
-        return orb_derivative
+        return orb_derivative.T
 
     def eval_orbs_radial_dd_density(self, points):
         r"""Return each orbital density evaluated at a set of points
