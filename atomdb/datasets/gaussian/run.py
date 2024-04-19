@@ -423,7 +423,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Get information about the element
     atom = Element(elem)
-    atmass = atom.mass["stb"]
+    atmass = atom.mass
     cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
         None,
     ] * 5
