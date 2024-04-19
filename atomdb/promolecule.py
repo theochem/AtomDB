@@ -207,7 +207,8 @@ class Promolecule:
         r"""Compute the mass of the promolecule."""
 
         def f(atom):
-            return atom.atmass
+            # FIXME: If mass of most abundant species is wanted change for 'nist'
+            return atom.atmass['stb']
 
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
