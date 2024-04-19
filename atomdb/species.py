@@ -351,7 +351,15 @@ class Species:
 
     @scalar
     def atmass(self):
-        r"""Atomic mass in atomic units."""
+        r"""Atomic mass in atomic units.
+        
+        Returns
+        -------
+        mass : dict
+            Two options are available: the isotopically averaged mass 'stb', and the mass of the most
+            common isotope 'nist'.
+
+        """
         pass
 
     @scalar
