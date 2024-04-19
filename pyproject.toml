@@ -45,10 +45,10 @@ classifiers = [
 dependencies = [
     "numpy>=1.16",
     "scipy>=1.4",
-    "msgpack",
-    "msgpack-numpy",
-    "h5py",
-    "importlib_resources",
+    "msgpack>=1.0.0",
+    "msgpack-numpy>=0.4.8",
+    "h5py>=3.6.0",
+    "importlib_resources>=3.0.0",
     "pooch==1.8.1",
 ]
 dynamic = ["version"]
