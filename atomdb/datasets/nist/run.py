@@ -112,12 +112,11 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     if not mult == MULTIPLICITIES[(atnum, charge)]:
         raise ValueError(f"{elem} with charge {charge} and multiplicity {mult} not available.")
 
-    print(f"Generating {elem} with charge {charge} and multiplicity {mult}.")
     #
     # Element properties
     #
     atom = Element(elem)
-    atmass = atom.mass["stb"]
+    atmass = atom.mass
     cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
         None,
     ] * 5
@@ -126,7 +125,6 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
         polarizability = atom.pold
         dispersion = {"C6": atom.c6}
-    # print(atmass)
 
     #
     # Get the ground state energy from database_beta_1.3.0.h5.
