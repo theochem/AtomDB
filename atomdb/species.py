@@ -352,7 +352,7 @@ class Species:
     @scalar
     def atmass(self):
         r"""Atomic mass in atomic units.
-        
+
         Returns
         -------
         mass : dict
