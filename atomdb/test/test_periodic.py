@@ -60,14 +60,11 @@ def test_get_attributes():
         "period": 1,
         "cov_radius": {
             "cordero": 0.31 * ANGSTROM,
-            # "bragg": np.nan,
             "slater": 0.25 * ANGSTROM,
         },
         "vdw_radius": {
             "bondi": 1.2 * ANGSTROM,
-            # "truhlar": np.nan,
             "rt": 1.1 * ANGSTROM,
-            # "batsanov": np.nan,
             "dreiding": 3.195 * ANGSTROM / 2,
             "uff": 2.886 * ANGSTROM / 2,
             "mm3": 1.62 * ANGSTROM,
@@ -76,7 +73,7 @@ def test_get_attributes():
         "eneg": {"pauling": 2.2},
         "pold": {"crc": 0.666793 * ANGSTROM**3, "chu": 4.5},
         "c6": {"chu": 6.499026705},
-        "mass": {"stb": 1.007975 * AMU},
+        "mass": {"stb": 1.007975 * AMU, "nist": 1.007825032 * AMU},
     }
 
     # Carbon data
@@ -93,7 +90,6 @@ def test_get_attributes():
         },
         "vdw_radius": {
             "bondi": 1.7 * ANGSTROM,
-            # "truhlar": np.nan,
             "rt": 1.77 * ANGSTROM,
             "batsanov": 1.7 * ANGSTROM,
             "dreiding": 3.8983 * ANGSTROM / 2,
@@ -104,7 +100,7 @@ def test_get_attributes():
         "eneg": {"pauling": 2.55},
         "pold": {"crc": 1.76 * ANGSTROM**3, "chu": 12.0},
         "c6": {"chu": 46.6},
-        "mass": {"stb": 12.0106 * AMU},
+        "mass": {"stb": 12.0106 * AMU, "nist": 12.000 * AMU},
     }
 
     # for each element, check if the attributes are as expected
