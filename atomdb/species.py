@@ -37,6 +37,7 @@ from numpy import ndarray
 
 import pooch
 import re
+import requests
 
 from scipy.interpolate import CubicSpline
 
@@ -620,35 +621,50 @@ def datafile(
     mult = "[^_]" if mult is Ellipsis else f"{mult:03d}"
     nexc = "[^_]" if nexc is Ellipsis else f"{nexc:03d}"
 
+    # Wildcard search for multiple species, use repodata.txt for matching
     if "[^_]" in (elem, charge, mult, nexc):
-        # Wildcard search for multiple species, use repodata.txt for matching
-        repodata = pooch.retrieve(
-            url=f"{remotepath}{dataset.lower()}/db/repodata.txt",
-            known_hash=None,
-            path=path.join(datapath, dataset.lower(), "db"),
-            fname=f"repo_data.txt",
-        )
+        # try to retrieve the repodata file from the remote URL
+        try:
+            repodata = pooch.retrieve(
+                url=f"{remotepath}{dataset.lower()}/db/repodata.txt",
+                known_hash=None,
+                path=path.join(datapath, dataset.lower(), "db"),
+                fname=f"repo_data.txt",
+            )
+        # if the file is not found, use the local repodata file
+        except requests.exceptions.HTTPError:
+            repodata = path.join(datapath, dataset.lower(), "db", "repo_data.txt")
 
         with open(repodata, "r") as f:
             data = f.read()
             files = re.findall(rf"\b{elem}+_{charge}+_{mult}+_{nexc}\.msg\b", data)
             species_list = []
             for file in files:
-                element = pooch.retrieve(
-                    url=f"{remotepath}{dataset.lower()}/db/{file}",
-                    known_hash=None,
-                    path=path.join(datapath, dataset.lower(), "db"),
-                    fname=f"{file}",
-                )
+                # try to retrieve the file from the remote URL
+                try:
+                    element = pooch.retrieve(
+                        url=f"{remotepath}{dataset.lower()}/db/{file}",
+                        known_hash=None,
+                        path=path.join(datapath, dataset.lower(), "db"),
+                        fname=f"{file}",
+                    )
+                # if the file is not found, use the local file
+                except requests.exceptions.HTTPError:
+                    element = path.join(datapath, dataset.lower(), "db", file)
                 species_list.append(element)
             return species_list
-
-    return pooch.retrieve(
-        url=f"{remotepath}{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg",
-        known_hash=None,
-        path=path.join(datapath, dataset.lower(), "db"),
-        fname=f"{elem}_{charge}_{mult}_{nexc}.msg",
-    )
+    # try to retrieve the file from the remote URL
+    try:
+        species = pooch.retrieve(
+            url=f"{remotepath}{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg",
+            known_hash=None,
+            path=path.join(datapath, dataset.lower(), "db"),
+            fname=f"{elem}_{charge}_{mult}_{nexc}.msg",
+        )
+    # if the file is not found, use the local file
+    except requests.exceptions.HTTPError:
+        species = path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
+    return species
 
 
 def raw_datafile(
@@ -695,9 +711,16 @@ def raw_datafile(
     mult = "*" if mult is Ellipsis else f"{mult:03d}"
     nexc = "*" if nexc is Ellipsis else f"{nexc:03d}"
 
-    return pooch.retrieve(
-        url=f"{remotepath}{dataset.lower()}/raw/{elem}_{charge}_{mult}_{nexc}{suffix}",
-        known_hash=None,
-        path=path.join(datapath, dataset.lower(), "raw"),
-        fname=f"{elem}_{charge}_{mult}_{nexc}{suffix}",
-    )
+    # try to retrieve the file from the remote URL
+    try:
+        raw_file = pooch.retrieve(
+            url=f"{remotepath}{dataset.lower()}/raw/{elem}_{charge}_{mult}_{nexc}{suffix}",
+            known_hash=None,
+            path=path.join(datapath, dataset.lower(), "raw"),
+            fname=f"{elem}_{charge}_{mult}_{nexc}{suffix}",
+        )
+    # if the file is not found, use the local file
+    except requests.exceptions.HTTPError:
+        raw_file = path.join(datapath, dataset.lower(), "raw", f"{elem}_{charge}_{mult}_{nexc}{suffix}")
+
+    return raw_file
