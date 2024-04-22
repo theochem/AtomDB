@@ -49,6 +49,7 @@ dependencies = [
     "msgpack-numpy",
     "h5py",
     "importlib_resources",
+    "pooch==1.8.1",
 ]
 dynamic = ["version"]
 
