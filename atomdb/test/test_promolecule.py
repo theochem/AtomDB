@@ -164,6 +164,7 @@ def test_make_promolecule(case):
         units=units,
         dataset=dataset,
         datapath=TEST_DATAPATH,
+        remotepath=None,
     )
 
     # Check that coefficients add up to (# centers)
