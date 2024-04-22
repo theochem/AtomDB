@@ -521,7 +521,14 @@ def make_promolecule(
         #
         if isinstance(charge, Integral) and isinstance(mult, Integral):
             try:
-                specie = load(atom, charge, abs(mult), dataset=dataset, datapath=datapath, remotepath=remotepath)
+                specie = load(
+                    atom,
+                    charge,
+                    abs(mult),
+                    dataset=dataset,
+                    datapath=datapath,
+                    remotepath=remotepath,
+                )
                 if mult < 0:
                     specie.spinpol = -1
                 promol._extend((specie,), (coord,), (1.0,))
