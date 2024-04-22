@@ -24,7 +24,7 @@ from warnings import warn
 import numpy as np
 from scipy.optimize import linprog
 
-from atomdb.utils import DEFAULT_DATAPATH, DEFAULT_DATASET, MULTIPLICITIES
+from atomdb.utils import DEFAULT_DATAPATH, DEFAULT_REMOTE, DEFAULT_DATASET, MULTIPLICITIES
 from atomdb.periodic import element_number, element_symbol
 from atomdb.species import load
 
@@ -465,6 +465,7 @@ def make_promolecule(
     units=None,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
+    remotepath=DEFAULT_REMOTE,
 ):
     r"""
     Construct a Promolecule instance from a set of atoms and their coordinates,
@@ -486,6 +487,8 @@ def make_promolecule(
         Data set from which to load atomic species.
     datapath: str, default=DEFAULT_DATAPATH
         System path where the desired data set is located.
+    remotepath: str, default=DEFAULT_REMOTE
+        Remote path where the desired data set is located.
 
     """
     # Check coordinate units
@@ -518,7 +521,7 @@ def make_promolecule(
         #
         if isinstance(charge, Integral) and isinstance(mult, Integral):
             try:
-                specie = load(atom, charge, abs(mult), dataset=dataset, datapath=datapath)
+                specie = load(atom, charge, abs(mult), dataset=dataset, datapath=datapath, remotepath=remotepath)
                 if mult < 0:
                     specie.spinpol = -1
                 promol._extend((specie,), (coord,), (1.0,))
