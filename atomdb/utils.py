@@ -29,6 +29,7 @@ from scipy import constants
 __all__ = [
     "DEFAULT_DATASET",
     "DEFAULT_DATAPATH",
+    "DEFAULT_REMOTE",
     "MODULE_DATAPATH",
     "CONVERTOR_TYPES",
     "MULTIPLICITIES",
@@ -44,8 +45,10 @@ DEFAULT_DATAPATH = environ.get(
     "ATOMDB_DATAPATH",
     path.join(path.dirname(__file__), "datasets"),
 )
-r"""The path for AtomDB datasets."""
+r"""The path for AtomDB local cache."""
 
+DEFAULT_REMOTE = "https://raw.githubusercontent.com/theochem/AtomDBdata/main/"
+r"""Default remote URL for AtomDB datasets."""
 
 MODULE_DATAPATH = path.join(path.dirname(__file__), "data")
 r"""The path for AtomDB data files."""
