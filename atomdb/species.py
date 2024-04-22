@@ -35,9 +35,13 @@ import numpy as np
 
 from numpy import ndarray
 
+import pooch
+import re
+import requests
+
 from scipy.interpolate import CubicSpline
 
-from atomdb.utils import DEFAULT_DATASET, DEFAULT_DATAPATH
+from atomdb.utils import DEFAULT_DATASET, DEFAULT_DATAPATH, DEFAULT_REMOTE
 from atomdb.periodic import element_symbol
 
 
@@ -566,6 +570,7 @@ def load(
     nexc=0,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
+    remotepath=DEFAULT_REMOTE,
 ):
     r"""Load one or many atomic or ionic species from the AtomDB database."""
     fn = datafile(
@@ -575,10 +580,12 @@ def load(
         nexc=nexc,
         dataset=dataset,
         datapath=datapath,
+        remotepath=remotepath,
     )
     if Ellipsis in (elem, charge, mult, nexc):
         obj = []
-        for file in glob(fn):
+
+        for file in fn:
             with open(file, "rb") as f:
                 obj.append(Species(dataset, unpackb(f.read(), object_hook=decode)))
     else:
@@ -594,13 +601,79 @@ def datafile(
     nexc=0,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
+    remotepath=DEFAULT_REMOTE,
 ):
-    r"""Return the name of the database file for a species."""
-    elem = "*" if elem is Ellipsis else element_symbol(elem)
-    charge = "*" if charge is Ellipsis else f"{charge:03d}"
-    mult = "*" if mult is Ellipsis else f"{mult:03d}"
-    nexc = "*" if nexc is Ellipsis else f"{nexc:03d}"
-    return path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
+    r"""Return the name of the database file for a species.
+
+    This function returns the local path to the database file of a species in the AtomDB cache. If
+    the file is not found, it is downloaded from the remote URL.
+
+    Parameters
+    ----------
+    elem : str | Ellipsis
+        Element symbol or Ellipsis for wildcard.
+    charge : int | Ellipsis
+        Charge or Ellipsis for wildcard.
+    mult : int | Ellipsis
+        Multiplicity or Ellipsis for wildcard.
+    nexc : int, optional
+        Excitation level, by default 0.
+    dataset : str, optional
+        Dataset name, by default DEFAULT_DATASET.
+    datapath : str, optional
+        Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
+    remotepath : str, optional
+        Remote URL for AtomDB datasets, by default DEFAULT_REMOTE variable value
+    """
+    elem = "[^_]" if elem is Ellipsis else element_symbol(elem)
+    charge = "[^_]" if charge is Ellipsis else f"{charge:03d}"
+    mult = "[^_]" if mult is Ellipsis else f"{mult:03d}"
+    nexc = "[^_]" if nexc is Ellipsis else f"{nexc:03d}"
+
+    # Wildcard search for multiple species, use repodata.txt for matching
+    if "[^_]" in (elem, charge, mult, nexc):
+        # try to retrieve the repodata file from the remote URL
+        try:
+            repodata = pooch.retrieve(
+                url=f"{remotepath}{dataset.lower()}/db/repodata.txt",
+                known_hash=None,
+                path=path.join(datapath, dataset.lower(), "db"),
+                fname=f"repo_data.txt",
+            )
+        # if the file is not found or remote was not valid, use the local repodata file
+        except (requests.exceptions.HTTPError, ValueError):
+            repodata = path.join(datapath, dataset.lower(), "db", "repo_data.txt")
+
+        with open(repodata, "r") as f:
+            data = f.read()
+            files = re.findall(rf"\b{elem}+_{charge}+_{mult}+_{nexc}\.msg\b", data)
+            species_list = []
+            for file in files:
+                # try to retrieve the file from the remote URL
+                try:
+                    element = pooch.retrieve(
+                        url=f"{remotepath}{dataset.lower()}/db/{file}",
+                        known_hash=None,
+                        path=path.join(datapath, dataset.lower(), "db"),
+                        fname=f"{file}",
+                    )
+                # if the file is not found, use the local file
+                except (requests.exceptions.HTTPError, ValueError):
+                    element = path.join(datapath, dataset.lower(), "db", file)
+                species_list.append(element)
+            return species_list
+    # try to retrieve the file from the remote URL
+    try:
+        species = pooch.retrieve(
+            url=f"{remotepath}{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg",
+            known_hash=None,
+            path=path.join(datapath, dataset.lower(), "db"),
+            fname=f"{elem}_{charge}_{mult}_{nexc}.msg",
+        )
+    # if the file is not found, use the local file
+    except (requests.exceptions.HTTPError, ValueError):
+        species = path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
+    return species
 
 
 def raw_datafile(
@@ -611,10 +684,54 @@ def raw_datafile(
     nexc=0,
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
+    remotepath=DEFAULT_REMOTE,
 ):
-    r"""Return the name of the database file for a species."""
+    r"""Returns the local path to the raw data file of a species
+
+    This function retrieves the raw data file of a species from the AtomDB cache if present. If the
+    file is not found, it is downloaded from the remote URL.
+
+    Parameters
+    ----------
+    suffix : str
+        File extension of the raw data file.
+    elem : str
+        Element symbol.
+    charge : int
+        Charge.
+    mult : int
+        Multiplicity.
+    nexc : int, optional
+        Excitation level, by default 0.
+    dataset : str, optional
+        Dataset name, by default DEFAULT_DATASET.
+    datapath : str, optional
+        Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
+    remotepath : str, optional
+        Remote URL for AtomDB datasets, by default DEFAULT_REMOTE variable value.
+
+    Returns
+    -------
+    str
+        Path to the raw data file.
+    """
     elem = "*" if elem is Ellipsis else element_symbol(elem)
     charge = "*" if charge is Ellipsis else f"{charge:03d}"
     mult = "*" if mult is Ellipsis else f"{mult:03d}"
     nexc = "*" if nexc is Ellipsis else f"{nexc:03d}"
-    return path.join(datapath, dataset.lower(), "raw", f"{elem}_{charge}_{mult}_{nexc}{suffix}")
+
+    # try to retrieve the file from the remote URL
+    try:
+        raw_file = pooch.retrieve(
+            url=f"{remotepath}{dataset.lower()}/raw/{elem}_{charge}_{mult}_{nexc}{suffix}",
+            known_hash=None,
+            path=path.join(datapath, dataset.lower(), "raw"),
+            fname=f"{elem}_{charge}_{mult}_{nexc}{suffix}",
+        )
+    # if the file is not found, use the local file
+    except (requests.exceptions.HTTPError, ValueError):
+        raw_file = path.join(
+            datapath, dataset.lower(), "raw", f"{elem}_{charge}_{mult}_{nexc}{suffix}"
+        )
+
+    return raw_file
