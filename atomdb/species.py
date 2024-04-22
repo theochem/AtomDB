@@ -576,7 +576,8 @@ def load(
     )
     if Ellipsis in (elem, charge, mult, nexc):
         obj = []
-        for file in glob(fn):
+
+        for file in fn:
             with open(file, "rb") as f:
                 obj.append(Species(dataset, unpackb(f.read(), object_hook=decode)))
     else:
@@ -631,8 +632,8 @@ def datafile(
                 path=path.join(datapath, dataset.lower(), "db"),
                 fname=f"repo_data.txt",
             )
-        # if the file is not found, use the local repodata file
-        except requests.exceptions.HTTPError:
+        # if the file is not found or remote was not valid, use the local repodata file
+        except (requests.exceptions.HTTPError, ValueError):
             repodata = path.join(datapath, dataset.lower(), "db", "repo_data.txt")
 
         with open(repodata, "r") as f:
@@ -649,7 +650,7 @@ def datafile(
                         fname=f"{file}",
                     )
                 # if the file is not found, use the local file
-                except requests.exceptions.HTTPError:
+                except (requests.exceptions.HTTPError, ValueError):
                     element = path.join(datapath, dataset.lower(), "db", file)
                 species_list.append(element)
             return species_list
@@ -662,7 +663,7 @@ def datafile(
             fname=f"{elem}_{charge}_{mult}_{nexc}.msg",
         )
     # if the file is not found, use the local file
-    except requests.exceptions.HTTPError:
+    except (requests.exceptions.HTTPError, ValueError):
         species = path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
     return species
 
@@ -720,7 +721,9 @@ def raw_datafile(
             fname=f"{elem}_{charge}_{mult}_{nexc}{suffix}",
         )
     # if the file is not found, use the local file
-    except requests.exceptions.HTTPError:
-        raw_file = path.join(datapath, dataset.lower(), "raw", f"{elem}_{charge}_{mult}_{nexc}{suffix}")
+    except (requests.exceptions.HTTPError, ValueError):
+        raw_file = path.join(
+            datapath, dataset.lower(), "raw", f"{elem}_{charge}_{mult}_{nexc}{suffix}"
+        )
 
     return raw_file
