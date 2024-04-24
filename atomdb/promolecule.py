@@ -78,16 +78,34 @@ class Promolecule:
     ked(points, spin='ab', log=False)
         Compute the kinetic energy density of the promolecule at the desired
         points.
+    nelec()
+        Compute the electron number of the promolecule.
+    charge()
+        Compute the charge of the promolecule.
     energy()
         Compute the energy of the promolecule.
     mass()
         Compute the mass of the promolecule.
+    nspin(p=1)
+        Compute the spin number of the promolecule.
+    mult(p=1)
+        Compute the multiplicity of the promolecule.
     ip(p=1)
         Compute the ionization potential of the promolecule.
     mu(p=1)
         Compute the chemical potential of the promolecule.
     eta(p=1)
         Compute the chemical hardness of the promolecule.
+    gradient(points, spin='ab', log=False)
+        Compute the electron density gradient of the promolecule at the
+        desired points.
+    hessian(points, spin='ab', log=False)
+        Compute the promolecule's electron density Hessian at the
+        desired points.
+    laplacian(points, spin='ab', log=False)
+        Compute the promolecule's electron density Laplacian at the
+        desired points.
+
 
     """
 
@@ -112,8 +130,6 @@ class Promolecule:
             Coordinates of each species component of the promolecule.
         coeffs: np.ndarray((N,), dtype=float)
             Coefficients of each species component of the promolecule.
-        mult: (int|float)
-            Multiplicity on the center.
 
         """
         self.atoms.extend(atoms)
@@ -134,6 +150,11 @@ class Promolecule:
         log: bool, default=False
             Whether to compute the log of the density instead of the density.
             May be slightly more accurate.
+
+        Returns
+        -------
+        density: np.ndarray((N,), dtype=float)
+            Density evaluated at N points.
 
         """
 
@@ -156,13 +177,18 @@ class Promolecule:
         points.
 
         points: np.ndarray((N, 3), dtype=float)
-            Points at which to compute the density.
+            Points at which to compute the kinetic energy density.
         spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density.
             May be slightly more accurate.
+
+        Returns
+        -------
+        ked: np.ndarray((N,), dtype=float)
+            Kinetic energy density evaluated at N points.
 
         """
 
@@ -180,7 +206,14 @@ class Promolecule:
         )
 
     def nelec(self):
-        r"""Compute the electron number of the promolecule."""
+        r"""Compute the electron number of the promolecule.
+
+        Returns
+        -------
+        nelec: float
+            Number of electrons in the promolecule.
+
+        """
 
         def f(atom):
             return atom.nelec
@@ -188,7 +221,14 @@ class Promolecule:
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
     def charge(self):
-        r"""Compute the charge of the promolecule."""
+        r"""Compute the charge of the promolecule.
+
+        Returns
+        -------
+        charge: float
+            Charge of the promolecule.
+
+        """
 
         def f(atom):
             return atom.charge
@@ -196,7 +236,14 @@ class Promolecule:
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
     def energy(self):
-        r"""Compute the energy of the promolecule."""
+        r"""Compute the energy of the promolecule.
+
+        Returns
+        -------
+        energy: float
+            Energy of the promolecule.
+
+        """
 
         def f(atom):
             return atom.energy
@@ -204,7 +251,14 @@ class Promolecule:
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
     def mass(self):
-        r"""Compute the mass of the promolecule."""
+        r"""Compute the mass of the promolecule.
+
+        Returns
+        -------
+        mass: float
+            Mass of the promolecule.
+
+        """
 
         def f(atom):
             # FIXME: If mass of most abundant species is wanted change for 'nist'
@@ -213,7 +267,19 @@ class Promolecule:
         return _extensive_global_property(self.atoms, self.coeffs, f)
 
     def nspin(self, p=1):
-        r"""Compute the spin number of the promolecule."""
+        r"""Compute the spin number of the promolecule.
+
+        Parameters
+        ----------
+        p: int, default=1 (linear mean)
+            Type of mean used in the computation.
+
+        Returns
+        -------
+        nspin: float
+            Spin number of the promolecule.
+
+        """
 
         def f(atom):
             return atom.nspin
@@ -221,7 +287,19 @@ class Promolecule:
         return _intensive_property(self.atoms, self.coeffs, f, p=1)
 
     def mult(self, p=1):
-        r"""Compute the multiplicity of the promolecule."""
+        r"""Compute the multiplicity of the promolecule.
+
+        Parameters
+        ----------
+        p: int, default=1 (linear mean)
+            Type of mean used in the computation.
+
+        Returns
+        -------
+        mult: float
+            Multiplicity of the promolecule.
+
+        """
         return abs(self.nspin(p=1)) + 1
 
     def ip(self, p=1):
@@ -230,8 +308,13 @@ class Promolecule:
 
         Parameters
         ----------
-        p: int, default=1
-            Value of ``p`` for the p-mean computation.
+        p: int, default=1 (linear mean)
+            Type of mean used in the computation.
+
+        Returns
+        -------
+        ip: float
+            Ionization potential of the promolecule.
 
         """
 
@@ -246,8 +329,13 @@ class Promolecule:
 
         Parameters
         ----------
-        p: int, default=1
-            Value of ``p`` for the p-mean computation.
+        p: int, default=1 (linear mean)
+            Type of mean used in the computation.
+
+        Returns
+        -------
+        mu: float
+            Chemical potential of the promolecule.
 
         """
 
@@ -262,8 +350,13 @@ class Promolecule:
 
         Parameters
         ----------
-        p: int, default=1
-            Value of ``p`` for the p-mean computation.
+        p: int, default=1 (linear mean)
+            Type of mean used in the computation.
+
+        Returns
+        -------
+        eta: float
+            Chemical hardness of the promolecule.
 
         """
 
@@ -296,7 +389,7 @@ class Promolecule:
         Parameters
         ----------
         points: np.ndarray((N, 3), dtype=float)
-            Points at which to compute the density.
+            Points at which to compute the electron density gradient.
         spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
@@ -307,6 +400,7 @@ class Promolecule:
         Returns
         -------
         gradient: np.ndarray((N, 3), dtype=float)
+            Electron density gradient of the promolecule evaluated at N points.
 
         """
 
@@ -349,13 +443,18 @@ class Promolecule:
         Parameters
         ----------
         points: np.ndarray((N, 3), dtype=float)
-            Points at which to compute the density.
+            Points at which to compute the electron density Hessian.
         spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density.
             May be slightly more accurate.
+
+        Returns
+        -------
+        hess: np.ndarray((N, 3, 3), dtype=float)
+            Electron density Hessian of the promolecule evaluated at N points.
 
         """
 
@@ -417,13 +516,18 @@ class Promolecule:
         Parameters
         ----------
         points: np.ndarray((N, 3), dtype=float)
-            Points at which to compute the density.
+            Points at which to compute the electron density Laplacian.
         spin: ('t' | 'a' | 'b' | 'm'), default='t'
             Type of density to compute; either total, alpha-spin, beta-spin,
             or magnetization density.
         log: bool, default=False
             Whether to compute the log of the density instead of the density.
             May be slightly more accurate.
+
+        Returns
+        -------
+        laplacian: np.ndarray((N,), dtype=float)
+            Electron density Laplacian of the promolecule evaluated at N points.
 
         """
 
@@ -490,6 +594,11 @@ def make_promolecule(
         System path where the desired data set is located.
     remotepath: str, default=DEFAULT_REMOTE
         Remote path where the desired data set is located.
+
+    Returns
+    -------
+    promol: Promolecule
+        Promolecule instance.
 
     """
     # Check coordinate units
@@ -585,13 +694,50 @@ def make_promolecule(
 
 
 def _extensive_global_property(atoms, coeffs, f):
-    r"""Helper function for computing extensive global properties."""
+    r"""Helper function for computing extensive global properties.
+
+    Parameters
+    ----------
+    atoms: list of Species
+        Species instances.
+    coeffs: np.ndarray((N,), dtype=float)
+        Coefficients of each species.
+    f: callable
+        Property function.
+
+    Returns
+    -------
+    prop: float
+        Extensive global property.
+    """
     # Weighted sum of each atom's property value
     return sum(coeff * f(atom) for atom, coeff in zip(atoms, coeffs))
 
 
 def _extensive_local_property(atoms, atom_coords, coeffs, points, f, deriv=0):
-    r"""Helper function for computing extensive local properties."""
+    r"""Helper function for computing extensive local properties.
+
+    Parameters
+    ----------
+    atoms: list of Species
+        Species instances.
+    atom_coords: list of np.ndarray((3,), dtype=float)
+        Coordinates of each species.
+    coeffs: np.ndarray((N,), dtype=float)
+        Coefficients of each species.
+    points: np.ndarray((N, 3), dtype=float)
+        Points at which to compute the property.
+    f: callable
+        Property function.
+    deriv: int, default=0
+        Derivative order.
+
+    Returns
+    -------
+    prop: num_atoms length list of np.ndarray((N,), dtype=float)
+        Extensive local property evaluated at N points for each atom.
+
+    """
     # Add contribution from each atom, calculating the radius between
     # the points of interest and each atom inside the generator
     splines = [f(atom) for atom in atoms]
@@ -602,7 +748,24 @@ def _extensive_local_property(atoms, atom_coords, coeffs, points, f, deriv=0):
 
 
 def _intensive_property(atoms, coeffs, f, p=1):
-    r"""Helper function for computing intensive properties."""
+    r"""Helper function for computing intensive properties.
+
+    Parameters
+    ----------
+    atoms: list of Species
+        Species instances.
+    coeffs: np.ndarray((N,), dtype=float)
+        Coefficients of each species.
+    f: callable
+        Property function.
+    p: int, default=1 (linear mean)
+        Type of mean used in the computation.
+
+    Returns
+    -------
+    prop: float
+        Intensive property.
+    """
     # P-mean of each atom's property value
     return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)) ** (
         1 / p
@@ -610,7 +773,18 @@ def _intensive_property(atoms, coeffs, f, p=1):
 
 
 def _radial_vector_outer_triu(radii):
-    r"""Evaluate the outer products of a set of radial unit vectors."""
+    r"""Evaluate the outer products of a set of radial unit vectors.
+
+    Parameters
+    ----------
+    radii: np.ndarray((N, 3), dtype=float)
+        Radial vectors.
+
+    Returns
+    -------
+    radv_outer: np.ndarray((N, 6), dtype=float)
+        Outer products of radial unit vectors.
+    """
 
     # Define a unit vector function
     def unit_v(vector):
@@ -626,7 +800,26 @@ def _radial_vector_outer_triu(radii):
 
 
 def _cart_to_bary(x0, y0, s1, s2, s3):
-    r"""Helper function for computing barycentric coordinates."""
+    r"""Helper function for computing barycentric coordinates.
+
+    Parameters
+    ----------
+    x0: float
+        x-coordinate of the point.
+    y0: float
+        y-coordinate of the point.
+    s1: Species
+        First species.
+    s2: Species
+        Second species.
+    s3: Species
+        Third species.
+
+    Returns
+    -------
+    lambda1, lambda2, lambda3: tuple of float
+        Barycentric coordinates.
+    """
     x1, x2, x3 = s1.nelec, s2.nelec, s3.nelec
     y1, y2, y3 = s1.nspin, s2.nspin, s3.nspin
     lambda1 = (
