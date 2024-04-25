@@ -24,7 +24,7 @@ Please use the following citation in any publication using AtomDB:
     :tab-width: 100
 
 `AtomDB source code <https://github.com/theochem/AtomDB/>`_ is hosted on GitHub and is released under the
-GNU General Public License v3.0. We welcome any contributions to the Grid library in accordance with our
+GNU General Public License v3.0. We welcome any contributions to the AtomDB library in accordance with our
 Code of Conduct; please see our Contributing Guidelines. Please report any issues you encounter while
 using AtomDB on `GitHub Issues <https://github.com/theochem/AtomDB/issues/new>`_. For further
 information and inquiries please contact us at qcdevs@gmail.com.
@@ -78,12 +78,11 @@ The table below lists the atomic properties available for the datasets in AtomDB
 ..    nbsphinx-link to link it to the table of contents. This
 ..    requires to create a ".nblink" for each external Jupyter notebook.
 
-.. .. toctree::
-..     :maxdepth: 1
-..     :caption: Example Tutorials
+.. toctree::
+    :maxdepth: 1
+    :caption: Example Tutorials
 
-..     ./notebooks/quickstart
-..     One-Dimensional Grids <./notebooks/one_dimensional_grids>
+    Getting Started <./notebooks/getting_started.ipynb>
 ..     Angular Grids <./notebooks/angular_grid>
 ..     Atom Grid Construction <./notebooks/atom_grid_construction>
 ..     Atom Grid Application <./notebooks/atom_grid>
