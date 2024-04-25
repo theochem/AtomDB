@@ -34,7 +34,7 @@ AtomDB can also be installed by cloning via git,
    git clone https://github.com/theochem/AtomDB.git
 
 
-Then installation via pip can be done by going into the directory where Grid is downloaded to
+Then installation via pip can be done by going into the directory where AtomDB was downloaded to
 and running,
 
 
@@ -95,8 +95,9 @@ These can be installed via pip by running,
 Optional dependencies for development:
 --------------------------------------
 
-Atomdb posses xxx capabilities for modyfing the database and adding new data. The following 
-dependencies are optional and are only necessary if you want to modify the database,
+AtomDB also provides a toolbox for extending its capabilities by modifying the
+(or adding new) databases. The following dependencies are optional and are
+only necessary if you intend to do so.
 
 * pytest >= 2.6 : https://docs.pytest.org/en/stable/
 * pyscf >= 1.7.0 : https://pyscf.org/
