@@ -36,10 +36,13 @@ extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinxcontrib.bibtex",
     "sphinx_autodoc_typehints",
     "sphinx_rtd_theme",
     "nbsphinx",
 ]
+
+bibtex_bibfiles = ["atomdb_cite.bib"]
 
 templates_path = [
     "_templates",
@@ -107,8 +110,8 @@ binder_badge = "https://mybinder.org/badge_logo.svg"
 binder_badge_sty = "vertical-align:text-bottom"
 
 binder_html = (
-    f"<a href=\"{binder_url}\">"
-    f"<img alt=\"Binder\" src=\"{binder_badge}\" style=\"{binder_badge_sty}\">"
+    f'<a href="{binder_url}">'
+    f'<img alt="Binder" src="{binder_badge}" style="{binder_badge_sty}">'
     f"</a>"
 )
 

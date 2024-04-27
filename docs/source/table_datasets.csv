@@ -1,0 +1,23 @@
+;NIST;Numeric HF;Slater HF;Gaussian HF;HCI
+:func:`atnum<atomdb.species.Species.atnum>`;x;x;x;x;x
+:func:`nelec<atomdb.species.Species.nelec>`;x;x;x;x;x
+:func:`charge<atomdb.species.Species.charge>`;x;x;x;x;x
+:func:`mult<atomdb.species.Species.mult>`;x;x;x;x;x
+:func:`nspin<atomdb.species.Species.nspin>`;x;x;x;x;x
+:func:`spinpol<atomdb.species.Species.spinpol>`;x;x;x;x;x
+:func:`elem<atomdb.species.Species.elem>`;x;x;x;x;x
+:func:`obasis_name<atomdb.species.Species.obasis_name>`;x;x;x;x;x
+:func:`atmass<atomdb.species.Species.atmass>`;x;x;x;x;x
+:func:`cov_radius<atomdb.species.Species.cov_radius>`;x;x;x;x;x
+:func:`vdw_radius<atomdb.species.Species.vdw_radius>`;x;x;x;x;x
+:func:`at_radius<atomdb.species.Species.at_radius>`;x;x;x;x;x
+:func:`polarizability<atomdb.species.Species.polarizability>`;x;x;x;x;x
+:func:`dispersion_c6<atomdb.species.Species.dispersion_c6>`;x;x;x;x;x
+:func:`energy<atomdb.species.Species.energy>`;x;x;x;x;x
+:func:`ip<atomdb.species.Species.ip>`;x;;x;x;
+:func:`mu<atomdb.species.Species.mu>`;x;;;;
+:func:`eta<atomdb.species.Species.eta>`;x;;;;
+:func:`dens_func<atomdb.species.Species.dens_func>`;x;x;x;x
+:func:`d_dens_func<atomdb.species.Species.d_dens_func>`;x;x;x;x
+:func:`dd_dens_fun<atomdb.species.Species.dd_dens_fun>`;x;x;x;x
+:func:`ked_func<atomdb.species.Species.ked_func>`;x;x;x
