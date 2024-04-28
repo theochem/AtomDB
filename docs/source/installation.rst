@@ -44,6 +44,13 @@ and running,
     pip install .
 
 
+or to install AtomDB as an editable package, run,
+
+.. code-block:: bash
+
+    pip install -e .
+
+
 Successful installation can be checked by running the tests,
 
 .. code-block:: bash
