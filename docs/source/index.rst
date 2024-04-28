@@ -83,7 +83,7 @@ The table below lists the atomic properties available for the datasets in AtomDB
     :caption: Example Tutorials
 
     Getting Started <./notebooks/getting_started.ipynb>
-..     Angular Grids <./notebooks/angular_grid>
+    Promolecular properties NCI <./notebooks/promolecule_nci.ipynb>
 ..     Atom Grid Construction <./notebooks/atom_grid_construction>
 ..     Atom Grid Application <./notebooks/atom_grid>
 ..     Molecular Grid Construction <./notebooks/molecular_grid_construction>
