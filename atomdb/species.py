@@ -449,7 +449,8 @@ class Species:
         -------
         atmass : dict
             Two options are available: the isotopically averaged mass 'stb', and the mass of the most
-            common isotope 'nist'.
+            common isotope 'nist'. For references corresponding to each type check
+            https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
 
         """
         pass
