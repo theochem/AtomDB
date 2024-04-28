@@ -277,7 +277,18 @@ class Species:
     r"""Properties of atomic and ionic species."""
 
     def __init__(self, dataset, fields, spinpol=1):
-        r"""Initialize a ``Species`` instance."""
+        r"""Initialize a ``Species`` instance.
+
+        Parameters
+        ----------
+        dataset : String
+            Type of dataset to load.
+        fields: dict
+            Dictionary containing all fields to initialize `SpecfiesData` class object
+        spinpol: int
+            Spin polarization
+
+        """
         self._dataset = dataset.lower()
         self._data = SpeciesData(**fields)
         self.spinpol = spinpol
@@ -297,32 +308,85 @@ class Species:
 
     @property
     def dataset(self):
-        r"""Dataset."""
+        r"""Name of the type of dataset.
+
+        Returns
+        -------
+        dataset : string
+
+        """
         return self._dataset
 
     @property
     def charge(self):
-        r"""Charge."""
+        r"""Charge
+        math::
+            Q = Z - N
+        Where Q is the charge, Z the atomic number and N the total number of electrons stored in
+        SpeciesData object.
+
+        Returns
+        -------
+        charge : int
+
+        """
         return self._data.atnum - self._data.nelec
 
     @property
     def nspin(self):
-        r"""Spin number :math:`N_S = N_α - N_β`."""
+        r"""Spin number
+        math::
+            `N_S = N_α - N_β`.
+        Where $N_S$ is the spin number and $N_α$ and $N_β$ number of alpha and beta electrons.
+
+        Returns
+        -------
+        nspin : int
+
+
+        """
         return self._data.nspin * self._spinpol
 
     @property
     def mult(self):
-        r"""Multiplicity :math:`M = \left|N_S\right| + 1`."""
+        r"""Multiplicity
+        math::
+            `M = \left|N_S\right| + 1`.
+        Where $\left|N_S\right|$ is the spin number.
+
+        Returns
+        -------
+        mult : int
+
+        """
         return self._data.nspin + 1
 
     @property
     def spinpol(self):
-        r"""Spin polarization direction (±1) of the species."""
+        r"""Spin polarization direction (±1).
+
+        Returns
+        -------
+        spinpol : int
+
+        """
         return self._spinpol
 
     @spinpol.setter
     def spinpol(self, spinpol):
-        r"""Spin polarization direction setter."""
+        r"""Spin polarization direction setter.
+
+        Parameters
+        ----------
+        spinpol : `Integral` class from numbers package
+
+        Raises
+        ------
+        TypeError
+            If spinpol is not `Integral` type
+            If absolute value is not equal to 1
+
+        """
         if not isinstance(spinpol, Integral):
             raise TypeError("`spinpol` attribute must be an integral type")
 
@@ -335,22 +399,46 @@ class Species:
 
     @scalar
     def elem(self):
-        r"""Element symbol."""
+        r"""Element symbol.
+
+        Returns
+        -------
+        elem : string
+
+        """
         pass
 
     @scalar
     def obasis_name(self):
-        r"""Basis name."""
+        r"""Basis name.
+
+        Returns
+        -------
+        obasis_name : string
+
+        """
         pass
 
     @scalar
     def atnum(self):
-        r"""Atomic number."""
+        r"""Atomic number.
+
+        Returns
+        -------
+        atnum : int
+
+        """
         pass
 
     @scalar
     def nelec(self):
-        r"""Number of electrons."""
+        r"""Number of electrons.
+
+        Returns
+        -------
+        nelec : int
+
+        """
         pass
 
     @scalar
@@ -359,7 +447,7 @@ class Species:
 
         Returns
         -------
-        mass : dict
+        atmass : dict
             Two options are available: the isotopically averaged mass 'stb', and the mass of the most
             common isotope 'nist'.
 
@@ -368,54 +456,130 @@ class Species:
 
     @scalar
     def cov_radius(self):
-        r"""Covalent radius (derived from crystallographic data)."""
+        r"""Covalent radius (derived from crystallographic data).
+
+        Returns
+        -------
+        cov_radius : dict, float
+            The return dictionary contains crystallographic covalent radii types `cordero`,
+            `bragg` and `slater`. For references corresponding to each type check
+            https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
+
+        """
         pass
 
     @scalar
     def vdw_radius(self):
-        r"""Van der Waals radii."""
+        r"""Van der Waals radii.
+
+        Returns
+        -------
+        vdw_radius : dict, float
+            The return dictionary contains van der wals radii types
+            `bondi`, `truhlar`, `rt`, `batsanov`, `dreiding`, `uff` and `mm3`. For
+            references corresponding to each type check
+            https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
+
+        """
         pass
 
     @scalar
     def at_radius(self):
-        r"""Atomic radius."""
+        r"""Atomic radius.
+
+        Returns
+        -------
+        at_radius : dict, float
+            The return dictionary contains atomic radii types
+            `wc` and `cr`. For references corresponding to each type check
+            https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
+
+        """
         pass
 
     @scalar
     def polarizability(self):
-        r"""Isolated atom dipole polarizability."""
+        r"""Isolated atom dipole polarizability.
+
+        Returns
+        -------
+        polarizability : dict, float
+            The return dictionary contains isolated atom dipole polarizability types
+            `crc` and `chu`. For references corresponding to each type check
+            https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
+
+        """
         pass
 
     @property
     def dispersion_c6(self):
-        r"""Isolated atom C6 dispersion coefficients."""
+        r"""Isolated atom C6 dispersion coefficients.
+
+        Returns
+        -------
+        dispersion_c6 : dict, float
+            The return dictionary contains isolated atom C6 dispersion coefficients types
+            `chu`. For references corresponding to each type check
+            https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
+
+        """
         if self._data.dispersion is None:
             return None
         return self._data.dispersion["C6"]
 
     @scalar
     def nexc(self):
-        r"""Excitation number."""
+        r"""Excitation number.
+
+        Returns
+        -------
+        nexc : int
+
+        """
         pass
 
     @scalar
     def energy(self):
-        r"""Energy."""
+        r"""Energy.
+
+        Returns
+        -------
+        energy : float
+
+        """
         pass
 
     @scalar
     def ip(self):
-        r"""Ionization potential."""
+        r"""Ionization potential.
+
+        Returns
+        -------
+        ip : float
+
+        """
         pass
 
     @scalar
     def mu(self):
-        r"""Chemical potential."""
+        r"""Chemical potential.
+
+        Returns
+        -------
+        mu : float
+
+        """
         pass
 
     @scalar
     def eta(self):
-        r"""Chemical hardness."""
+        r"""Chemical hardness.
+
+        Returns
+        -------
+        eta : float
+
+        """
         pass
 
     @spline
@@ -542,7 +706,24 @@ def compile(
     dataset=DEFAULT_DATASET,
     datapath=DEFAULT_DATAPATH,
 ):
-    r"""Compile an atomic or ionic species into the AtomDB database."""
+    r"""Compile an atomic or ionic species into the AtomDB database.
+
+    Parameters
+    ----------
+    elem : str
+        Element symbol.
+    charge : int
+        Charge.
+    mult : int
+        Multiplicity.
+    nexc : int, optional
+        Excitation level, by default 0.
+    dataset : str, optional
+        Dataset name, by default DEFAULT_DATASET.
+    datapath : str, optional
+        Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
+
+    """
     # Ensure directories exist
     makedirs(path.join(datapath, dataset.lower(), "db"), exist_ok=True)
     makedirs(path.join(datapath, dataset.lower(), "raw"), exist_ok=True)
@@ -554,7 +735,16 @@ def compile(
 
 
 def dump(*species, datapath=DEFAULT_DATAPATH):
-    r"""Dump the Species instance(s) to a MessagePack file in the database."""
+    r"""Dump the Species instance(s) to a MessagePack file in the database.
+
+    Parameters
+    ----------
+    species: Iterable
+        Iterables of objects of class `Species`
+    datapath : str, optional
+        Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
+
+    """
     for s in species:
         fn = datafile(
             s._data.elem, s.charge, s.mult, nexc=s.nexc, dataset=s.dataset, datapath=datapath
@@ -572,7 +762,30 @@ def load(
     datapath=DEFAULT_DATAPATH,
     remotepath=DEFAULT_REMOTE,
 ):
-    r"""Load one or many atomic or ionic species from the AtomDB database."""
+    r"""Load one or many atomic or ionic species from the AtomDB database.
+
+    Parameters
+    ----------
+    elem : str
+        Element symbol.
+    charge : int
+        Charge.
+    mult : int
+        Multiplicity.
+    nexc : int, optional
+        Excitation level, by default 0.
+    dataset : str, optional
+        Dataset name, by default DEFAULT_DATASET.
+    datapath : str, optional
+        Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
+    remotepath : str, optional
+        Remote URL for AtomDB datasets, by default DEFAULT_REMOTE variable value
+
+    Returns
+    -------
+    Object of class Species
+
+    """
     fn = datafile(
         elem,
         charge,
@@ -624,6 +837,12 @@ def datafile(
         Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
     remotepath : str, optional
         Remote URL for AtomDB datasets, by default DEFAULT_REMOTE variable value
+
+    Returns
+    -------
+    str
+        Local path to the database file of a species in the AtomDB cache
+
     """
     elem = "[^_]" if elem is Ellipsis else element_symbol(elem)
     charge = "[^_]" if charge is Ellipsis else f"{charge:03d}"
