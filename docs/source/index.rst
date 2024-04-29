@@ -69,14 +69,6 @@ The table below lists the atomic properties available for the datasets in AtomDB
     :caption: User Documentation
 
     ./installation.rst
-..     ./onedgrids.rst
-..     ./radial_transf.rst
-..     ./conventions.rst
-
-
-.. .. Notebooks that are external to the ./doc/ directory require
-..    nbsphinx-link to link it to the table of contents. This
-..    requires to create a ".nblink" for each external Jupyter notebook.
 
 .. toctree::
     :maxdepth: 1
@@ -85,44 +77,13 @@ The table below lists the atomic properties available for the datasets in AtomDB
     Getting Started <./notebooks/getting_started.ipynb>
     Intro to promolecular properties <./notebooks/promolecule_intro.ipynb>
     Promolecular properties NCI <./notebooks/promolecule_nci.ipynb>
-..     Atom Grid Construction <./notebooks/atom_grid_construction>
-..     Atom Grid Application <./notebooks/atom_grid>
-..     Molecular Grid Construction <./notebooks/molecular_grid_construction>
-..     Molecular Grid Application <./notebooks/molecular_grid>
-..     Cubic Grids <./notebooks/cubic_grid>
-..     ./notebooks/interpolation_poisson
-..     ./notebooks/multipole_moments
 
-.. .. toctree::
-..    :maxdepth: 2
-..    :caption: API Documentation
+.. toctree::
+    :maxdepth: 3
+    :caption: API Documentation
 
-..    pyapi/modules.rst
+    api/modules
 
-.. .. toctree::
-..     :maxdepth: 2
-..     :caption: Introduction
-
-..     intro
-
-.. .. toctree::
-..     :maxdepth: 2
-..     :caption: User Documentation
-
-..     user
-
-.. .. toctree::
-..     :maxdepth: 3
-..     :caption: API Reference
-
-..     api/modules
-
-.. Indices and tables
-.. ==================
-
-.. * :ref:`genindex`
-.. * :ref:`modindex`
-.. * :ref:`search`
 
 .. |GitHub| image:: https://img.shields.io/badge/theochem-000000.svg?logo=GitHub
    :target: https://github.com/theochem/AtomDB/
