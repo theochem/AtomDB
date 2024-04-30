@@ -622,7 +622,7 @@ def make_promolecule(
     if mults is None:
         # Force non-int charge to be integer here; will be overwritten below.
         mults = []
-        for (atnum, charge) in zip(atnums, charges):
+        for atnum, charge in zip(atnums, charges):
             if isinstance(charge, Integral):
                 mults.append(MULTIPLICITIES[(atnum, charge)])
             else:
