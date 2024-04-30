@@ -18,6 +18,7 @@ r"""AtomDB promolecule submodule."""
 from copy import deepcopy
 from itertools import chain, combinations
 from numbers import Integral
+from math import ceil, floor
 from operator import itemgetter
 from warnings import warn
 
@@ -620,7 +621,14 @@ def make_promolecule(
     # Handle default multiplicity parameters
     if mults is None:
         # Force non-int charge to be integer here; will be overwritten below.
-        mults = [MULTIPLICITIES[(atnum, charge)] for (atnum, charge) in zip(atnums, charges)]
+        mults = []
+        for (atnum, charge) in zip(atnums, charges):
+            if isinstance(charge, Integral):
+                mults.append(MULTIPLICITIES[(atnum, charge)])
+            else:
+                ts = load(atnum, floor(charge), ..., nexc=0, dataset=dataset, datapath=datapath)
+                ts += load(atnum, ceil(charge), ..., nexc=0, dataset=dataset, datapath=datapath)
+                mults.append(min(ts, key=lambda t: t.energy).mult)
 
     # Construct linear combination of species
     promol = Promolecule()
@@ -686,7 +694,7 @@ def make_promolecule(
             promol._extend(*(min(good_combs, key=itemgetter(0))[1:]))
         else:
             raise ValueError(
-                "Unable to construct species with non-integer" "charge/spin from database entries"
+                "Unable to construct species with non-integer charge/spin from database entries"
             )
 
     # Return Promolecule instance
