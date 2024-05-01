@@ -90,7 +90,7 @@ def setup_element():
     def atsym(self):
         return element_symbol(self._atnum)
 
-    atnum.__doc__ = "Atomic number of the element.\n" "\n" "Returns\n" "-------\n" "atnum : int\n"
+    # atnum.__doc__ = "Atomic number of the element.\n" "\n" "Returns\n" "-------\n" "atnum : int\n"
 
     @property
     def symbol(self):
@@ -154,7 +154,7 @@ def setup_element():
             long += "\n"
 
         # Add property to class docstring
-        class_doc += f"{sig}\n" f"    {short}\n"
+        # class_doc += f"{sig}\n" f"    {short}\n"
 
         # Make property method for Element class with docstring
         f = make_property(data, prop, prop2col)

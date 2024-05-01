@@ -71,42 +71,6 @@ class Promolecule:
     coeffs: np.ndarray((N,), dtype=float)
         Coefficients of each species component of the promolecule.
 
-    Methods
-    -------
-    density(points, spin='ab', log=False)
-        Compute the electron density of the promolecule at the desired points.
-    ked(points, spin='ab', log=False)
-        Compute the kinetic energy density of the promolecule at the desired
-        points.
-    nelec()
-        Compute the electron number of the promolecule.
-    charge()
-        Compute the charge of the promolecule.
-    energy()
-        Compute the energy of the promolecule.
-    mass()
-        Compute the mass of the promolecule.
-    nspin(p=1)
-        Compute the spin number of the promolecule.
-    mult(p=1)
-        Compute the multiplicity of the promolecule.
-    ip(p=1)
-        Compute the ionization potential of the promolecule.
-    mu(p=1)
-        Compute the chemical potential of the promolecule.
-    eta(p=1)
-        Compute the chemical hardness of the promolecule.
-    gradient(points, spin='ab', log=False)
-        Compute the electron density gradient of the promolecule at the
-        desired points.
-    hessian(points, spin='ab', log=False)
-        Compute the promolecule's electron density Hessian at the
-        desired points.
-    laplacian(points, spin='ab', log=False)
-        Compute the promolecule's electron density Laplacian at the
-        desired points.
-
-
     """
 
     def __init__(self):
@@ -371,10 +335,11 @@ class Promolecule:
         desired points.
 
         Promolecular gradient:
+
         .. math::
-            \nabla \rho_{\text{mol}}^{(0)} (\mathbf{R})
-                = \sum_{A=1}^{N_{\text{atoms}}}
-                    c_A \nabla \rho_A^{(0)}(\mathbf{R})
+
+            \nabla \rho_{\text{mol}}^{(0)} (\mathbf{R}) = \sum_{A=1}^{N_{\text{atoms}}}\
+            c_A \nabla \rho_A^{(0)}(\mathbf{R})
 
         where
 
