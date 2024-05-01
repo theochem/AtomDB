@@ -83,6 +83,8 @@ def scalar(method):
         rf"""{method.__doc__}"""
         return getattr(self._data, name)
 
+    # conserve the docstring of the method
+    wrapper.__doc__ = method.__doc__
     return wrapper
 
 
@@ -137,6 +139,8 @@ def spline(method):
         # Return cubic spline
         return DensitySpline(self._data.rs, arr, log=log)
 
+    # conserve the docstring of the method
+    wrapper.__doc__ = method.__doc__
     return wrapper
 
 
@@ -320,8 +324,11 @@ class Species:
     @property
     def charge(self):
         r"""Charge
-        math::
+
+        .. math::
+
             Q = Z - N
+
         Where Q is the charge, Z the atomic number and N the total number of electrons stored in
         SpeciesData object.
 
@@ -335,9 +342,12 @@ class Species:
     @property
     def nspin(self):
         r"""Spin number
-        math::
-            `N_S = N_α - N_β`.
-        Where $N_S$ is the spin number and $N_α$ and $N_β$ number of alpha and beta electrons.
+
+        .. math::
+            N_S = N_α - N_β
+
+        Where :math:`N_S` is the spin number and :math:`N_α` and :math:`N_β` number of alpha and \
+            beta electrons.
 
         Returns
         -------
@@ -350,9 +360,12 @@ class Species:
     @property
     def mult(self):
         r"""Multiplicity
-        math::
-            `M = \left|N_S\right| + 1`.
-        Where $\left|N_S\right|$ is the spin number.
+
+        .. math::
+
+            M = \left|N_S\right| + 1
+
+        Where :math:`\left|N_S\right|` is the spin number.
 
         Returns
         -------
