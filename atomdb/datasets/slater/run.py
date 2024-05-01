@@ -98,23 +98,35 @@ class AtomicDensity:
     Examples
     --------
     Grab information about Beryllium.
-    >> be =  AtomicDensity("be")
+
+    .. code-block:: python
+
+        be =  AtomicDensity("be")
 
     Some of the attributes are the following.
-    >> print(be.configuration) #  Should "1S(2)2S(2)".
-    >> print(be.orbitals)  # ['1S', '2S'].
-    >> print(be.orbitals_occupation) # [[2], [2]] Two electrons in each orbital.
-    >> print(be.orbitals_cusp)  # [1.0001235, 0.9998774].
 
-    The Slatar coefficients and exponents of the 1S orbital can be obtained as:
-    >> print(be.orbital_coeff["1S"])
-    >> print(be.orbitals_exp["1S"])
+    .. code-block:: python
+
+        print(be.configuration) #  Should "1S(2)2S(2)".
+        print(be.orbitals)  # ['1S', '2S'].
+        print(be.orbitals_occupation) # [[2], [2]] Two electrons in each orbital.
+        print(be.orbitals_cusp)  # [1.0001235, 0.9998774].
+
+    The Slater coefficients and exponents of the 1S orbital can be obtained as:
+
+    .. code-block:: python
+
+        print(be.orbital_coeff["1S"])
+        print(be.orbitals_exp["1S"])
 
     The total, core and valence electron density can be obtained as:
-    >> points = np.arange(0., 25., 0.01)
-    >> total_density = be.atomic_density(points, "total")
-    >> core_density = be.atomic_density(points, "core")
-    >> valence_density = be.atomic_density(points, "valence")
+
+    .. code-block:: python
+
+        points = np.arange(0., 25., 0.01)
+        total_density = be.atomic_density(points, "total")
+        core_density = be.atomic_density(points, "core")
+        valence_density = be.atomic_density(points, "valence")
 
     References
     ----------
@@ -152,8 +164,10 @@ class AtomicDensity:
         Compute the Slater-type orbitals on the given points.
 
         A Slater-type orbital is defined as:
+
         .. math::
-            R(r) = N r^{n-1} e^{- C r)
+
+            R(r) = N r^{n-1}e^{-Cr}
 
         where,
             :math:`n` is the principal quantum number of that orbital.
@@ -201,6 +215,7 @@ class AtomicDensity:
         of the form:
 
         .. math::
+
             \sum c_i R(r, n_i, C_i)
 
         where,
@@ -252,13 +267,15 @@ class AtomicDensity:
 
         The total density is written as a linear combination of Slater-type orbital
         whose coefficients is the orbital occupation number of the electron configuration:
+
         .. math::
-            \sum n_i |P(r, n_i, C_i)|^2
+
+            \sum n_{i} \left|P(r, n_{i}, C_{i})\right|^{2}
 
         where,
             :math:`n_i` is the number of electrons in orbital i.
-            :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
-                on the point :math:`r`.
+            :math:`P(r, n_{i}, C_{i})` is a linear combination of Slater-type orbitals evaluated\
+            on the point :math:`r`.
 
         For core and valence density, please see More Info below.
 
@@ -277,8 +294,10 @@ class AtomicDensity:
         Notes
         -----
         The core density and valence density is respectively written as:
+
         .. math::
-            \sum n_i (1 - e^{-|e_i - e_{homo}|^2}) |P(r, n_i, C_i)|
+
+            \sum n_i (1 - e^{-|e_i - e_{homo}|^2}) \left|P(r, n_{i}, C_{i})\right|
             \sum n_i e^{-|e_i - e_{homo}|^2}) |P(r, n_i. C_i)|
 
         where,
@@ -306,23 +325,28 @@ class AtomicDensity:
     def eval_orbs_density(self, points):
         r"""Return each orbital density evaluated at a set of points
 
-        rho_i(r) = n_i |P(r, n_i, C_i)|^2
+        Mathematically, the orbital density :math:`\rho_i(r)` is computed as:
 
-        where,
-        :math:`n_i` is the number of electrons in orbital i.
-        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
-            on the point :math:`r`.
+        .. math::
+
+            \rho_{i}(r) = n_{i} \left|P(r, n_{i}, C_{i})\right|^{2}
+
+        where:
+            - :math:`n_{i}` is the number of electrons in orbital i.
+            - :math:`P(r, n_{i}, C_{i})` represents a linear combination of Slater-type orbitals
+              evaluated at point :math:`r`.
 
         Parameters
         ----------
         points: np.ndarray(N)
-            radial grid points
+            Radial grid points.
 
         Returns
         -------
         orb_dens : np.ndarray(K_orb, N)
-            orbitals density at a set of grid points (N)
+            Orbital densities at the set of grid points (N).
         """
+
         orb_occs = self.orbitals_occupation
         orb_dens = self.phi_matrix(points) ** 2 * orb_occs.ravel() / (4 * np.pi)
         return orb_dens.T
@@ -330,13 +354,14 @@ class AtomicDensity:
     def eval_orbs_radial_d_density(self, points):
         r"""Return each orbital density evaluated at a set of points
 
-        math::
-        \frac{d \rho_i(r)}{dr} = n_i \frac{d}{dr} |P(r, n_i, C_i)|^2
+        .. math::
+
+            \frac{d \rho_{i}(r)}{dr} = n_{i} \frac{d}{dr} \left|P(r, n_{i}, C_{i})\right|^{2}
 
         where,
-        :math:`n_i` is the number of electrons in orbital i.
-        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
-            on the point :math:`r`.
+        :math:`n_{i}` is the number of electrons in orbital i.
+        :math:`P(r, n_{i}, C_{i})` is a linear combination of Slater-type orbitals evaluated on \
+        the point :math:`r`.
 
         Parameters
         ----------
@@ -356,13 +381,15 @@ class AtomicDensity:
     def eval_orbs_radial_dd_density(self, points):
         r"""Return each orbital density evaluated at a set of points
 
-        math::
-        \frac{d^{2} \rho_i(r)}{dr^{2}} = n_i \frac{d^{2}}{dr^{2}} |P(r, n_i, C_i)|^2
+        .. math::
+
+            \frac{d^{2}\rho_{i}(r)}{dr^{2}} = n_{i} \frac{d^{2}}{dr^{2}}\left| P(r,n_{i},C_{i})\
+            \right|^{2}
 
         where,
-        :math:`n_i` is the number of electrons in orbital i.
-        :math:`P(r, n_i, C_i)` is a linear combination of Slater-type orbitals evaluated
-            on the point :math:`r`.
+        :math:`n_{i}` is the number of electrons in orbital i.
+        :math:`P(r, n_{i}, C_{i})` is a linear combination of Slater-type orbitals evaluated on \
+        the point :math:`r`.
 
         Parameters
         ----------
@@ -388,8 +415,10 @@ class AtomicDensity:
         Compute the derivative of Slater-type orbitals on the given points.
 
         A Slater-type orbital is defined as:
+
         .. math::
-            \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - C \bigg) N r^{n-1} e^{- C r),
+
+            \frac{d R(r)}{dr} = \left(\frac{n-1}{r} - C \right) N r^{n-1} e^{-Cr}
 
         where,
             :math:`n` is the principal quantum number of that orbital.
@@ -433,8 +462,10 @@ class AtomicDensity:
         Compute the derivative of Slater-type orbitals on the given points.
 
         A Slater-type orbital is defined as:
+
         .. math::
-            \frac{d R(r)}{dr} = \bigg(\frac{n-1}{r} - C \bigg) N r^{n-1} e^{- C r),
+
+            \frac{d R(r)}{dr} = \left(\frac{n-1}{r} - C \right) N r^{n-1} e^{-Cr}
 
         where,
             :math:`n` is the principal quantum number of that orbital.
@@ -476,8 +507,9 @@ class AtomicDensity:
     def eval_orbs_ked_positive_definite(self, points):
         r"""Return each the kinetic energy density of each orbital evaluated at a set of points
 
-        math::
-            \tau_{\text{PD}}^{i} \left(\mathbf{r}\right) = \tfrac{1}{2} n_i \rvert \nabla \phi_i \left(\mathbf{r}\right) \lvert^2
+        .. math::
+
+            \tau_{\text{PD}}^{i} (\mathbf{r}) = \tfrac{1}{2}n_{i}|\nabla\phi_i(\mathbf{r})|^{2}
 
 
         Parameters
