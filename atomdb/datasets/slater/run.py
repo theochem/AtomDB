@@ -120,7 +120,7 @@ class AtomicDensity:
         print(be.orbitals_exp["1S"])
 
     The total, core and valence electron density can be obtained as:
-    
+
     .. code-block:: python
 
         points = np.arange(0., 25., 0.01)
