@@ -18,7 +18,6 @@ r"""AtomDB promolecule submodule."""
 from copy import deepcopy
 from itertools import chain, combinations
 from numbers import Integral
-from math import ceil, floor
 from operator import itemgetter
 from warnings import warn
 
@@ -620,15 +619,12 @@ def make_promolecule(
 
     # Handle default multiplicity parameters
     if mults is None:
-        # Force non-int charge to be integer here; will be overwritten below.
-        mults = []
-        for atnum, charge in zip(atnums, charges):
-            if isinstance(charge, Integral):
-                mults.append(MULTIPLICITIES[(atnum, charge)])
-            else:
-                ts = load(atnum, floor(charge), ..., nexc=0, dataset=dataset, datapath=datapath)
-                ts += load(atnum, ceil(charge), ..., nexc=0, dataset=dataset, datapath=datapath)
-                mults.append(min(ts, key=lambda t: t.energy).mult)
+        # if all charges are integers, get corresponding multiplicities
+        if all(isinstance(charge, Integral) for charge in charges):
+            mults = [MULTIPLICITIES[(atnum, charge)] for (atnum, charge) in zip(atnums, charges)]
+        else:
+            # set each multiplicity to None
+            mults = [None for _ in atnums]
 
     # Construct linear combination of species
     promol = Promolecule()
@@ -650,6 +646,41 @@ def make_promolecule(
                 if mult < 0:
                     specie.spinpol = -1
                 promol._extend((specie,), (coord,), (1.0,))
+                continue
+            except FileNotFoundError:
+                warn(
+                    "Unable to load species corresponding to `charge, mult`; "
+                    "generating species via linear combination "
+                    "of other species",
+                    stacklevel=1,
+                )
+        # Non-integer charge, default multiplicity
+        if mult is None:
+            # get floor and ceiling charges
+            f_charge, c_charge = int(np.floor(charge)), int(np.ceil(charge))
+            fmult, cmult = MULTIPLICITIES[(atnum, f_charge)], MULTIPLICITIES[(atnum, c_charge)]
+            # get coefficients for linear combination
+            f_coeff = np.ceil(charge) - charge
+            c_coeff = charge - np.floor(charge)
+            # get corresponding species
+            try:
+                specie_f = load(
+                    atom,
+                    f_charge,
+                    fmult,
+                    dataset=dataset,
+                    datapath=datapath,
+                    remotepath=remotepath,
+                )
+                specie_c = load(
+                    atom,
+                    c_charge,
+                    cmult,
+                    dataset=dataset,
+                    datapath=datapath,
+                    remotepath=remotepath,
+                )
+                promol._extend((specie_f, specie_c), (coord, coord), (f_coeff, c_coeff))
                 continue
             except FileNotFoundError:
                 warn(
@@ -694,7 +725,7 @@ def make_promolecule(
             promol._extend(*(min(good_combs, key=itemgetter(0))[1:]))
         else:
             raise ValueError(
-                "Unable to construct species with non-integer charge/spin from database entries"
+                "Unable to construct species with non-integer" "charge/spin from database entries"
             )
 
     # Return Promolecule instance
