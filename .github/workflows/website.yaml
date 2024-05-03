@@ -58,22 +58,25 @@ jobs:
       with:
         path: build/html/
 
-  deploy:
+    - name: Create soft links
+      run: |
+        cd website
+        ln -s ../notebooks ./examples
+        ln -s ../doc/source ./api
+        cd ../
 
-    runs-on: ubuntu-latest
+    - name: Build Jupyter Book
+      run: |
+        jupyter-book build ./website/
 
-    needs: build
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
-
-    steps:
-
-      - name: Deploy artifact to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+      # Push the book's HTML to github-pages
+      # inspired by https://github.com/orgs/community/discussions/26724
+      # only push to gh-pages if the master branch has been updated
+    - name: GitHub Pages Action
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./website/_build/html
+        publish_branch: gh-pages
+        # cname: pyci.qcdevs.org
