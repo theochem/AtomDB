@@ -61,7 +61,7 @@ jobs:
     - name: Create soft links
       run: |
         cd website
-        ln -s ../notebooks ./examples
+        ln -s ../docs/notebooks ./examples
         ln -s ../docs/source ./api
         cd ../
 
