@@ -62,6 +62,7 @@ jobs:
       run: |
         cd website
         ln -s ../docs/notebooks ./examples
+        ln -s ../docs/notebooks/images ./examples/images
         ln -s ../docs/source ./api
         cd ../
 
