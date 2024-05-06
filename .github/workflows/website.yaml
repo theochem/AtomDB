@@ -62,7 +62,7 @@ jobs:
       run: |
         cd website
         ln -s ../notebooks ./examples
-        ln -s ../doc/source ./api
+        ln -s ../docs/source ./api
         cd ../
 
     - name: Install Requirements
