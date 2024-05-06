@@ -6,7 +6,7 @@ root: index.rst
 parts:
     - caption: User Documentation
       chapters:
-      - file: installation.rst
+      - file: source/installation.rst
 
     - caption: Example Tutorials
       chapters:
