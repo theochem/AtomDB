@@ -66,6 +66,10 @@ jobs:
         ln -s ../doc/source ./api
         cd ../
 
+    - name: Install Requirements
+      run: |
+        python3 -m pip install -r website/requirements.txt
+
     - name: Build Jupyter Book
       run: |
         jupyter-book build ./website/
