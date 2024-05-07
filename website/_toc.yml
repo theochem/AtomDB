@@ -13,3 +13,7 @@ parts:
       - file: examples/getting_started.ipynb
       - file: examples/promolecule_intro.ipynb
       - file: examples/promolecule_nci.ipynb
+
+    - caption: API Documentation
+      chapters:
+      - file: api/api/atomdb.rst
