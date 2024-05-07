@@ -63,23 +63,3 @@ The table below lists the atomic properties available for the datasets in AtomDB
     :delim: ;
     :header-rows: 1
     :align: center
-
-.. toctree::
-    :maxdepth: 2
-    :caption: User Documentation
-
-    ./installation.rst
-
-.. toctree::
-    :maxdepth: 1
-    :caption: Example Tutorials
-
-    Getting Started <./notebooks/getting_started.ipynb>
-    Intro to promolecular properties <./notebooks/promolecule_intro.ipynb>
-    Promolecular properties NCI <./notebooks/promolecule_nci.ipynb>
-
-.. toctree::
-    :maxdepth: 3
-    :caption: API Documentation
-
-    api/modules
