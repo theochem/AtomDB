@@ -43,7 +43,7 @@ jobs:
 
     - name: Build documentation
       run: |
-        sphinx-apidoc -a -e -o docs/source/api atomdb
+        sphinx-apidoc -a -e -o website/doc atomdb
         sphinx-build -M html docs/source build
         touch build/html/.nojekyll
 

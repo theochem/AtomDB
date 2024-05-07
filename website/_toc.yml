@@ -16,4 +16,4 @@ parts:
 
     - caption: API Documentation
       chapters:
-      - file: api/api/modules.rst
+      - file: doc/modules.rst
