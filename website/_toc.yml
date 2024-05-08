@@ -1,0 +1,19 @@
+# Table of contents
+# Learn more at https://jupyterbook.org/customize/toc.html
+
+format: jb-book
+root: api/index.rst
+parts:
+    - caption: User Documentation
+      chapters:
+      - file: installation.rst
+
+    - caption: Example Tutorials
+      chapters:
+      - file: examples/getting_started.ipynb
+      - file: examples/promolecule_intro.ipynb
+      - file: examples/promolecule_nci.ipynb
+
+    - caption: API Documentation
+      chapters:
+      - file: _autosummary/atomdb.rst
