@@ -1,100 +1,362 @@
+
 <!DOCTYPE html>
-<html class="writer-html5" lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Index &mdash; AtomDB  documentation</title>
-      <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
-      <link rel="stylesheet" type="text/css" href="_static/css/override.css" />
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Index &#8212; Ayers Lab</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
 
   
-  <!--[if lt IE 9]>
-    <script src="_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+  <link href="_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/sphinx_highlight.js"></script>
-        <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
-    <script src="_static/js/theme.js"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9a2dae69"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="_static/copybutton.js?v=f281be69"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'genindex';</script>
+    <link rel="icon" href="_static/favicon.png"/>
     <link rel="index" title="Index" href="#" />
-    <link rel="search" title="Search" href="search.html" /> 
-</head>
+    <link rel="search" title="Search" href="search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
 
-          
-          
-          <a href="index.html" class="icon icon-home">
-            AtomDB
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <p class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="pyapi/modules.html">atomdb</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="pyapi/atomdb.html">atomdb package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="pyapi/atomdb.html#submodules">Submodules</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="pyapi/atomdb.api.html">atomdb.api module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pyapi/atomdb.periodic.html">atomdb.periodic module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pyapi/atomdb.promolecule.html">atomdb.promolecule module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="pyapi/atomdb.version.html">atomdb.version module</a></li>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="api/index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="_static/logo.png" class="logo__image only-light" alt="Ayers Lab - Home"/>
+    <script>document.write(`<img src="_static/logo.png" class="logo__image only-dark" alt="Ayers Lab - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="api/index.html">
+                    Welcome to AtomDB’s documentation!
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Example Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="examples/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/promolecule_intro.html">Promolecule properties: Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples/promolecule_nci.html">Promolecular properties: water dimer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="_autosummary/atomdb.html">atomdb package</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="_autosummary/atomdb.datasets.html">atomdb.datasets package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/atomdb.datasets.gaussian.html">atomdb.datasets.gaussian package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/atomdb.datasets.hci_augccpwcvqz.html">atomdb.datasets.hci_augccpwcvqz package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/atomdb.datasets.nist.html">atomdb.datasets.nist package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/atomdb.datasets.numeric.html">atomdb.datasets.numeric package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/atomdb.datasets.slater.html">atomdb.datasets.slater package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="_autosummary/atomdb.datasets.uhf_augccpvdz.html">atomdb.datasets.uhf_augccpvdz package</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="pyapi/atomdb.html#module-contents">Module contents</a></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>
 
-        </div>
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
       </div>
-    </nav>
+      
+      <main id="main-content" class="bd-main">
+        
+        
 
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">AtomDB</a>
-      </nav>
+<div class="sbt-scroll-pixel-helper"></div>
 
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Index</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/theochem/AtomDB" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/theochem/AtomDB/issues/new?title=Issue%20on%20page%20%2Fgenindex.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
   </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1></h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
 
 <h1 id="index">Index</h1>
 
 <div class="genindex-jumpbox">
- <a href="#_"><strong>_</strong></a>
- | <a href="#A"><strong>A</strong></a>
- | <a href="#B"><strong>B</strong></a>
+ <a href="#A"><strong>A</strong></a>
  | <a href="#C"><strong>C</strong></a>
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
- | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
@@ -102,83 +364,148 @@
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
+ | <a href="#O"><strong>O</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#R"><strong>R</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
- | <a href="#U"><strong>U</strong></a>
  | <a href="#V"><strong>V</strong></a>
- | <a href="#X"><strong>X</strong></a>
  
 </div>
-<h2 id="_">_</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.__init__">__init__() (cubicspline_ method)</a>
-
-      <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.__init__">(cubicspline_log method)</a>
-</li>
-        <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.__init__">(Promolecule method)</a>
-</li>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.__init__">(Species method)</a>
-</li>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.__init__">(SpeciesData method)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
 <h2 id="A">A</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.antiderivative">antiderivative() (cubicspline_ method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.at_radius">at_radius (atomdb.Element property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.antiderivative">(cubicspline_log method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.at_radius">(atomdb.periodic.Element property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.Species.at_radius">(atomdb.Species property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.at_radius">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.atmass">atmass (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.atmass">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.atnum">atnum (atomdb.Element property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.atnum">(atomdb.periodic.Element property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.Species.atnum">(atomdb.Species property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.atnum">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
       <li>
-    atomdb.api
+    atomdb
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#module-atomdb.api">module</a>
+        <li><a href="_autosummary/atomdb.html#module-atomdb">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.html#module-atomdb.datasets">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets.gaussian
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.gaussian.html#module-atomdb.datasets.gaussian">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets.hci_augccpwcvqz
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.hci_augccpwcvqz.html#module-atomdb.datasets.hci_augccpwcvqz">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets.nist
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.nist.html#module-atomdb.datasets.nist">module</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    atomdb.datasets.nist.run
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.nist.html#module-atomdb.datasets.nist.run">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets.numeric
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.numeric.html#module-atomdb.datasets.numeric">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets.numeric.run
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.numeric.html#module-atomdb.datasets.numeric.run">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets.slater
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.slater.html#module-atomdb.datasets.slater">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.datasets.uhf_augccpvdz
+
+      <ul>
+        <li><a href="_autosummary/atomdb.datasets.uhf_augccpvdz.html#module-atomdb.datasets.uhf_augccpvdz">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.periodic
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.periodic">module</a>
 </li>
       </ul></li>
       <li>
     atomdb.promolecule
 
       <ul>
-        <li><a href="pyapi/atomdb.promolecule.html#module-atomdb.promolecule">module</a>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.promolecule">module</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
+      <li>
+    atomdb.species
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.species">module</a>
+</li>
+      </ul></li>
+      <li>
+    atomdb.utils
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.utils">module</a>
+</li>
+      </ul></li>
       <li>
     atomdb.version
 
       <ul>
-        <li><a href="pyapi/atomdb.version.html#module-atomdb.version">module</a>
-</li>
-      </ul></li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.atoms">atoms (Promolecule attribute)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.axis">axis (cubicspline_ attribute)</a>
-
-      <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.axis">(cubicspline_log attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="B">B</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.basis">basis (Species attribute)</a>
-
-      <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.basis">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.version">module</a>
 </li>
       </ul></li>
   </ul></td>
@@ -187,70 +514,96 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.c">c (cubicspline_ attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.c6">c6 (atomdb.Element property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.c">(cubicspline_log attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.c6">(atomdb.periodic.Element property)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.coeffs">coeffs (Promolecule attribute)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.compile">compile() (in module atomdb.api)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.construct_fast">construct_fast() (cubicspline_ class method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.charge">charge (atomdb.Species property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.construct_fast">(cubicspline_log class method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.charge">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.charge">charge() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.charge">(atomdb.promolecule.Promolecule method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.coords">coords (Promolecule attribute)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.cov_radii">cov_radii (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.compile">compile() (in module atomdb)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.cov_radii">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.compile">(in module atomdb.species)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubic_interp">cubic_interp() (in module atomdb.api)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.cov_radius">cov_radius (atomdb.Element property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.cov_radius">(atomdb.periodic.Element property)</a>
 </li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_">cubicspline_ (class in atomdb.api)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.Species.cov_radius">(atomdb.Species property)</a>
 </li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log">cubicspline_log (class in atomdb.api)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.cov_radius">(atomdb.species.Species property)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.datafile">datafile() (in module atomdb.api)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.dataset">dataset (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.d_dens_func">d_dens_func() (atomdb.Species method)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.dataset">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.d_dens_func">(atomdb.species.Species method)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.DEFAULT_DATAPATH">DEFAULT_DATAPATH (in module atomdb.api)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.dataset">dataset (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.dataset">(atomdb.species.Species property)</a>
 </li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.DEFAULT_DATASET">DEFAULT_DATASET (in module atomdb.api)</a>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.dd_dens_func">dd_dens_func() (atomdb.Species method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.dd_dens_func">(atomdb.species.Species method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.utils.DEFAULT_DATAPATH">DEFAULT_DATAPATH (in module atomdb.utils)</a>
+</li>
+      <li><a href="_autosummary/atomdb.html#atomdb.utils.DEFAULT_DATASET">DEFAULT_DATASET (in module atomdb.utils)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.dens_tot">dens_tot (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.utils.DEFAULT_REMOTE">DEFAULT_REMOTE (in module atomdb.utils)</a>
+</li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.dens_func">dens_func() (atomdb.Species method)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.dens_tot">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.dens_func">(atomdb.species.Species method)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.density">density() (Promolecule method)</a>, <a href="pyapi/atomdb.promolecule.html#id0">[1]</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.derivative">derivative() (cubicspline_ method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.density">density() (atomdb.Promolecule method)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.derivative">(cubicspline_log method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.density">(atomdb.promolecule.Promolecule method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.dispersion_c6">dispersion_c6 (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.dispersion_c6">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.dump">dump() (in module atomdb)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.dump">(in module atomdb.species)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -259,66 +612,66 @@
 <h2 id="E">E</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.elem">elem (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.elem">elem (atomdb.Species property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.elem">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.elem">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.element_number">element_number() (in module atomdb.api)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.element_symbol">element_symbol() (in module atomdb.api)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.ELEMENTS">ELEMENTS (in module atomdb.api)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.energy">energy (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element">Element (class in atomdb)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.energy">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element">(class in atomdb.periodic)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.energy">energy() (Promolecule method)</a>, <a href="pyapi/atomdb.promolecule.html#id1">[1]</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.eta">eta (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.element_name">element_name() (in module atomdb)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.eta">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.element_name">(in module atomdb.periodic)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.eta">eta() (Promolecule method)</a>, <a href="pyapi/atomdb.promolecule.html#id2">[1]</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.extend">extend() (cubicspline_ method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.element_number">element_number() (in module atomdb)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.extend">(cubicspline_log method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.element_number">(in module atomdb.periodic)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.extrapolate">extrapolate (cubicspline_ attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.element_symbol">element_symbol() (in module atomdb)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.extrapolate">(cubicspline_log attribute)</a>
-</li>
-      </ul></li>
-  </ul></td>
-</tr></table>
-
-<h2 id="F">F</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.from_bernstein_basis">from_bernstein_basis() (cubicspline_ class method)</a>
-
-      <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.from_bernstein_basis">(cubicspline_log class method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.element_symbol">(in module atomdb.periodic)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.from_spline">from_spline() (cubicspline_ class method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.eneg">eneg (atomdb.Element property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.from_spline">(cubicspline_log class method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.eneg">(atomdb.periodic.Element property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.energy">energy (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.energy">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.energy">energy() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.energy">(atomdb.promolecule.Promolecule method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.eta">eta (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.eta">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.eta">eta() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.eta">(atomdb.promolecule.Promolecule method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -327,62 +680,78 @@
 <h2 id="G">G</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.get_docstring">get_docstring() (in module atomdb.api)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.utils.generate_mult_csv">generate_mult_csv() (in module atomdb.utils)</a>
 </li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.get_docstring">get_docstring() (atomdb.Species method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.get_docstring">(atomdb.species.Species method)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.get_element_data">get_element_data() (in module atomdb.api)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.gradient">gradient() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.gradient">(atomdb.promolecule.Promolecule method)</a>
 </li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.gradient">gradient() (Promolecule method)</a>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.group">group (atomdb.Element property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.group">(atomdb.periodic.Element property)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="H">H</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.hessian">hessian() (Promolecule method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.hessian">hessian() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.hessian">(atomdb.promolecule.Promolecule method)</a>
 </li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.integrate">integrate() (cubicspline_ method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.ip">ip (atomdb.Species property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.integrate">(cubicspline_log method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.ip">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.interpolate_dens">interpolate_dens() (Species method)</a>
-</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.interpolate_ked">interpolate_ked() (Species method)</a>
-</li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.ip">ip (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.ip">ip() (atomdb.Promolecule method)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.ip">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.ip">(atomdb.promolecule.Promolecule method)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.ip">ip() (Promolecule method)</a>, <a href="pyapi/atomdb.promolecule.html#id3">[1]</a>
-</li>
   </ul></td>
 </tr></table>
 
 <h2 id="K">K</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.ked">ked() (Promolecule method)</a>, <a href="pyapi/atomdb.promolecule.html#id4">[1]</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.ked_tot">ked_tot (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.ked">ked() (atomdb.Promolecule method)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.ked_tot">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.ked">(atomdb.promolecule.Promolecule method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.ked_func">ked_func() (atomdb.Species method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.ked_func">(atomdb.species.Species method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -391,11 +760,21 @@
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.laplacian">laplacian() (Promolecule method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.laplacian">laplacian() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.laplacian">(atomdb.promolecule.Promolecule method)</a>
 </li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.load">load() (in module atomdb.api)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.load">load() (in module atomdb)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.load">(in module atomdb.species)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.datasets.numeric.html#atomdb.datasets.numeric.run.load_numerical_hf_data">load_numerical_hf_data() (in module atomdb.datasets.numeric.run)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -403,38 +782,88 @@
 <h2 id="M">M</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.make_promolecule">make_promolecule() (in module atomdb.promolecule)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.promolecule.make_promolecule">make_promolecule() (in module atomdb.promolecule)</a>
 </li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.mass">mass (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.mass">mass (atomdb.Element property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.mass">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.mass">(atomdb.periodic.Element property)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.mass">mass() (Promolecule method)</a>, <a href="pyapi/atomdb.promolecule.html#id5">[1]</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.mass">mass() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.mass">(atomdb.promolecule.Promolecule method)</a>
 </li>
+      </ul></li>
       <li>
     module
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#module-atomdb.api">atomdb.api</a>
+        <li><a href="_autosummary/atomdb.html#module-atomdb">atomdb</a>
 </li>
-        <li><a href="pyapi/atomdb.promolecule.html#module-atomdb.promolecule">atomdb.promolecule</a>
+        <li><a href="_autosummary/atomdb.datasets.html#module-atomdb.datasets">atomdb.datasets</a>
 </li>
-        <li><a href="pyapi/atomdb.version.html#module-atomdb.version">atomdb.version</a>
+        <li><a href="_autosummary/atomdb.datasets.gaussian.html#module-atomdb.datasets.gaussian">atomdb.datasets.gaussian</a>
+</li>
+        <li><a href="_autosummary/atomdb.datasets.hci_augccpwcvqz.html#module-atomdb.datasets.hci_augccpwcvqz">atomdb.datasets.hci_augccpwcvqz</a>
+</li>
+        <li><a href="_autosummary/atomdb.datasets.nist.html#module-atomdb.datasets.nist">atomdb.datasets.nist</a>
+</li>
+        <li><a href="_autosummary/atomdb.datasets.nist.html#module-atomdb.datasets.nist.run">atomdb.datasets.nist.run</a>
+</li>
+        <li><a href="_autosummary/atomdb.datasets.numeric.html#module-atomdb.datasets.numeric">atomdb.datasets.numeric</a>
+</li>
+        <li><a href="_autosummary/atomdb.datasets.numeric.html#module-atomdb.datasets.numeric.run">atomdb.datasets.numeric.run</a>
+</li>
+        <li><a href="_autosummary/atomdb.datasets.slater.html#module-atomdb.datasets.slater">atomdb.datasets.slater</a>
+</li>
+        <li><a href="_autosummary/atomdb.datasets.uhf_augccpvdz.html#module-atomdb.datasets.uhf_augccpvdz">atomdb.datasets.uhf_augccpvdz</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.periodic">atomdb.periodic</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.promolecule">atomdb.promolecule</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.species">atomdb.species</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.utils">atomdb.utils</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#module-atomdb.version">atomdb.version</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.mu">mu (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.utils.MODULE_DATAPATH">MODULE_DATAPATH (in module atomdb.utils)</a>
+</li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.mu">mu (atomdb.Species property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.mu">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.mu">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule.mu">mu() (Promolecule method)</a>, <a href="pyapi/atomdb.promolecule.html#id6">[1]</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.mu">mu() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.mu">(atomdb.promolecule.Promolecule method)</a>
 </li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.MULTIPLICITIES">MULTIPLICITIES (in module atomdb.api)</a>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.mult">mult (atomdb.Element property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.mult">(atomdb.periodic.Element property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.Species.mult">(atomdb.Species property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.mult">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.mult">mult() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.mult">(atomdb.promolecule.Promolecule method)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.utils.MULTIPLICITIES">MULTIPLICITIES (in module atomdb.utils)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -442,30 +871,54 @@
 <h2 id="N">N</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.natom">natom (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.name">name (atomdb.Element property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.natom">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.name">(atomdb.periodic.Element property)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.nelec">nelec (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.nelec">nelec (atomdb.Species property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.nelec">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.nelec">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.nelec">nelec() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.nelec">(atomdb.promolecule.Promolecule method)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.nexc">nexc (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.nexc">nexc (atomdb.Species property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.nexc">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.nexc">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.nspin">nspin (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.nspin">nspin (atomdb.Species property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.nspin">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.nspin">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule.nspin">nspin() (atomdb.Promolecule method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule.nspin">(atomdb.promolecule.Promolecule method)</a>
+</li>
+      </ul></li>
+  </ul></td>
+</tr></table>
+
+<h2 id="O">O</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.obasis_name">obasis_name (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.obasis_name">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -474,30 +927,50 @@
 <h2 id="P">P</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.pack_msg">pack_msg() (in module atomdb.api)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.period">period (atomdb.Element property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.period">(atomdb.periodic.Element property)</a>
 </li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.polarizability">polarizability (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.polarizability">(atomdb.species.Species property)</a>
+</li>
+      </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.promolecule.html#atomdb.promolecule.Promolecule">Promolecule (class in atomdb.promolecule)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.pold">pold (atomdb.Element property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.pold">(atomdb.periodic.Element property)</a>
 </li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Promolecule">Promolecule (class in atomdb)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.promolecule.Promolecule">(class in atomdb.promolecule)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="R">R</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.roots">roots() (cubicspline_ method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.raw_datafile">raw_datafile() (in module atomdb)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.roots">(cubicspline_log method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.raw_datafile">(in module atomdb.species)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.rs">rs (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.datasets.nist.html#atomdb.datasets.nist.run.run">run() (in module atomdb.datasets.nist.run)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.rs">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.datasets.numeric.html#atomdb.datasets.numeric.run.run">(in module atomdb.datasets.numeric.run)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -506,96 +979,137 @@
 <h2 id="S">S</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.solve">solve() (cubicspline_ method)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species">Species (class in atomdb)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.solve">(cubicspline_log method)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species">(class in atomdb.species)</a>
+</li>
+      </ul></li>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.spinpol">spinpol (atomdb.Species property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.spinpol">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species">Species (class in atomdb.api)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.symbol">symbol (atomdb.Element property)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.symbol">(atomdb.periodic.Element property)</a>
 </li>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData">SpeciesData (class in atomdb.api)</a>
-</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="T">T</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.to_dict">to_dict() (Species method)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.to_json">to_json() (Species method)</a>
-</li>
-  </ul></td>
-</tr></table>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.to_dict">to_dict() (atomdb.Species method)</a>
 
-<h2 id="U">U</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.unpack_msg">unpack_msg() (in module atomdb.api)</a>
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.to_dict">(atomdb.species.Species method)</a>
 </li>
+      </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="_autosummary/atomdb.html#atomdb.Species.to_json">to_json() (atomdb.Species method)</a>
+
+      <ul>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.to_json">(atomdb.species.Species method)</a>
+</li>
+      </ul></li>
   </ul></td>
 </tr></table>
 
 <h2 id="V">V</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.Species.vdw_radii">vdw_radii (Species attribute)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.Element.vdw_radius">vdw_radius (atomdb.Element property)</a>
 
       <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.SpeciesData.vdw_radii">(SpeciesData attribute)</a>
+        <li><a href="_autosummary/atomdb.html#atomdb.periodic.Element.vdw_radius">(atomdb.periodic.Element property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.Species.vdw_radius">(atomdb.Species property)</a>
+</li>
+        <li><a href="_autosummary/atomdb.html#atomdb.species.Species.vdw_radius">(atomdb.species.Species property)</a>
 </li>
       </ul></li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.version.html#atomdb.version.version">version (in module atomdb.version)</a>
+      <li><a href="_autosummary/atomdb.html#atomdb.version.version">version (in module atomdb.version)</a>
 </li>
-  </ul></td>
-</tr></table>
-
-<h2 id="X">X</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_.x">x (cubicspline_ attribute)</a>
-
-      <ul>
-        <li><a href="pyapi/atomdb.api.html#atomdb.api.cubicspline_log.x">(cubicspline_log attribute)</a>
-</li>
-      </ul></li>
   </ul></td>
 </tr></table>
 
 
 
-           </div>
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"></div>
+              
+            
           </div>
-          <footer>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The QC-Dev Community with the support of Digital Research Alliance of Canada and The Jupyter Book Community
+</p>
 
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2024, QC-Devs.</p>
   </div>
+  
+  <div class="footer-item">
+    
 
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
+  <p class="copyright">
+    
+      © Copyright 2023-2024.
+      <br/>
+    
+  </p>
 
-</footer>
-        </div>
-      </div>
-    </section>
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
 
-</body>
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
 </html>

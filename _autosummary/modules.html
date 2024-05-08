@@ -1,0 +1,673 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>atomdb &#8212; Ayers Lab</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "light";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.1/css/all.min.css?digest=8d27b9dea8ad943066ae" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.1/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=fa44fd50" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=384b581d" />
+    <link rel="stylesheet" type="text/css" href="../_static/togglebutton.css?v=13237357" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.4510f1fc1dee50b3e5859aac5469c37c29e427902b24a333a5f9fcb2f0b3ac41.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/sphinx-thebe.css?v=4fa983c6" />
+    <link rel="stylesheet" type="text/css" href="../_static/design-style.1e8bd061cd6da7fc9cf755528e8ffc24.min.css?v=0a3b3ea7" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae" />
+  <script src="../_static/vendor/fontawesome/6.5.1/js/all.min.js?digest=8d27b9dea8ad943066ae"></script>
+
+    <script src="../_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=efea14e4"></script>
+    <script>let toggleHintShow = 'Click to show';</script>
+    <script>let toggleHintHide = 'Click to hide';</script>
+    <script>let toggleOpenOnPrint = 'true';</script>
+    <script src="../_static/togglebutton.js?v=4a39c7ea"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script src="../_static/design-tabs.js?v=36754332"></script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
+    <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
+    <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/modules';</script>
+    <link rel="icon" href="../_static/favicon.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <a id="pst-skip-link" class="skip-link" href="#main-content">Skip to main content</a>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>
+    Back to top
+  </button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__primary"
+          id="__primary"/>
+  <label class="overlay overlay-primary" for="__primary"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          name="__secondary"
+          id="__secondary"/>
+  <label class="overlay overlay-secondary" for="__secondary"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search this book..."
+         aria-label="Search this book..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+        
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+
+<a class="navbar-brand logo" href="../api/index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/logo.png" class="logo__image only-light" alt="Ayers Lab - Home"/>
+    <script>document.write(`<img src="../_static/logo.png" class="logo__image only-dark" alt="Ayers Lab - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn navbar-btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        
+        <ul class="nav bd-sidenav bd-sidenav__home-link">
+            <li class="toctree-l1">
+                <a class="reference internal" href="../api/index.html">
+                    Welcome to AtomDB’s documentation!
+                </a>
+            </li>
+        </ul>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">User Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Example Tutorials</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../examples/getting_started.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/promolecule_intro.html">Promolecule properties: Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples/promolecule_nci.html">Promolecular properties: water dimer</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="atomdb.html">atomdb package</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="atomdb.datasets.html">atomdb.datasets package</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.gaussian.html">atomdb.datasets.gaussian package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.hci_augccpwcvqz.html">atomdb.datasets.hci_augccpwcvqz package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.nist.html">atomdb.datasets.nist package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.numeric.html">atomdb.datasets.numeric package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.slater.html">atomdb.datasets.slater package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.uhf_augccpvdz.html">atomdb.datasets.uhf_augccpvdz package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><label class="sidebar-toggle primary-toggle btn btn-sm" for="__primary" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</label></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/theochem/AtomDB" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/theochem/AtomDB/issues/new?title=Issue%20on%20page%20%2F_autosummary/modules.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/_autosummary/modules.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="theme-switch nav-link" data-mode="light"><i class="fa-solid fa-sun fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="dark"><i class="fa-solid fa-moon fa-lg"></i></span>
+    <span class="theme-switch nav-link" data-mode="auto"><i class="fa-solid fa-circle-half-stroke fa-lg"></i></span>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm navbar-btn search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>atomdb</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="atomdb">
+<h1>atomdb<a class="headerlink" href="#atomdb" title="Link to this heading">#</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="atomdb.html">atomdb package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.Element"><code class="docutils literal notranslate"><span class="pre">Element</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.at_radius"><code class="docutils literal notranslate"><span class="pre">Element.at_radius</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.atnum"><code class="docutils literal notranslate"><span class="pre">Element.atnum</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.c6"><code class="docutils literal notranslate"><span class="pre">Element.c6</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.cov_radius"><code class="docutils literal notranslate"><span class="pre">Element.cov_radius</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.eneg"><code class="docutils literal notranslate"><span class="pre">Element.eneg</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.group"><code class="docutils literal notranslate"><span class="pre">Element.group</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.mass"><code class="docutils literal notranslate"><span class="pre">Element.mass</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.mult"><code class="docutils literal notranslate"><span class="pre">Element.mult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.name"><code class="docutils literal notranslate"><span class="pre">Element.name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.period"><code class="docutils literal notranslate"><span class="pre">Element.period</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.pold"><code class="docutils literal notranslate"><span class="pre">Element.pold</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.symbol"><code class="docutils literal notranslate"><span class="pre">Element.symbol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Element.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Element.vdw_radius</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.Promolecule"><code class="docutils literal notranslate"><span class="pre">Promolecule</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.charge"><code class="docutils literal notranslate"><span class="pre">Promolecule.charge()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.density"><code class="docutils literal notranslate"><span class="pre">Promolecule.density()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.energy"><code class="docutils literal notranslate"><span class="pre">Promolecule.energy()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.eta"><code class="docutils literal notranslate"><span class="pre">Promolecule.eta()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.gradient"><code class="docutils literal notranslate"><span class="pre">Promolecule.gradient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.hessian"><code class="docutils literal notranslate"><span class="pre">Promolecule.hessian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.ip"><code class="docutils literal notranslate"><span class="pre">Promolecule.ip()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.ked"><code class="docutils literal notranslate"><span class="pre">Promolecule.ked()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.laplacian"><code class="docutils literal notranslate"><span class="pre">Promolecule.laplacian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.mass"><code class="docutils literal notranslate"><span class="pre">Promolecule.mass()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.mu"><code class="docutils literal notranslate"><span class="pre">Promolecule.mu()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.mult"><code class="docutils literal notranslate"><span class="pre">Promolecule.mult()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.nelec"><code class="docutils literal notranslate"><span class="pre">Promolecule.nelec()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Promolecule.nspin"><code class="docutils literal notranslate"><span class="pre">Promolecule.nspin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.Species"><code class="docutils literal notranslate"><span class="pre">Species</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.at_radius"><code class="docutils literal notranslate"><span class="pre">Species.at_radius</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.atmass"><code class="docutils literal notranslate"><span class="pre">Species.atmass</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.atnum"><code class="docutils literal notranslate"><span class="pre">Species.atnum</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.charge"><code class="docutils literal notranslate"><span class="pre">Species.charge</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.cov_radius"><code class="docutils literal notranslate"><span class="pre">Species.cov_radius</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.d_dens_func"><code class="docutils literal notranslate"><span class="pre">Species.d_dens_func()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.dataset"><code class="docutils literal notranslate"><span class="pre">Species.dataset</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.dd_dens_func"><code class="docutils literal notranslate"><span class="pre">Species.dd_dens_func()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.dens_func"><code class="docutils literal notranslate"><span class="pre">Species.dens_func()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.dispersion_c6"><code class="docutils literal notranslate"><span class="pre">Species.dispersion_c6</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.elem"><code class="docutils literal notranslate"><span class="pre">Species.elem</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.energy"><code class="docutils literal notranslate"><span class="pre">Species.energy</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.eta"><code class="docutils literal notranslate"><span class="pre">Species.eta</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.get_docstring"><code class="docutils literal notranslate"><span class="pre">Species.get_docstring()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.ip"><code class="docutils literal notranslate"><span class="pre">Species.ip</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.ked_func"><code class="docutils literal notranslate"><span class="pre">Species.ked_func()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.mu"><code class="docutils literal notranslate"><span class="pre">Species.mu</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.mult"><code class="docutils literal notranslate"><span class="pre">Species.mult</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.nelec"><code class="docutils literal notranslate"><span class="pre">Species.nelec</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.nexc"><code class="docutils literal notranslate"><span class="pre">Species.nexc</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.nspin"><code class="docutils literal notranslate"><span class="pre">Species.nspin</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.obasis_name"><code class="docutils literal notranslate"><span class="pre">Species.obasis_name</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.polarizability"><code class="docutils literal notranslate"><span class="pre">Species.polarizability</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.spinpol"><code class="docutils literal notranslate"><span class="pre">Species.spinpol</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.to_dict"><code class="docutils literal notranslate"><span class="pre">Species.to_dict()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.to_json"><code class="docutils literal notranslate"><span class="pre">Species.to_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.Species.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Species.vdw_radius</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.compile"><code class="docutils literal notranslate"><span class="pre">compile()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.dump"><code class="docutils literal notranslate"><span class="pre">dump()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.element_name"><code class="docutils literal notranslate"><span class="pre">element_name()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.element_number"><code class="docutils literal notranslate"><span class="pre">element_number()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.element_symbol"><code class="docutils literal notranslate"><span class="pre">element_symbol()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#atomdb.raw_datafile"><code class="docutils literal notranslate"><span class="pre">raw_datafile()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.html">atomdb.datasets package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.datasets.html#subpackages">Subpackages</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#module-atomdb.periodic">atomdb.periodic module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element"><code class="docutils literal notranslate"><span class="pre">Element</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.at_radius"><code class="docutils literal notranslate"><span class="pre">Element.at_radius</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.atnum"><code class="docutils literal notranslate"><span class="pre">Element.atnum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.c6"><code class="docutils literal notranslate"><span class="pre">Element.c6</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.cov_radius"><code class="docutils literal notranslate"><span class="pre">Element.cov_radius</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.eneg"><code class="docutils literal notranslate"><span class="pre">Element.eneg</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.group"><code class="docutils literal notranslate"><span class="pre">Element.group</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.mass"><code class="docutils literal notranslate"><span class="pre">Element.mass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.mult"><code class="docutils literal notranslate"><span class="pre">Element.mult</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.name"><code class="docutils literal notranslate"><span class="pre">Element.name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.period"><code class="docutils literal notranslate"><span class="pre">Element.period</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.pold"><code class="docutils literal notranslate"><span class="pre">Element.pold</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.symbol"><code class="docutils literal notranslate"><span class="pre">Element.symbol</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.periodic.Element.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Element.vdw_radius</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.periodic.element_name"><code class="docutils literal notranslate"><span class="pre">element_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.periodic.element_number"><code class="docutils literal notranslate"><span class="pre">element_number()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.periodic.element_symbol"><code class="docutils literal notranslate"><span class="pre">element_symbol()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#module-atomdb.promolecule">atomdb.promolecule module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule"><code class="docutils literal notranslate"><span class="pre">Promolecule</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.charge"><code class="docutils literal notranslate"><span class="pre">Promolecule.charge()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.density"><code class="docutils literal notranslate"><span class="pre">Promolecule.density()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.energy"><code class="docutils literal notranslate"><span class="pre">Promolecule.energy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.eta"><code class="docutils literal notranslate"><span class="pre">Promolecule.eta()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.gradient"><code class="docutils literal notranslate"><span class="pre">Promolecule.gradient()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.hessian"><code class="docutils literal notranslate"><span class="pre">Promolecule.hessian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.ip"><code class="docutils literal notranslate"><span class="pre">Promolecule.ip()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.ked"><code class="docutils literal notranslate"><span class="pre">Promolecule.ked()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.laplacian"><code class="docutils literal notranslate"><span class="pre">Promolecule.laplacian()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.mass"><code class="docutils literal notranslate"><span class="pre">Promolecule.mass()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.mu"><code class="docutils literal notranslate"><span class="pre">Promolecule.mu()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.mult"><code class="docutils literal notranslate"><span class="pre">Promolecule.mult()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.nelec"><code class="docutils literal notranslate"><span class="pre">Promolecule.nelec()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.promolecule.Promolecule.nspin"><code class="docutils literal notranslate"><span class="pre">Promolecule.nspin()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.promolecule.make_promolecule"><code class="docutils literal notranslate"><span class="pre">make_promolecule()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#module-atomdb.species">atomdb.species module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.species.Species"><code class="docutils literal notranslate"><span class="pre">Species</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.at_radius"><code class="docutils literal notranslate"><span class="pre">Species.at_radius</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.atmass"><code class="docutils literal notranslate"><span class="pre">Species.atmass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.atnum"><code class="docutils literal notranslate"><span class="pre">Species.atnum</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.charge"><code class="docutils literal notranslate"><span class="pre">Species.charge</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.cov_radius"><code class="docutils literal notranslate"><span class="pre">Species.cov_radius</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.d_dens_func"><code class="docutils literal notranslate"><span class="pre">Species.d_dens_func()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.dataset"><code class="docutils literal notranslate"><span class="pre">Species.dataset</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.dd_dens_func"><code class="docutils literal notranslate"><span class="pre">Species.dd_dens_func()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.dens_func"><code class="docutils literal notranslate"><span class="pre">Species.dens_func()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.dispersion_c6"><code class="docutils literal notranslate"><span class="pre">Species.dispersion_c6</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.elem"><code class="docutils literal notranslate"><span class="pre">Species.elem</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.energy"><code class="docutils literal notranslate"><span class="pre">Species.energy</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.eta"><code class="docutils literal notranslate"><span class="pre">Species.eta</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.get_docstring"><code class="docutils literal notranslate"><span class="pre">Species.get_docstring()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.ip"><code class="docutils literal notranslate"><span class="pre">Species.ip</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.ked_func"><code class="docutils literal notranslate"><span class="pre">Species.ked_func()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.mu"><code class="docutils literal notranslate"><span class="pre">Species.mu</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.mult"><code class="docutils literal notranslate"><span class="pre">Species.mult</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.nelec"><code class="docutils literal notranslate"><span class="pre">Species.nelec</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.nexc"><code class="docutils literal notranslate"><span class="pre">Species.nexc</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.nspin"><code class="docutils literal notranslate"><span class="pre">Species.nspin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.obasis_name"><code class="docutils literal notranslate"><span class="pre">Species.obasis_name</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.polarizability"><code class="docutils literal notranslate"><span class="pre">Species.polarizability</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.spinpol"><code class="docutils literal notranslate"><span class="pre">Species.spinpol</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.to_dict"><code class="docutils literal notranslate"><span class="pre">Species.to_dict()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.to_json"><code class="docutils literal notranslate"><span class="pre">Species.to_json()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="atomdb.html#atomdb.species.Species.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Species.vdw_radius</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.species.compile"><code class="docutils literal notranslate"><span class="pre">compile()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.species.dump"><code class="docutils literal notranslate"><span class="pre">dump()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.species.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.species.raw_datafile"><code class="docutils literal notranslate"><span class="pre">raw_datafile()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#module-atomdb.utils">atomdb.utils module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.utils.DEFAULT_DATAPATH"><code class="docutils literal notranslate"><span class="pre">DEFAULT_DATAPATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.utils.DEFAULT_DATASET"><code class="docutils literal notranslate"><span class="pre">DEFAULT_DATASET</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.utils.DEFAULT_REMOTE"><code class="docutils literal notranslate"><span class="pre">DEFAULT_REMOTE</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.utils.MODULE_DATAPATH"><code class="docutils literal notranslate"><span class="pre">MODULE_DATAPATH</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.utils.MULTIPLICITIES"><code class="docutils literal notranslate"><span class="pre">MULTIPLICITIES</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.utils.generate_mult_csv"><code class="docutils literal notranslate"><span class="pre">generate_mult_csv()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="atomdb.html#module-atomdb.version">atomdb.version module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.html#atomdb.version.version"><code class="docutils literal notranslate"><span class="pre">version</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+    <script type="text/x-thebe-config">
+    {
+        requestKernel: true,
+        binderOptions: {
+            repo: "theochem/AtomDB",
+            ref: "master",
+        },
+        codeMirrorConfig: {
+            theme: "abcdef",
+            mode: "python"
+        },
+        kernelOptions: {
+            name: "python3",
+            path: "./_autosummary"
+        },
+        predefinedOutput: true
+    }
+    </script>
+    <script>kernelName = 'python3'</script>
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer">
+                  
+<div class="prev-next-area">
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By The QC-Dev Community with the support of Digital Research Alliance of Canada and The Jupyter Book Community
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2023-2024.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=8d27b9dea8ad943066ae"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=8d27b9dea8ad943066ae"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
