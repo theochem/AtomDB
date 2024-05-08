@@ -43,20 +43,7 @@ jobs:
 
     - name: Build documentation
       run: |
-        sphinx-apidoc -a -e -o website/doc atomdb
-        sphinx-build -M html docs/source build
-        touch build/html/.nojekyll
-
-    - name: Fix documentation permissions
-      run: |
-        chmod -c -R +rX "build/html/" | while read line; do
-          echo "::warning title=Invalid file permissions automatically fixed::$line"
-        done
-
-    - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: build/html/
+        sphinx-apidoc -o website/_autosummary atomdb -M -f
 
     - name: Create soft links
       run: |

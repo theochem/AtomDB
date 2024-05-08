@@ -16,4 +16,4 @@ parts:
 
     - caption: API Documentation
       chapters:
-      - file: doc/atomdb.rst
+      - file: _autosummary/atomdb.rst
