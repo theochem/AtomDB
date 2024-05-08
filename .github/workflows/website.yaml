@@ -43,37 +43,32 @@ jobs:
 
     - name: Build documentation
       run: |
-        sphinx-apidoc -a -e -o docs/source/api atomdb
-        sphinx-build -M html docs/source build
-        touch build/html/.nojekyll
+        sphinx-apidoc -o website/_autosummary atomdb -M -f
 
-    - name: Fix documentation permissions
+    - name: Create soft links
       run: |
-        chmod -c -R +rX "build/html/" | while read line; do
-          echo "::warning title=Invalid file permissions automatically fixed::$line"
-        done
+        cd website
+        ln -s ../docs/notebooks ./examples
+        ln -s ../docs/notebooks/images ./examples/images
+        ln -s ../docs/source ./api
+        cd ../
 
-    - name: Upload Pages artifact
-      uses: actions/upload-pages-artifact@v3
+    - name: Install Requirements
+      run: |
+        python3 -m pip install -r website/requirements.txt
+
+    - name: Build Jupyter Book
+      run: |
+        jupyter-book build ./website/
+
+      # Push the book's HTML to github-pages
+      # inspired by https://github.com/orgs/community/discussions/26724
+      # only push to gh-pages if the master branch has been updated
+    - name: GitHub Pages Action
+      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      uses: peaceiris/actions-gh-pages@v3
       with:
-        path: build/html/
-
-  deploy:
-
-    runs-on: ubuntu-latest
-
-    needs: build
-
-    permissions:
-      pages: write
-      id-token: write
-
-    environment:
-      name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
-
-    steps:
-
-      - name: Deploy artifact to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./website/_build/html
+        publish_branch: gh-pages
+        cname: atomdb.qcdevs.org
