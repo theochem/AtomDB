@@ -3,8 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-|GitHub|
-
 Welcome to AtomDB's documentation!
 ================================
 
@@ -63,27 +61,3 @@ The table below lists the atomic properties available for the datasets in AtomDB
     :delim: ;
     :header-rows: 1
     :align: center
-
-.. toctree::
-    :maxdepth: 2
-    :caption: User Documentation
-
-    ./installation.rst
-
-.. toctree::
-    :maxdepth: 1
-    :caption: Example Tutorials
-
-    Getting Started <./notebooks/getting_started.ipynb>
-    Intro to promolecular properties <./notebooks/promolecule_intro.ipynb>
-    Promolecular properties NCI <./notebooks/promolecule_nci.ipynb>
-
-.. toctree::
-    :maxdepth: 3
-    :caption: API Documentation
-
-    api/modules
-
-
-.. |GitHub| image:: https://img.shields.io/badge/theochem-000000.svg?logo=GitHub
-   :target: https://github.com/theochem/AtomDB/

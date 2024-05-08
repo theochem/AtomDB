@@ -86,6 +86,9 @@ doc = [
     "nbsphinx-link",
 ]
 
+[tool.setuptools]
+packages = ["atomdb"]
+
 [tool.black]
 line-length = 100
 
