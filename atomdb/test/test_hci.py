@@ -42,7 +42,7 @@ TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 def test_compiled_hci_data():
     ### Use Be atomic data as a test case
-    sp = load("H", 0, 2, dataset="hci_augccpwcvqz", datapath=TEST_DATAPATH)
+    sp = load("H", 0, 2, dataset="hci", datapath=TEST_DATAPATH)
 
     # check values of energy components
     answer = -0.4999483214691
@@ -69,7 +69,7 @@ def test_compiled_hci_data():
 
 def test_hci_density():
     # load the atomic data and make density spline
-    sp = load("H", 0, 2, dataset="hci_augccpwcvqz", datapath=TEST_DATAPATH)
+    sp = load("H", 0, 2, dataset="hci", datapath=TEST_DATAPATH)
     grid = sp._data.rs
     ##FIXME: orbital density arrays must be 2D arrays
     orb_dens_a = sp._data.mo_dens_a.reshape(len(sp._data.mo_energy_a), -1)
@@ -89,7 +89,7 @@ def test_hci_density():
 
 def test_hci_ked():
     # load the atomic data and make a spline of the kinetic energy density.
-    sp = load("H", 0, 2, dataset="hci_augccpwcvqz", datapath=TEST_DATAPATH)
+    sp = load("H", 0, 2, dataset="hci", datapath=TEST_DATAPATH)
     grid = sp._data.rs
     spline_kdens = sp.ked_func(spin="t")
 
