@@ -14,3 +14,12 @@
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
 r"""HCI dataset."""
+
+DOCSTRING = """Heat-bath Configuration Interaction (HCI) Dataset
+
+Electronic structure and density properties for elements H--Ar evaluated
+with aug-ccpwCVQZ basis set. The HCI variational optimization step was
+performed with epsilon = 5e-4. For elements of group 1 and 2, the aug-cc-pVQZ
+basis set was used instead.
+
+"""
