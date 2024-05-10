@@ -65,7 +65,7 @@ DEGREE = 21  #  Lebedev grid degrees
 BASIS = "aug-ccpwCVQZ"
 
 
-def raw_filepath(suffix, n_atom, charge, mult, nexc, data_path):
+def raw_filepath(suffix, n_atom, charge, mult, nexc, basis, data_path):
     G1G2 = [1, 2, 3, 4, 11, 12]  # Group 1 and 2 elements
     elem = f"{n_atom:04d}"
     charge = f"q{charge:03d}"
@@ -73,8 +73,8 @@ def raw_filepath(suffix, n_atom, charge, mult, nexc, data_path):
     nexc = f"k{nexc:02d}"
 
     if n_atom in G1G2:
-        BASIS = "aug-cc-pVQZ"  # basis set for Group 1 and 2 elements
-    bname = BASIS.lower().replace("-", "").replace("*", "p").replace("+", "d")
+        basis = "aug-cc-pVQZ"  # basis set for Group 1 and 2 elements
+    bname = basis.lower().replace("-", "").replace("*", "p").replace("+", "d")
 
     tag = f"{elem}_{charge}_{mult}_{nexc}"
     method = f"sp_hci_{bname}_5e-4"
@@ -98,7 +98,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     obasis_name = BASIS
 
     # Load restricted Hartree-Fock SCF
-    scfdata = load_one(raw_filepath(".molden", atnum, charge, mult, nexc, datapath))
+    scfdata = load_one(raw_filepath(".molden", atnum, charge, mult, nexc, BASIS, datapath))
     norba = scfdata.mo.norba
     mo_e_up = scfdata.mo.energies[:norba]
     mo_e_dn = mo_e_up  # since only alpha MO information in .molden
@@ -107,7 +107,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     mo_coeff = scfdata.mo.coeffs
 
     # Load HCI data
-    data = np.load(raw_filepath(".ci.npz", atnum, charge, mult, nexc, datapath))
+    data = np.load(raw_filepath(".ci.npz", atnum, charge, mult, nexc, BASIS, datapath))
     energy = data["energy"]
     print(f"Energy: {energy}")
 
