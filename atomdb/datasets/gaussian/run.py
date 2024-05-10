@@ -44,8 +44,8 @@ from atomdb.datasets.tools import (
     eval_orb_ked,
     eval_radial_d_density,
     eval_radial_dd_density,
-    eval_orb_ked
-) 
+    eval_orb_ked,
+)
 
 
 __all__ = [
