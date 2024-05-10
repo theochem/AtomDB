@@ -65,7 +65,7 @@ DEGREE = 21  #  Lebedev grid degrees
 BASIS = "aug-ccpwCVQZ"
 
 
-def raw_filepath(suffix, n_atom, charge, mult, nexc, basis, data_path):
+def raw_filepath(suffix, n_atom, charge, mult, nexc, basis, dataset, data_path):
     G1G2 = [1, 2, 3, 4, 11, 12]  # Group 1 and 2 elements
     elem = f"{n_atom:04d}"
     charge = f"q{charge:03d}"
@@ -78,7 +78,7 @@ def raw_filepath(suffix, n_atom, charge, mult, nexc, basis, data_path):
 
     tag = f"{elem}_{charge}_{mult}_{nexc}"
     method = f"sp_hci_{bname}_5e-4"
-    rawpath = os.path.join(data_path, f"hci_augccpwcvqz/raw/{tag}_{method}{suffix}")
+    rawpath = os.path.join(data_path, f"{dataset}/raw/{tag}_{method}{suffix}")
     return rawpath
 
 
@@ -98,7 +98,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     obasis_name = BASIS
 
     # Load restricted Hartree-Fock SCF
-    scfdata = load_one(raw_filepath(".molden", atnum, charge, mult, nexc, BASIS, datapath))
+    rawpath = raw_filepath(".molden", atnum, charge, mult, nexc, BASIS, dataset, datapath)
+    scfdata = load_one(rawpath)
     norba = scfdata.mo.norba
     mo_e_up = scfdata.mo.energies[:norba]
     mo_e_dn = mo_e_up  # since only alpha MO information in .molden
@@ -107,9 +108,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     mo_coeff = scfdata.mo.coeffs
 
     # Load HCI data
-    data = np.load(raw_filepath(".ci.npz", atnum, charge, mult, nexc, BASIS, datapath))
+    rawpath = raw_filepath(".ci.npz", atnum, charge, mult, nexc, BASIS, dataset, datapath)
+    data = np.load(rawpath)
     energy = data["energy"]
-    print(f"Energy: {energy}")
 
     # Prepare data for computing Species properties
     # density matrix in MO basis
@@ -197,9 +198,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Get information about the element
     atom = Element(elem)
     atmass = atom.mass
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
-        None,
-    ] * 5
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [None,] * 5
     # overwrite values for neutral atomic species
     if charge == 0:
         cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
