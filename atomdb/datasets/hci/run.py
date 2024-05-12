@@ -13,26 +13,23 @@
 # You should have received a copy of the GNU General Public License
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
-r"""Gaussian density compile function."""
+r"""HCI compile function."""
 
 import os
 
 import numpy as np
 
+from iodata import load_one
+
 from gbasis.wrappers import from_iodata
 
 from gbasis.evals.density import evaluate_density as eval_dens
-from gbasis.evals.density import evaluate_density_gradient
-from gbasis.evals.density import evaluate_density_hessian
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
-from gbasis.evals.eval_deriv import evaluate_deriv_basis
-from gbasis.evals.eval import evaluate_basis
+from gbasis.evals.density import evaluate_basis
 
 from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
 from grid.atomgrid import AtomGrid
-
-from iodata import load_one
 
 import atomdb
 
@@ -56,59 +53,37 @@ __all__ = [
 # Parameters to generate an atomic grid from uniform radial grid
 # Use 170 points, lmax = 21 for the Lebedev grid since our basis
 # don't go beyond l=10 in the spherical harmonics.
-BOUND = (1e-30, 2e1)  # (r_min, r_max)
+BOUND = (1e-10, 2e1)  # (r_min, r_max)
 
-NPOINTS = 1000
+NPOINTS = 200
 
 SIZE = 170  # Lebedev grid sizes
 
 DEGREE = 21  #  Lebedev grid degrees
 
 
-DOCSTRING = """Gaussian basis densities (UHF) Dataset
-
-Electronic structure and density properties evaluated with def2-svpd basis set
-
-"""
+BASIS = "aug-ccpwCVQZ"
 
 
-def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
-    r"""Load Gaussian fchk file and return the iodata object
+def raw_filepath(suffix, n_atom, charge, mult, nexc, basis, dataset, data_path):
+    G1G2 = [1, 2, 3, 4, 11, 12]  # Group 1 and 2 elements
+    elem = f"{n_atom:04d}"
+    charge = f"q{charge:03d}"
+    mult = f"m{mult:02d}"
+    nexc = f"k{nexc:02d}"
 
-    This function finds the fchk file in the data directory corresponding to the given parameters,
-    loads it and returns the iodata object.
+    if n_atom in G1G2:
+        basis = "aug-cc-pVQZ"  # basis set for Group 1 and 2 elements
+    bname = basis.lower().replace("-", "").replace("*", "p").replace("+", "d")
 
-    Parameters
-    ----------
-    n_atom : int
-        Atomic number
-    element : str
-        Chemical symbol of the species
-    n_elec : int
-        Number of electrons
-    multi : int
-        Multiplicity
-    basis_name : str
-        Basis set name
-    data_path : str
-        Path to the data directory
-
-    Returns
-    -------
-    iodata : iodata.IOData
-        Iodata object containing the data from the fchk file
-    """
-    bname = basis_name.lower().replace("-", "").replace("*", "p").replace("+", "d")
-    prefix = f"atom_{str(n_atom).zfill(3)}_{element}"
-    tag = f"N{str(n_elec).zfill(2)}_M{multi}"
-    method = f"uhf_{bname}_g09"
-    # fchkpath = os.path.join(os.path.dirname(__file__), f"raw/{prefix}_{tag}_{method}.fchk")
-    fchkpath = os.path.join(data_path, f"gaussian/raw/{prefix}_{tag}_{method}.fchk")
-    return load_one(fchkpath)
+    tag = f"{elem}_{charge}_{mult}_{nexc}"
+    method = f"sp_hci_{bname}_5e-4"
+    rawpath = os.path.join(data_path, f"{dataset}/raw/{tag}_{method}{suffix}")
+    return rawpath
 
 
 def run(elem, charge, mult, nexc, dataset, datapath):
-    r"""Compile the AtomDB database entry for densities from Gaussian wfn."""
+    r"""Run an HCI computation and compile the AtomDB database entry."""
     # Check arguments
     if nexc != 0:
         raise ValueError("Nonzero value of `nexc` is not currently supported")
@@ -120,31 +95,27 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
     n_dn = (nelec - nspin) // 2
+    obasis_name = BASIS
 
-    # Load data from fchk
-    obasis_name = "def2-svpd"
-    data = _load_fchk(atnum, elem, nelec, mult, obasis_name, datapath)
+    # Load restricted Hartree-Fock SCF
+    rawpath = raw_filepath(".molden", atnum, charge, mult, nexc, BASIS, dataset, datapath)
+    scfdata = load_one(rawpath)
+    norba = scfdata.mo.norba
+    mo_e_up = scfdata.mo.energies[:norba]
+    mo_e_dn = mo_e_up  # since only alpha MO information in .molden
+    occs_up = scfdata.mo.occs  # ndarray(nbasis, nmos)
+    occs_dn = None
+    mo_coeff = scfdata.mo.coeffs
 
-    # Unrestricted Hartree-Fock SCF results
-    energy = data.energy
-    norba = data.mo.norba
-    mo_e_up = data.mo.energies[:norba]
-    mo_e_dn = data.mo.energies[norba:]
-    occs_up = data.mo.occs[:norba]
-    occs_dn = data.mo.occs[norba:]
-    mo_coeffs = data.mo.coeffs  # ndarray(nbasis, norba + norbb)
-    coeffs_a = mo_coeffs[:, :norba]
-    coeffs_b = mo_coeffs[:, norba:]
-
-    # check for inconsistencies in filenames
-    if not np.allclose(np.array([n_up, n_dn]), np.array([sum(occs_up), sum(occs_dn)])):
-        raise ValueError(f"Inconsistent data in fchk file for N: {atnum}, M: {mult} CH: {charge}")
+    # Load HCI data
+    rawpath = raw_filepath(".ci.npz", atnum, charge, mult, nexc, BASIS, dataset, datapath)
+    data = np.load(rawpath)
+    energy = data["energy"]
 
     # Prepare data for computing Species properties
-    # density matrix in AO basis
-    dm1_up = np.dot(coeffs_a * occs_up, coeffs_a.T)
-    dm1_dn = np.dot(coeffs_b * occs_dn, coeffs_b.T)
-    dm1_tot = data.one_rdms["scf"]
+    # density matrix in MO basis
+    dm1_up, dm1_dn = data["rdm1"]
+    dm1_tot = dm1_up + dm1_dn
 
     # Make grid
     onedg = UniformInteger(NPOINTS)  # number of uniform grid points.
@@ -154,26 +125,30 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Evaluate properties on the grid:
     # --------------------------------
     # total and spin-up orbital, and spin-down orbital densities
-    obasis = from_iodata(data)
-    orb_eval = evaluate_basis(obasis, atgrid.points, transform=None)
+    obasis = from_iodata(scfdata)
+    orb_eval = evaluate_basis(obasis, atgrid.points, transform=mo_coeff.T)
     orb_dens_up = eval_orbs_density(dm1_up, orb_eval)
     orb_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
-    dens_tot = eval_dens(dm1_tot, obasis, atgrid.points, transform=None)
+    dens_tot = eval_dens(dm1_tot, obasis, atgrid.points, transform=mo_coeff.T)
 
     # total, spin-up orbital, and spin-down orbital first (radial) derivatives of the density
     d_dens_tot = eval_radial_d_density(dm1_tot, obasis, atgrid.points)
-    orb_d_dens_up = eval_orbs_radial_d_density(dm1_up, obasis, atgrid.points, transform=None)
-    orb_d_dens_dn = eval_orbs_radial_d_density(dm1_dn, obasis, atgrid.points, transform=None)
+    orb_d_dens_up = eval_orbs_radial_d_density(dm1_up, obasis, atgrid.points, transform=mo_coeff.T)
+    orb_d_dens_dn = eval_orbs_radial_d_density(dm1_dn, obasis, atgrid.points, transform=mo_coeff.T)
 
-    # total, spin-up orbital, and spin-down orbital second (radial) derivatives of the density
+    # total, spin-up orbital, and spin-down orbital first (radial) derivatives of the density
     dd_dens_tot = eval_radial_dd_density(dm1_tot, obasis, atgrid.points)
-    orb_dd_dens_up = eval_orbs_radial_dd_density(dm1_up, obasis, atgrid.points, transform=None)
-    orb_dd_dens_dn = eval_orbs_radial_dd_density(dm1_dn, obasis, atgrid.points, transform=None)
+    orb_dd_dens_up = eval_orbs_radial_dd_density(
+        dm1_up, obasis, atgrid.points, transform=mo_coeff.T
+    )
+    orb_dd_dens_dn = eval_orbs_radial_dd_density(
+        dm1_dn, obasis, atgrid.points, transform=mo_coeff.T
+    )
 
     # total, spin-up orbital, and spin-down orbital kinetic energy densities
-    ked_tot = eval_pd_ked(dm1_tot, obasis, atgrid.points, transform=None)
-    orb_ked_up = eval_orb_ked(dm1_up, obasis, atgrid.points, transform=None)
-    orb_ked_dn = eval_orb_ked(dm1_dn, obasis, atgrid.points, transform=None)
+    ked_tot = eval_pd_ked(dm1_tot, obasis, atgrid.points, transform=mo_coeff.T)
+    orb_ked_up = eval_orb_ked(dm1_up, obasis, atgrid.points, transform=mo_coeff.T)
+    orb_ked_dn = eval_orb_ked(dm1_dn, obasis, atgrid.points, transform=mo_coeff.T)
 
     # Spherically average properties:
     # --------------------------------
@@ -197,7 +172,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     ked_splines_up = [atgrid.spherical_average(dens) for dens in orb_ked_up]
     ked_splines_dn = [atgrid.spherical_average(dens) for dens in orb_ked_dn]
 
-    # Evaluate interpolated densities in uniform radial grid:
+    # Evaluate interpolated densities in a uniform radial grid
     # -------------------------------------------------------
     rs = rgrid.points
     # total, spin-up orbital, and spin-down orbital densities
@@ -232,12 +207,8 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         polarizability = atom.pold
         dispersion = {"C6": atom.c6}
 
-    # Conceptual-DFT properties (WIP)
-    # NOTE: Only the alpha component of the MOs is used bellow
-    mo_energy_occ_up = mo_e_up[:n_up]
-    mo_energy_virt_up = mo_e_up[n_up:]
-    ip = -mo_energy_occ_up[-1]  # - energy_HOMO_alpha
-    ea = -mo_energy_virt_up[0]  # - energy_LUMO_alpha
+    # Conceptual-DFT properties (TODO)
+    ip = None
     mu = None
     eta = None
 
