@@ -14,79 +14,90 @@
     : You should have received a copy of the GNU General Public License
     : along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
+|Documentation| |Github|
+
 AtomDB
 ======
-|Python3.9| |Github|
 
 About
 -----
 
-AtomDB is a database of atomic and ionic properties.
+AtomDB is a versatile, free and open-source Python library for accessing and managing atomic and
+promolecular properties. It serves as an extended database or periodic table, of neutral and charged
+atomic properties offering accurate experimental and computational data for various atomic
+charge/multiplicity states.
 
-Installation
-------------
+AtomDB is a `QC-Devs <https://qcdevs.org/>`_ project.
 
-.. code-block::
+Documentation
+-------------
 
-    python -m pip install -e .
+AtomDB's documentation, including installation and usage instructions, as well as API documentation,
+is available at `atomdb.qcdevs.org <https://atomdb.qcdevs.org/>`_.
 
-Usage
------
+Functionality
+~~~~~~~~~~~~~
 
-.. code-block::
+* **Atomic scalar properties**
+    AtomDB provides a wide range of atomic properties for neutral and charged atoms, including:
+    **Atomic number**, **Atomic symbol**, **Atomic mass**, **Atomic radius**, **van der Waals radius**,
+    **Covalent radius**, **Ionization potential**, **Electron affinity**, **Electronegativity**,
+    **Atomic polarizability**
 
-    ~/git/atomdb % python -m atomdb -h
-    usage: python -m atomdb [-h] [-c] [-q] [-e E] dataset elem basis charge mult
+* **Point dependent properties**
+    AtomDB provides functions to calculate point-dependent properties, such as:
+    **Electron density** :math:`\rho(r)`, **Electron density gradient** :math:`\nabla \rho(r)`,
+    **Electron density Laplacian** :math:`\nabla^2 \rho(r)`, **Electron density Hessian** :math:`\nabla^2 \rho(r)`
+    (for these properties, only the radial part is provided), and **Kinetic energy density** :math:`ked(r)`
 
-    Compile and/or query an AtomDB entry
+    The computation of contributions per orbital, set of orbitals or spin to these properties is also supported.
 
-    positional arguments:
-      dataset     name of dataset
-      elem        element symbol
-      basis       basis set
-      charge      charge
-      mult        multiplicity
+* **promolecular properties**
+    AtomDB provides the capabilities to create promolecular models, and then estimate molecular properties
+    from the atomic properties.
 
-    optional arguments:
-      -h, --help  show this help message and exit
-      -c          compile the specified entry
-      -q          query the specified entry
-      -e E        excitation level
+* **Dumping and loading**
+    AtomDB provides the capability to dump and load atomic properties to and from json files.
 
-If AtomDB is installed in a directory for which you do not have write permissions, or if you'd
-rather store your AtomDB database in another directory (or you already have one), then you
-can set the ``ATOMDB_DATAPATH`` environment variable to the directory of your choice; either
-a non-existing directory, or an existing AtomDB database.
-
-On release, AtomDB should come with compiled database files pre-installed in the default
-``ATOMDB_DATAPATH``. Raw data files containing the output of electronic structure computations
-will be hosted in another Git repo (AtomDB-Data) via LFS. If you are a developer working on compiling new
-database entries or writing new datasets, then you can set ``ATOMDB_DATAPATH`` to the location
-of the AtomDB-Data repo on your computer.
-
-Send Michael your SSH public key and ask him for the current URL for the AtomDB-Data repo.
+For a complete list of available properties, see
+`this table <https://atomdb.qcdevs.org/api/index.html#properties>`_.
 
 Contributing
 ------------
 
-You can help by writing features, properties, and datasets, or by running computations! 🙂
+We welcome any contributions to the AtomDB library in accordance with our
+`Code of Conduct <https://qcdevs.org/guidelines/qcdevs_code_of_conduct/>`_; please see our
+`Contributing Guidelines <https://qcdevs.org/guidelines/>`_.
+Please report any issues you encounter while using AtomDB on GitHub Issues.
 
-TODO
-~~~~
-- Add functions for dealing with multiple database entries at once
-- Add more properties (C-DFT, SP-CDFT, etc.) See the [properties list](https://docs.google.com/spreadsheets/d/1_N-wvdiSEjHuCrhf9t14a114BRIzcugmE8sRww5XUTY/edit?usp=sharing)
-- Add more datasets (Hartree-Fock, some useful DFT calcs...?)
-- Get the NIST dataset, and add those dataset-independent fields to the DB entries
-- Make all field names consistent with IOData
-- See Issues tab
+For further information and inquiries please contact us at
+`qcdevs@gmail.com <mailto:qcdevs@gmail.com>`_.
 
+Citing AtomDB
+-------------
 
-Citations
----------
+Please use the following citation in any publication using AtomDB:
 
-2021 QuantumElephant 🐘 AtomDB ⚛
+.. code::bibtex
 
-.. |Python3.9| image:: http://img.shields.io/badge/python-3.9-blue.svg
-   :target: https://docs.python.org/3/
-.. |Github| image:: https://img.shields.io/badge/quantumelephant-black.svg?logo=GitHub
-   :target: https://github.com/quantumelephant/atomdb/
+    @Article{atomdb,
+        author  = {S{\'a}nchez D{\'\i}az, Gabriela and Richer, Michelle and
+                   Mart{\'\i}nez Gonz{\'a}lez, Marco and {v}an Zyl, Maximilian and
+                   Pujal, Leila and Tehrani, Alireza and Bianchi, Julianna and
+                   Ayers, Paul W. and Heidar-Zadeh, Farnaz},
+        title   = {{AtomDB: A Python Library for Atomic and Promolecular Properties}},
+        journal = {-},
+        year    = {2024},
+        url     = {https://atomdb.qcdevs.org/},
+    }
+
+License
+-------
+
+AtomDB's source code is hosted on GitHub and is released under the GNU General Public License v3.0.
+
+.. |Documentation| image:: https://img.shields.io/badge/documentation-blue.svg?logo=Sphinx
+   :target: https://atomdb.qcdevs.org/
+
+.. |Github| image:: https://img.shields.io/badge/theochem-black.svg?logo=GitHub
+   :target: https://github.com/theochem/AtomDB/
