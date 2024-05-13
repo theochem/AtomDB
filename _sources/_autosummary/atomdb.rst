@@ -17,6 +17,14 @@ Subpackages
 Submodules
 ----------
 
+atomdb.periodic module
+----------------------
+
+.. automodule:: atomdb.periodic
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 atomdb.promolecule module
 -------------------------
 
@@ -29,6 +37,14 @@ atomdb.species module
 ---------------------
 
 .. automodule:: atomdb.species
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+atomdb.utils module
+-------------------
+
+.. automodule:: atomdb.utils
    :members:
    :undoc-members:
    :show-inheritance:

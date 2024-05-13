@@ -192,6 +192,7 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="atomdb.html">atomdb package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-1"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="atomdb.datasets.html">atomdb.datasets package</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" type="checkbox"/><label class="toctree-toggle" for="toctree-checkbox-2"><i class="fa-solid fa-chevron-down"></i></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.gaussian.html">atomdb.datasets.gaussian package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.hci.html">atomdb.datasets.hci package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.nist.html">atomdb.datasets.nist package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="atomdb.datasets.numeric.html">atomdb.datasets.numeric package</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">atomdb.datasets.slater package</a></li>
@@ -408,8 +409,21 @@ document.write(`
 <div id="searchbox"></div>
                 <article class="bd-article">
                   
-  <section id="atomdb-datasets-slater-package">
-<h1>atomdb.datasets.slater package<a class="headerlink" href="#atomdb-datasets-slater-package" title="Link to this heading">#</a></h1>
+  <section id="module-atomdb.datasets.slater">
+<span id="atomdb-datasets-slater-package"></span><h1>atomdb.datasets.slater package<a class="headerlink" href="#module-atomdb.datasets.slater" title="Link to this heading">#</a></h1>
+<p>Slater dataset.</p>
+<dl>
+<dt>Module responsible for reading and storing atomic wave-function information from ‘.slater’ files and</dt><dd><p>computing electron density, and kinetic energy from them.</p>
+</dd>
+<dt>AtomicDensity:</dt><dd><dl class="simple">
+<dt>Information about atoms obtained from .slater file and able to construct atomic density</dt><dd><p>(total, core and valence) from the linear combination of Slater-type orbitals.</p>
+</dd>
+</dl>
+<p>Elements supported by default from “./atomdb/data/slater_atom/” range from Hydrogen to Xenon.</p>
+</dd>
+<dt>load_slater_wfn<span class="classifier">Function for reading and returning information from ‘.slater’ files that consist</span></dt><dd><p>of anion, cation and neutral atomic wave-function information.</p>
+</dd>
+</dl>
 <section id="submodules">
 <h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading">#</a></h2>
 </section>

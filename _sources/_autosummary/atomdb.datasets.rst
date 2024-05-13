@@ -13,6 +13,7 @@ Subpackages
    :maxdepth: 4
 
    atomdb.datasets.gaussian
+   atomdb.datasets.hci
    atomdb.datasets.nist
    atomdb.datasets.numeric
    atomdb.datasets.slater
