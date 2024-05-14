@@ -65,7 +65,7 @@ dev = [
     "pyscf",
     "qc-gbasis@git+https://github.com/theochem/gbasis.git@master",
     "qc-grid@git+https://github.com/theochem/grid.git@master",
-    "qc-iodata@git+https://github.com/theochem/iodata.git@master",
+    "qc-iodata@git+https://github.com/theochem/iodata.git@main",
 ]
 test_extra = [
     "pytest-md",
