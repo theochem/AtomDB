@@ -41,9 +41,6 @@ try:
     TEST_DATAPATH = files("atomdb.test.data")
     TEST_DATAPATH = os.path.abspath(TEST_DATAPATH._paths[0])
 
-    # raw data path
-    RAW_DATAPATH = files("atomdb.datasets.slater.raw")
-    RAW_DATAPATH = os.path.abspath(RAW_DATAPATH._paths[0])
 except ImportError:
     pass
 
@@ -70,9 +67,9 @@ def test_get_cs_occupations():
 @pytest.mark.parametrize("atom", ["al", "c", "cu"])
 def test_load_slater_wfn_orbitals_occupation_simple(atom):
 
-    cation = load_slater_wfn(atom, cation=True)
-    anion = load_slater_wfn(atom, anion=True)
-    neutral = load_slater_wfn(atom)
+    cation = load_slater_wfn(atom, cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn(atom, anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn(atom, data_path=TEST_DATAPATH)
 
     cation_occ = cation["orbitals_occupation"]
     anion_occ = anion["orbitals_occupation"]
@@ -86,9 +83,9 @@ def test_load_slater_wfn_orbitals_occupation_simple(atom):
 @pytest.mark.parametrize("atom", ["al", "c", "cu"])
 def test_load_slater_wfn_orbitals_occupation_complex(atom):
 
-    cation = load_slater_wfn(atom, cation=True)
-    anion = load_slater_wfn(atom, anion=True)
-    neutral = load_slater_wfn(atom)
+    cation = load_slater_wfn(atom, cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn(atom, anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn(atom, data_path=TEST_DATAPATH)
 
     cation_occ = cation["orbitals_occupation"]
     anion_occ = anion["orbitals_occupation"]
@@ -112,9 +109,9 @@ def test_load_slater_wfn_orbitals_occupation_complex(atom):
 @pytest.mark.parametrize("atom", ["al", "c", "cu"])
 def test_load_slater_wfn_orbitals(atom):
 
-    cation = load_slater_wfn(atom, cation=True)
-    anion = load_slater_wfn(atom, anion=True)
-    neutral = load_slater_wfn(atom)
+    cation = load_slater_wfn(atom, cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn(atom, anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn(atom, data_path=TEST_DATAPATH)
 
     cation_orbs = cation["orbitals"]
     anion_orbs = anion["orbitals"]
@@ -143,9 +140,9 @@ def test_load_slater_wfn_orbitals(atom):
 @pytest.mark.parametrize("atom", ["al", "c", "cu"])
 def test_load_slater_wfn_orbitals_energy(atom):
 
-    cation = load_slater_wfn(atom, cation=True)
-    anion = load_slater_wfn(atom, anion=True)
-    neutral = load_slater_wfn(atom)
+    cation = load_slater_wfn(atom, cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn(atom, anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn(atom, data_path=TEST_DATAPATH)
 
     cation_e = cation["orbitals_energy"]
     anion_e = anion["orbitals_energy"]
@@ -171,9 +168,9 @@ def test_load_slater_wfn_orbitals_energy(atom):
 
 def test_load_slater_wfn_orbitals_coefficients():
 
-    cation = load_slater_wfn("c", cation=True)
-    anion = load_slater_wfn("c", anion=True)
-    neutral = load_slater_wfn("c")
+    cation = load_slater_wfn("c", cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn("c", anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn("c", data_path=TEST_DATAPATH)
 
     ca_1s_ref = np.array(
         [
@@ -221,9 +218,9 @@ def test_load_slater_wfn_orbitals_coefficients():
 
 def test_load_slater_wfn_orbitals_exp():
 
-    cation = load_slater_wfn("cu", cation=True)
-    anion = load_slater_wfn("cu", anion=True)
-    neutral = load_slater_wfn("cu")
+    cation = load_slater_wfn("cu", cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn("cu", anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn("cu", data_path=TEST_DATAPATH)
 
     cation_exp = cation["orbitals_exp"]
     anion_exp = anion["orbitals_exp"]
@@ -271,9 +268,9 @@ def test_load_slater_wfn_orbitals_exp():
 
 def test_load_slater_wfn_basis():
 
-    cation = load_slater_wfn("al", cation=True)
-    anion = load_slater_wfn("al", anion=True)
-    neutral = load_slater_wfn("al")
+    cation = load_slater_wfn("al", cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn("al", anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn("al", data_path=TEST_DATAPATH)
 
     cation_basis = cation["orbitals_basis"]
     anion_basis = anion["orbitals_basis"]
@@ -290,9 +287,9 @@ def test_load_slater_wfn_basis():
 
 def test_load_slater_wfn_basis_numbers():
 
-    cation = load_slater_wfn("al", cation=True)
-    anion = load_slater_wfn("al", anion=True)
-    neutral = load_slater_wfn("al")
+    cation = load_slater_wfn("al", cation=True, data_path=TEST_DATAPATH)
+    anion = load_slater_wfn("al", anion=True, data_path=TEST_DATAPATH)
+    neutral = load_slater_wfn("al", data_path=TEST_DATAPATH)
 
     cation_basis = cation["basis_numbers"]
     anion_basis = anion["basis_numbers"]
@@ -311,11 +308,11 @@ def test_eval_density_heavy_cs():
     r"""Test integration of atomic density of carbon anion and cation."""
     # These files don't exist.
     with pytest.raises(ValueError):
-        AtomicDensity("cs", cation=True)
+        AtomicDensity("cs", cation=True, data_path=TEST_DATAPATH)
     with pytest.raises(ValueError):
-        AtomicDensity("cs", anion=True)
+        AtomicDensity("cs", anion=True, data_path=TEST_DATAPATH)
 
-    cs = AtomicDensity("cs")
+    cs = AtomicDensity("cs", data_path=TEST_DATAPATH)
     grid = np.arange(0.0, 40.0, 0.0001)
     dens = cs.eval_density(grid, mode="total")
     assert_almost_equal(4 * np.pi * np.trapz(dens * grid**2.0, grid), 55.0, decimal=5)
@@ -326,10 +323,10 @@ def test_eval_density_heavy_rn():
 
     # These files don't exist.
     with pytest.raises(ValueError):
-        AtomicDensity("rn", cation=True)
+        AtomicDensity("rn", cation=True, data_path=TEST_DATAPATH)
     with pytest.raises(ValueError):
-        AtomicDensity("rn", anion=True)
-    rn = AtomicDensity("rn")
+        AtomicDensity("rn", anion=True, data_path=TEST_DATAPATH)
+    rn = AtomicDensity("rn", data_path=TEST_DATAPATH)
     grid = np.arange(0.0, 40.0, 0.0001)
     dens = rn.eval_density(grid, mode="total")
     assert_almost_equal(4 * np.pi * np.trapz(dens * grid**2.0, grid), 86, decimal=5)
@@ -349,14 +346,14 @@ def test_raises():
         AtomicDensity("be2")
     with pytest.raises(ValueError):
         AtomicDensity.slater_orbital(np.array([[1]]), np.array([[2]]), np.array([[1.0]]))
-    c = AtomicDensity("c")
+    c = AtomicDensity("c", data_path=TEST_DATAPATH)
     with pytest.raises(ValueError):
         c.eval_density(np.array([[1.0]]), "not total")
 
 
 def test_parsing_slater_density_k():
     # Load the K file
-    k = load_slater_wfn("k")
+    k = load_slater_wfn("k", data_path=TEST_DATAPATH)
 
     assert k["configuration"] == "K(2)L(8)3S(2)3P(6)4S(1)"
     assert k["energy"] == [-599.164786322]
