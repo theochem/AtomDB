@@ -25,7 +25,7 @@ authors = [
 description = "AtomDB is a database of atomic and ionic properties."
 readme = "README.rst"
 license = {text = "GPL-3.0-or-later"}
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 classifiers = [
    'Development Status :: 0 - Released',
     'Environment :: Console',
@@ -36,8 +36,6 @@ classifiers = [
     'Intended Audience :: Science/Research',
     "Intended Audience :: Education",
     "Natural Language :: English",
-    'Programming Language :: Python :: 3.7',
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
