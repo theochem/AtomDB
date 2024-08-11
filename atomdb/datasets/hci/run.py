@@ -64,9 +64,8 @@ DEGREE = 21  #  Lebedev grid degrees
 
 BASIS = "aug-ccpwCVQZ"
 
-
 def raw_filepath(suffix, n_atom, charge, mult, nexc, basis, dataset, data_path):
-    G1G2 = [1, 2, 3, 4, 11, 12]  # Group 1 and 2 elements
+    G1G2 = [1, 2, 3, 4, 11, 12, 19, 20]  # Group 1 and 2 elements
     elem = f"{n_atom:04d}"
     charge = f"q{charge:03d}"
     mult = f"m{mult:02d}"
@@ -98,14 +97,27 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     obasis_name = BASIS
 
     # Load restricted Hartree-Fock SCF
-    rawpath = raw_filepath(".molden", atnum, charge, mult, nexc, BASIS, dataset, datapath)
-    scfdata = load_one(rawpath)
-    norba = scfdata.mo.norba
-    mo_e_up = scfdata.mo.energies[:norba]
-    mo_e_dn = mo_e_up  # since only alpha MO information in .molden
-    occs_up = scfdata.mo.occs  # ndarray(nbasis, nmos)
-    occs_dn = None
-    mo_coeff = scfdata.mo.coeffs
+    if False:
+        rawpath = raw_filepath(".molden", atnum, charge, mult, nexc, BASIS, dataset, datapath)
+        scfdata = load_one(rawpath)
+        norba = scfdata.mo.norba
+        mo_e_up = scfdata.mo.energies[:norba]
+        mo_e_dn = mo_e_up  # since only alpha MO information in .molden
+        occs_up = scfdata.mo.occs  # ndarray(nbasis, nmos)
+        occs_dn = None
+        mo_coeff = scfdata.mo.coeffs
+    # Load restricted Hartree-Fock SCF instead from fchk
+    if True:
+        rawpath= raw_filepath(".fchk",  atnum, charge, mult, nexc, BASIS, dataset, datapath)
+        scfdata = load_one(rawpath) 
+        norba =    scfdata.mo.norba # yes
+        mo_e_up =  scfdata.mo.energies[:norba] # yes
+        mo_e_dn =  scfdata.mo.energies[norba:] # yes
+        occs_up =  scfdata.mo.occs[:norba] # yes
+        occs_dn =  scfdata.mo.occs[norba:] # ?
+        mo_coeff = scfdata.mo.coeffs  # thats different now, ndarray(nbasis, norba + norbb)
+    
+
 
     # Load HCI data
     rawpath = raw_filepath(".ci.npz", atnum, charge, mult, nexc, BASIS, dataset, datapath)
@@ -125,6 +137,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     # Evaluate properties on the grid:
     # --------------------------------
     # total and spin-up orbital, and spin-down orbital densities
+
     obasis = from_iodata(scfdata)
     orb_eval = evaluate_basis(obasis, atgrid.points, transform=mo_coeff.T)
     orb_dens_up = eval_orbs_density(dm1_up, orb_eval)
