@@ -40,9 +40,10 @@ TEST_DATAPATH = files("atomdb.test.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
 
-def test_compiled_hci_data():
-    ### Use Be atomic data as a test case
-    sp = load("H", 0, 2, dataset="hci", datapath=TEST_DATAPATH)
+def test_compiled_hci_data(TEST_DATAPATH=None):
+    ### Use Be atomic data as a test case ... What???
+    sp = load("Li", 0, 2, dataset="hci", datapath=TEST_DATAPATH)
+    print(dir(sp))
 
     # check values of energy components
     answer = -0.4999483214691

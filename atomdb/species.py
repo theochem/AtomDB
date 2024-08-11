@@ -866,16 +866,16 @@ def datafile(
     # Wildcard search for multiple species, use repodata.txt for matching
     if "[^_]" in (elem, charge, mult, nexc):
         # try to retrieve the repodata file from the remote URL
-        try:
-            repodata = pooch.retrieve(
-                url=f"{remotepath}{dataset.lower()}/db/repodata.txt",
-                known_hash=None,
-                path=path.join(datapath, dataset.lower(), "db"),
-                fname=f"repo_data.txt",
-            )
-        # if the file is not found or remote was not valid, use the local repodata file
-        except (requests.exceptions.HTTPError, ValueError):
-            repodata = path.join(datapath, dataset.lower(), "db", "repo_data.txt")
+        #try:
+        #    repodata = pooch.retrieve(
+        #        url=f"{remotepath}{dataset.lower()}/db/repodata.txt",
+        #        known_hash=None,
+        #        path=path.join(datapath, dataset.lower(), "db"),
+        #        fname=f"repo_data.txt",
+        #    )
+        ## if the file is not found or remote was not valid, use the local repodata file
+        #except (requests.exceptions.HTTPError, ValueError):
+        repodata = path.join(datapath, dataset.lower(), "db", "repo_data.txt")
 
         with open(repodata, "r") as f:
             data = f.read()
@@ -883,29 +883,29 @@ def datafile(
             species_list = []
             for file in files:
                 # try to retrieve the file from the remote URL
-                try:
-                    element = pooch.retrieve(
-                        url=f"{remotepath}{dataset.lower()}/db/{file}",
-                        known_hash=None,
-                        path=path.join(datapath, dataset.lower(), "db"),
-                        fname=f"{file}",
-                    )
-                # if the file is not found, use the local file
-                except (requests.exceptions.HTTPError, ValueError):
-                    element = path.join(datapath, dataset.lower(), "db", file)
+                #try:
+                #    element = pooch.retrieve(
+                #        url=f"{remotepath}{dataset.lower()}/db/{file}",
+                #        known_hash=None,
+                #        path=path.join(datapath, dataset.lower(), "db"),
+                #        fname=f"{file}",
+                #    )
+                ## if the file is not found, use the local file
+                #except (requests.exceptions.HTTPError, ValueError):
+                element = path.join(datapath, dataset.lower(), "db", file)
                 species_list.append(element)
             return species_list
     # try to retrieve the file from the remote URL
-    try:
-        species = pooch.retrieve(
-            url=f"{remotepath}{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg",
-            known_hash=None,
-            path=path.join(datapath, dataset.lower(), "db"),
-            fname=f"{elem}_{charge}_{mult}_{nexc}.msg",
-        )
-    # if the file is not found, use the local file
-    except (requests.exceptions.HTTPError, ValueError):
-        species = path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
+    #try:
+    #    species = pooch.retrieve(
+    #        url=f"{remotepath}{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg",
+    #        known_hash=None,
+    #        path=path.join(datapath, dataset.lower(), "db"),
+    #        fname=f"{elem}_{charge}_{mult}_{nexc}.msg",
+    #    )
+    ## if the file is not found, use the local file
+    #except (requests.exceptions.HTTPError, ValueError):
+    species = path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
     return species
 
 
