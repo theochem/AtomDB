@@ -48,11 +48,3 @@ atomdb.utils module
    :members:
    :undoc-members:
    :show-inheritance:
-
-atomdb.version module
----------------------
-
-.. automodule:: atomdb.version
-   :members:
-   :undoc-members:
-   :show-inheritance:

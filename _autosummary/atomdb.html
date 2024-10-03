@@ -470,6 +470,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_number"><code class="docutils literal notranslate"><span class="pre">element_number()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_symbol"><code class="docutils literal notranslate"><span class="pre">element_symbol()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.make_promolecule"><code class="docutils literal notranslate"><span class="pre">make_promolecule()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.raw_datafile"><code class="docutils literal notranslate"><span class="pre">raw_datafile()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
@@ -560,10 +561,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.utils.MODULE_DATAPATH"><code class="docutils literal notranslate"><span class="pre">MODULE_DATAPATH</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.utils.MULTIPLICITIES"><code class="docutils literal notranslate"><span class="pre">MULTIPLICITIES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.utils.generate_mult_csv"><code class="docutils literal notranslate"><span class="pre">generate_mult_csv()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-atomdb.version">atomdb.version module</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.version.version"><code class="docutils literal notranslate"><span class="pre">version</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -2094,13 +2091,48 @@ references corresponding to each type check
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="atomdb.make_promolecule">
+<span class="sig-prename descclassname"><span class="pre">atomdb.</span></span><span class="sig-name descname"><span class="pre">make_promolecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remotepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://raw.githubusercontent.com/theochem/AtomDBdata/main/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.make_promolecule" title="Link to this definition">#</a></dt>
+<dd><p>Construct a Promolecule instance from a set of atoms and their coordinates,
+charges, and multiplicities.</p>
+<section id="id79">
+<h2>Parameters<a class="headerlink" href="#id79" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>atnums: list of (str|int)</dt><dd><p>List of element number for each atom.</p>
+</dd>
+<dt>coords: list of np.ndarray((3,), dtype=float)</dt><dd><p>List of coordinates for each atom.</p>
+</dd>
+<dt>charges: list of (int | float), default=[0, …, 0]</dt><dd><p>List of charges.</p>
+</dd>
+<dt>mults: list of (int), default=[1, …, 1]</dt><dd><p>List of multiplicities for each atom.</p>
+</dd>
+<dt>units: (‘bohr’ | ‘angstrom’)</dt><dd><p>Units of <code class="docutils literal notranslate"><span class="pre">coords</span></code> values. Default is Bohr.</p>
+</dd>
+<dt>dataset: str, default=DEFAULT_DATASET</dt><dd><p>Data set from which to load atomic species.</p>
+</dd>
+<dt>datapath: str, default=DEFAULT_DATAPATH</dt><dd><p>System path where the desired data set is located.</p>
+</dd>
+<dt>remotepath: str, default=DEFAULT_REMOTE</dt><dd><p>Remote path where the desired data set is located.</p>
+</dd>
+</dl>
+</section>
+<section id="id80">
+<h2>Returns<a class="headerlink" href="#id80" title="Link to this heading">#</a></h2>
+<dl class="simple">
+<dt>promol: Promolecule</dt><dd><p>Promolecule instance.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atomdb.raw_datafile">
 <span class="sig-prename descclassname"><span class="pre">atomdb.</span></span><span class="sig-name descname"><span class="pre">raw_datafile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">suffix</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nexc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remotepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://raw.githubusercontent.com/theochem/AtomDBdata/main/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.raw_datafile" title="Link to this definition">#</a></dt>
 <dd><p>Returns the local path to the raw data file of a species</p>
 <p>This function retrieves the raw data file of a species from the AtomDB cache if present. If the
 file is not found, it is downloaded from the remote URL.</p>
-<section id="id79">
-<h2>Parameters<a class="headerlink" href="#id79" title="Link to this heading">#</a></h2>
+<section id="id81">
+<h2>Parameters<a class="headerlink" href="#id81" title="Link to this heading">#</a></h2>
 <dl class="simple">
 <dt>suffix<span class="classifier">str</span></dt><dd><p>File extension of the raw data file.</p>
 </dd>
@@ -2120,8 +2152,8 @@ file is not found, it is downloaded from the remote URL.</p>
 </dd>
 </dl>
 </section>
-<section id="id80">
-<h2>Returns<a class="headerlink" href="#id80" title="Link to this heading">#</a></h2>
+<section id="id82">
+<h2>Returns<a class="headerlink" href="#id82" title="Link to this heading">#</a></h2>
 <dl class="simple">
 <dt>str</dt><dd><p>Path to the raw data file.</p>
 </dd>
@@ -2184,8 +2216,8 @@ file is not found, it is downloaded from the remote URL.</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">atomdb.periodic.</span></span><span class="sig-name descname"><span class="pre">Element</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.periodic.Element" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Element properties.</p>
-<section id="id81">
-<h3>Attributes<a class="headerlink" href="#id81" title="Link to this heading">#</a></h3>
+<section id="id83">
+<h3>Attributes<a class="headerlink" href="#id83" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>atnum<span class="classifier">int</span></dt><dd><p>Atomic number of the element.</p>
 </dd>
@@ -2198,12 +2230,12 @@ file is not found, it is downloaded from the remote URL.</p>
 <dt class="sig sig-object py" id="atomdb.periodic.Element.at_radius">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">at_radius</span></span><a class="headerlink" href="#atomdb.periodic.Element.at_radius" title="Link to this definition">#</a></dt>
 <dd><p>atomic radius of the element.</p>
-<section id="id82">
-<h4>Returns<a class="headerlink" href="#id82" title="Link to this heading">#</a></h4>
+<section id="id84">
+<h4>Returns<a class="headerlink" href="#id84" title="Link to this heading">#</a></h4>
 <p>at_radius : Dict[float]</p>
 </section>
-<section id="id83">
-<h4>Notes<a class="headerlink" href="#id83" title="Link to this heading">#</a></h4>
+<section id="id85">
+<h4>Notes<a class="headerlink" href="#id85" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>This property is a dictionary with the following keys:</dt><dd><ul class="simple">
 <li><dl class="simple">
@@ -2275,12 +2307,12 @@ file is not found, it is downloaded from the remote URL.</p>
 <dt class="sig sig-object py" id="atomdb.periodic.Element.c6">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">c6</span></span><a class="headerlink" href="#atomdb.periodic.Element.c6" title="Link to this definition">#</a></dt>
 <dd><p>Isolated atom C6 dispersion coefficients of the element.</p>
-<section id="id84">
-<h4>Returns<a class="headerlink" href="#id84" title="Link to this heading">#</a></h4>
+<section id="id86">
+<h4>Returns<a class="headerlink" href="#id86" title="Link to this heading">#</a></h4>
 <p>c6 : Dict[float]</p>
 </section>
-<section id="id85">
-<h4>Notes<a class="headerlink" href="#id85" title="Link to this heading">#</a></h4>
+<section id="id87">
+<h4>Notes<a class="headerlink" href="#id87" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>This property is a dictionary with the following keys:</dt><dd><ul class="simple">
 <li><dl class="simple">
@@ -2323,12 +2355,12 @@ K. T. Tang, J. M. Norbeck and P. R. Certain, J. Chem. Phys. 64, 3063 (1976)
 <dt class="sig sig-object py" id="atomdb.periodic.Element.cov_radius">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cov_radius</span></span><a class="headerlink" href="#atomdb.periodic.Element.cov_radius" title="Link to this definition">#</a></dt>
 <dd><p>Covalent radius of the element.</p>
-<section id="id86">
-<h4>Returns<a class="headerlink" href="#id86" title="Link to this heading">#</a></h4>
+<section id="id88">
+<h4>Returns<a class="headerlink" href="#id88" title="Link to this heading">#</a></h4>
 <p>cov_radius : Dict[float]</p>
 </section>
-<section id="id87">
-<h4>Notes<a class="headerlink" href="#id87" title="Link to this heading">#</a></h4>
+<section id="id89">
+<h4>Notes<a class="headerlink" href="#id89" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>This property is a dictionary with the following keys:</dt><dd><ul class="simple">
 <li><dl class="simple">
@@ -2422,12 +2454,12 @@ For Mn, Fe, and Co, the number is a weighted average over the data for different
 <dt class="sig sig-object py" id="atomdb.periodic.Element.eneg">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eneg</span></span><a class="headerlink" href="#atomdb.periodic.Element.eneg" title="Link to this definition">#</a></dt>
 <dd><p>Electronegativity of the element.</p>
-<section id="id88">
-<h4>Returns<a class="headerlink" href="#id88" title="Link to this heading">#</a></h4>
+<section id="id90">
+<h4>Returns<a class="headerlink" href="#id90" title="Link to this heading">#</a></h4>
 <p>eneg : Dict[float]</p>
 </section>
-<section id="id89">
-<h4>Notes<a class="headerlink" href="#id89" title="Link to this heading">#</a></h4>
+<section id="id91">
+<h4>Notes<a class="headerlink" href="#id91" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>This property is a dictionary with the following keys:</dt><dd><ul class="simple">
 <li><dl class="simple">
@@ -2466,8 +2498,8 @@ For Mn, Fe, and Co, the number is a weighted average over the data for different
 <dt class="sig sig-object py" id="atomdb.periodic.Element.group">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">group</span></span><a class="headerlink" href="#atomdb.periodic.Element.group" title="Link to this definition">#</a></dt>
 <dd><p>Group of the element.</p>
-<section id="id90">
-<h4>Returns<a class="headerlink" href="#id90" title="Link to this heading">#</a></h4>
+<section id="id92">
+<h4>Returns<a class="headerlink" href="#id92" title="Link to this heading">#</a></h4>
 <p>group : int</p>
 </section>
 </dd></dl>
@@ -2476,12 +2508,12 @@ For Mn, Fe, and Co, the number is a weighted average over the data for different
 <dt class="sig sig-object py" id="atomdb.periodic.Element.mass">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mass</span></span><a class="headerlink" href="#atomdb.periodic.Element.mass" title="Link to this definition">#</a></dt>
 <dd><p>Atomic mass of the element.</p>
-<section id="id91">
-<h4>Returns<a class="headerlink" href="#id91" title="Link to this heading">#</a></h4>
+<section id="id93">
+<h4>Returns<a class="headerlink" href="#id93" title="Link to this heading">#</a></h4>
 <p>mass : Dict[float]</p>
 </section>
-<section id="id92">
-<h4>Notes<a class="headerlink" href="#id92" title="Link to this heading">#</a></h4>
+<section id="id94">
+<h4>Notes<a class="headerlink" href="#id94" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>This property is a dictionary with the following keys:</dt><dd><ul class="simple">
 <li><dl class="simple">
@@ -2541,8 +2573,8 @@ For Mn, Fe, and Co, the number is a weighted average over the data for different
 <dt class="sig sig-object py" id="atomdb.periodic.Element.mult">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mult</span></span><a class="headerlink" href="#atomdb.periodic.Element.mult" title="Link to this definition">#</a></dt>
 <dd><p>Multiplicity of the element.</p>
-<section id="id93">
-<h4>Returns<a class="headerlink" href="#id93" title="Link to this heading">#</a></h4>
+<section id="id95">
+<h4>Returns<a class="headerlink" href="#id95" title="Link to this heading">#</a></h4>
 <p>mult : int</p>
 </section>
 </dd></dl>
@@ -2551,8 +2583,8 @@ For Mn, Fe, and Co, the number is a weighted average over the data for different
 <dt class="sig sig-object py" id="atomdb.periodic.Element.name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#atomdb.periodic.Element.name" title="Link to this definition">#</a></dt>
 <dd><p>Name of the element.</p>
-<section id="id94">
-<h4>Returns<a class="headerlink" href="#id94" title="Link to this heading">#</a></h4>
+<section id="id96">
+<h4>Returns<a class="headerlink" href="#id96" title="Link to this heading">#</a></h4>
 <p>name : str</p>
 </section>
 </dd></dl>
@@ -2561,8 +2593,8 @@ For Mn, Fe, and Co, the number is a weighted average over the data for different
 <dt class="sig sig-object py" id="atomdb.periodic.Element.period">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">period</span></span><a class="headerlink" href="#atomdb.periodic.Element.period" title="Link to this definition">#</a></dt>
 <dd><p>Period of the element.</p>
-<section id="id95">
-<h4>Returns<a class="headerlink" href="#id95" title="Link to this heading">#</a></h4>
+<section id="id97">
+<h4>Returns<a class="headerlink" href="#id97" title="Link to this heading">#</a></h4>
 <p>period : int</p>
 </section>
 </dd></dl>
@@ -2571,12 +2603,12 @@ For Mn, Fe, and Co, the number is a weighted average over the data for different
 <dt class="sig sig-object py" id="atomdb.periodic.Element.pold">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">pold</span></span><a class="headerlink" href="#atomdb.periodic.Element.pold" title="Link to this definition">#</a></dt>
 <dd><p>Isolated atom dipole polarizability of the element.</p>
-<section id="id96">
-<h4>Returns<a class="headerlink" href="#id96" title="Link to this heading">#</a></h4>
+<section id="id98">
+<h4>Returns<a class="headerlink" href="#id98" title="Link to this heading">#</a></h4>
 <p>pold : Dict[float]</p>
 </section>
-<section id="id97">
-<h4>Notes<a class="headerlink" href="#id97" title="Link to this heading">#</a></h4>
+<section id="id99">
+<h4>Notes<a class="headerlink" href="#id99" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>This property is a dictionary with the following keys:</dt><dd><ul class="simple">
 <li><dl class="simple">
@@ -2640,8 +2672,8 @@ A.D. Buckingham, K.L. Clarke, Chem. Phys. Lett. 57(3), 321–325 (1978)
 <dt class="sig sig-object py" id="atomdb.periodic.Element.symbol">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">symbol</span></span><a class="headerlink" href="#atomdb.periodic.Element.symbol" title="Link to this definition">#</a></dt>
 <dd><p>Symbol of the element.</p>
-<section id="id98">
-<h4>Returns<a class="headerlink" href="#id98" title="Link to this heading">#</a></h4>
+<section id="id100">
+<h4>Returns<a class="headerlink" href="#id100" title="Link to this heading">#</a></h4>
 <p>symbol : str</p>
 </section>
 </dd></dl>
@@ -2650,12 +2682,12 @@ A.D. Buckingham, K.L. Clarke, Chem. Phys. Lett. 57(3), 321–325 (1978)
 <dt class="sig sig-object py" id="atomdb.periodic.Element.vdw_radius">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vdw_radius</span></span><a class="headerlink" href="#atomdb.periodic.Element.vdw_radius" title="Link to this definition">#</a></dt>
 <dd><p>van der Waals radius of the element.</p>
-<section id="id99">
-<h4>Returns<a class="headerlink" href="#id99" title="Link to this heading">#</a></h4>
+<section id="id101">
+<h4>Returns<a class="headerlink" href="#id101" title="Link to this heading">#</a></h4>
 <p>vdw_radius : Dict[float]</p>
 </section>
-<section id="id100">
-<h4>Notes<a class="headerlink" href="#id100" title="Link to this heading">#</a></h4>
+<section id="id102">
+<h4>Notes<a class="headerlink" href="#id102" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>This property is a dictionary with the following keys:</dt><dd><ul class="simple">
 <li><dl class="simple">
@@ -2852,15 +2884,15 @@ A.D. Buckingham, K.L. Clarke, Chem. Phys. Lett. 57(3), 321–325 (1978)
 <dt class="sig sig-object py" id="atomdb.periodic.element_name">
 <span class="sig-prename descclassname"><span class="pre">atomdb.periodic.</span></span><span class="sig-name descname"><span class="pre">element_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.periodic.element_name" title="Link to this definition">#</a></dt>
 <dd><p>Return the element name from a string or int.</p>
-<section id="id101">
-<h3>Parameters<a class="headerlink" href="#id101" title="Link to this heading">#</a></h3>
+<section id="id103">
+<h3>Parameters<a class="headerlink" href="#id103" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>elem: (str | int)</dt><dd><p>Symbol, name, or number of an element.</p>
 </dd>
 </dl>
 </section>
-<section id="id102">
-<h3>Returns<a class="headerlink" href="#id102" title="Link to this heading">#</a></h3>
+<section id="id104">
+<h3>Returns<a class="headerlink" href="#id104" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>name<span class="classifier">str</span></dt><dd><p>Element name.</p>
 </dd>
@@ -2872,15 +2904,15 @@ A.D. Buckingham, K.L. Clarke, Chem. Phys. Lett. 57(3), 321–325 (1978)
 <dt class="sig sig-object py" id="atomdb.periodic.element_number">
 <span class="sig-prename descclassname"><span class="pre">atomdb.periodic.</span></span><span class="sig-name descname"><span class="pre">element_number</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.periodic.element_number" title="Link to this definition">#</a></dt>
 <dd><p>Return the element number from a string or int.</p>
-<section id="id103">
-<h3>Parameters<a class="headerlink" href="#id103" title="Link to this heading">#</a></h3>
+<section id="id105">
+<h3>Parameters<a class="headerlink" href="#id105" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>elem: (str | int)</dt><dd><p>Symbol, name, or number of an element.</p>
 </dd>
 </dl>
 </section>
-<section id="id104">
-<h3>Returns<a class="headerlink" href="#id104" title="Link to this heading">#</a></h3>
+<section id="id106">
+<h3>Returns<a class="headerlink" href="#id106" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>atnum<span class="classifier">int</span></dt><dd><p>Atomic number.</p>
 </dd>
@@ -2892,15 +2924,15 @@ A.D. Buckingham, K.L. Clarke, Chem. Phys. Lett. 57(3), 321–325 (1978)
 <dt class="sig sig-object py" id="atomdb.periodic.element_symbol">
 <span class="sig-prename descclassname"><span class="pre">atomdb.periodic.</span></span><span class="sig-name descname"><span class="pre">element_symbol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.periodic.element_symbol" title="Link to this definition">#</a></dt>
 <dd><p>Return the element symbol from a string or int.</p>
-<section id="id105">
-<h3>Parameters<a class="headerlink" href="#id105" title="Link to this heading">#</a></h3>
+<section id="id107">
+<h3>Parameters<a class="headerlink" href="#id107" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>elem: (str | int)</dt><dd><p>Symbol, name, or number of an element.</p>
 </dd>
 </dl>
 </section>
-<section id="id106">
-<h3>Returns<a class="headerlink" href="#id106" title="Link to this heading">#</a></h3>
+<section id="id108">
+<h3>Returns<a class="headerlink" href="#id108" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>symbol<span class="classifier">str</span></dt><dd><p>Element symbol.</p>
 </dd>
@@ -2933,8 +2965,8 @@ on whether the property is an extensive one or an intensive one.</p>
      \right\rangle}_p\]</div>
 <p>where the parameter <code class="docutils literal notranslate"><span class="pre">p</span></code> defines the type of mean used
 (1 = linear, 2 = geometric, etc.).</p>
-<section id="id107">
-<h3>Attributes<a class="headerlink" href="#id107" title="Link to this heading">#</a></h3>
+<section id="id109">
+<h3>Attributes<a class="headerlink" href="#id109" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>atoms: list of Species</dt><dd><p>Species instances out of which the promolecule is composed.</p>
 </dd>
@@ -2947,8 +2979,8 @@ on whether the property is an extensive one or an intensive one.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.charge">
 <span class="sig-name descname"><span class="pre">charge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.charge" title="Link to this definition">#</a></dt>
 <dd><p>Compute the charge of the promolecule.</p>
-<section id="id108">
-<h4>Returns<a class="headerlink" href="#id108" title="Link to this heading">#</a></h4>
+<section id="id110">
+<h4>Returns<a class="headerlink" href="#id110" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>charge: float</dt><dd><p>Charge of the promolecule.</p>
 </dd>
@@ -2960,8 +2992,8 @@ on whether the property is an extensive one or an intensive one.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.density">
 <span class="sig-name descname"><span class="pre">density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.density" title="Link to this definition">#</a></dt>
 <dd><p>Compute the electron density of the promolecule at the desired points.</p>
-<section id="id109">
-<h4>Parameters<a class="headerlink" href="#id109" title="Link to this heading">#</a></h4>
+<section id="id111">
+<h4>Parameters<a class="headerlink" href="#id111" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>points: np.ndarray((N, 3), dtype=float)</dt><dd><p>Points at which to compute the density.</p>
 </dd>
@@ -2973,8 +3005,8 @@ May be slightly more accurate.</p>
 </dd>
 </dl>
 </section>
-<section id="id110">
-<h4>Returns<a class="headerlink" href="#id110" title="Link to this heading">#</a></h4>
+<section id="id112">
+<h4>Returns<a class="headerlink" href="#id112" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>density: np.ndarray((N,), dtype=float)</dt><dd><p>Density evaluated at N points.</p>
 </dd>
@@ -2986,8 +3018,8 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.energy">
 <span class="sig-name descname"><span class="pre">energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.energy" title="Link to this definition">#</a></dt>
 <dd><p>Compute the energy of the promolecule.</p>
-<section id="id111">
-<h4>Returns<a class="headerlink" href="#id111" title="Link to this heading">#</a></h4>
+<section id="id113">
+<h4>Returns<a class="headerlink" href="#id113" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>energy: float</dt><dd><p>Energy of the promolecule.</p>
 </dd>
@@ -2999,15 +3031,15 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.eta">
 <span class="sig-name descname"><span class="pre">eta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.eta" title="Link to this definition">#</a></dt>
 <dd><p>Compute the chemical hardness of the promolecule.</p>
-<section id="id112">
-<h4>Parameters<a class="headerlink" href="#id112" title="Link to this heading">#</a></h4>
+<section id="id114">
+<h4>Parameters<a class="headerlink" href="#id114" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>p: int, default=1 (linear mean)</dt><dd><p>Type of mean used in the computation.</p>
 </dd>
 </dl>
 </section>
-<section id="id113">
-<h4>Returns<a class="headerlink" href="#id113" title="Link to this heading">#</a></h4>
+<section id="id115">
+<h4>Returns<a class="headerlink" href="#id115" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>eta: float</dt><dd><p>Chemical hardness of the promolecule.</p>
 </dd>
@@ -3029,37 +3061,10 @@ c_A \nabla \rho_A^{(0)}(\mathbf{R})\]</div>
 <p><span class="math notranslate nohighlight">\(c_A\)</span> are the coefficients of the species,</p>
 <p><span class="math notranslate nohighlight">\(R\)</span> are points in 3D cartesian coordinates,</p>
 <p><span class="math notranslate nohighlight">\(\nabla \rho_A^{(0)}(\mathbf{R})\)</span> is the gradient of the species.</p>
-<section id="id114">
-<h4>Parameters<a class="headerlink" href="#id114" title="Link to this heading">#</a></h4>
-<dl class="simple">
-<dt>points: np.ndarray((N, 3), dtype=float)</dt><dd><p>Points at which to compute the electron density gradient.</p>
-</dd>
-<dt>spin: (‘t’ | ‘a’ | ‘b’ | ‘m’), default=’t’</dt><dd><p>Type of density to compute; either total, alpha-spin, beta-spin,
-or magnetization density.</p>
-</dd>
-<dt>log: bool, default=False</dt><dd><p>Whether to compute the log of the density instead of the density.
-May be slightly more accurate.</p>
-</dd>
-</dl>
-</section>
-<section id="id115">
-<h4>Returns<a class="headerlink" href="#id115" title="Link to this heading">#</a></h4>
-<dl class="simple">
-<dt>gradient: np.ndarray((N, 3), dtype=float)</dt><dd><p>Electron density gradient of the promolecule evaluated at N points.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.hessian">
-<span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.hessian" title="Link to this definition">#</a></dt>
-<dd><p>Compute the promolecule’s electron density Hessian at the
-desired points.</p>
 <section id="id116">
 <h4>Parameters<a class="headerlink" href="#id116" title="Link to this heading">#</a></h4>
 <dl class="simple">
-<dt>points: np.ndarray((N, 3), dtype=float)</dt><dd><p>Points at which to compute the electron density Hessian.</p>
+<dt>points: np.ndarray((N, 3), dtype=float)</dt><dd><p>Points at which to compute the electron density gradient.</p>
 </dd>
 <dt>spin: (‘t’ | ‘a’ | ‘b’ | ‘m’), default=’t’</dt><dd><p>Type of density to compute; either total, alpha-spin, beta-spin,
 or magnetization density.</p>
@@ -3072,6 +3077,33 @@ May be slightly more accurate.</p>
 <section id="id117">
 <h4>Returns<a class="headerlink" href="#id117" title="Link to this heading">#</a></h4>
 <dl class="simple">
+<dt>gradient: np.ndarray((N, 3), dtype=float)</dt><dd><p>Electron density gradient of the promolecule evaluated at N points.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.hessian">
+<span class="sig-name descname"><span class="pre">hessian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.hessian" title="Link to this definition">#</a></dt>
+<dd><p>Compute the promolecule’s electron density Hessian at the
+desired points.</p>
+<section id="id118">
+<h4>Parameters<a class="headerlink" href="#id118" title="Link to this heading">#</a></h4>
+<dl class="simple">
+<dt>points: np.ndarray((N, 3), dtype=float)</dt><dd><p>Points at which to compute the electron density Hessian.</p>
+</dd>
+<dt>spin: (‘t’ | ‘a’ | ‘b’ | ‘m’), default=’t’</dt><dd><p>Type of density to compute; either total, alpha-spin, beta-spin,
+or magnetization density.</p>
+</dd>
+<dt>log: bool, default=False</dt><dd><p>Whether to compute the log of the density instead of the density.
+May be slightly more accurate.</p>
+</dd>
+</dl>
+</section>
+<section id="id119">
+<h4>Returns<a class="headerlink" href="#id119" title="Link to this heading">#</a></h4>
+<dl class="simple">
 <dt>hess: np.ndarray((N, 3, 3), dtype=float)</dt><dd><p>Electron density Hessian of the promolecule evaluated at N points.</p>
 </dd>
 </dl>
@@ -3082,15 +3114,15 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.ip">
 <span class="sig-name descname"><span class="pre">ip</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.ip" title="Link to this definition">#</a></dt>
 <dd><p>Compute the ionization potential of the promolecule.</p>
-<section id="id118">
-<h4>Parameters<a class="headerlink" href="#id118" title="Link to this heading">#</a></h4>
+<section id="id120">
+<h4>Parameters<a class="headerlink" href="#id120" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>p: int, default=1 (linear mean)</dt><dd><p>Type of mean used in the computation.</p>
 </dd>
 </dl>
 </section>
-<section id="id119">
-<h4>Returns<a class="headerlink" href="#id119" title="Link to this heading">#</a></h4>
+<section id="id121">
+<h4>Returns<a class="headerlink" href="#id121" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>ip: float</dt><dd><p>Ionization potential of the promolecule.</p>
 </dd>
@@ -3113,8 +3145,8 @@ or magnetization density.</p>
 May be slightly more accurate.</p>
 </dd>
 </dl>
-<section id="id120">
-<h4>Returns<a class="headerlink" href="#id120" title="Link to this heading">#</a></h4>
+<section id="id122">
+<h4>Returns<a class="headerlink" href="#id122" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>ked: np.ndarray((N,), dtype=float)</dt><dd><p>Kinetic energy density evaluated at N points.</p>
 </dd>
@@ -3127,8 +3159,8 @@ May be slightly more accurate.</p>
 <span class="sig-name descname"><span class="pre">laplacian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.laplacian" title="Link to this definition">#</a></dt>
 <dd><p>Compute the promolecule’s electron density Laplacian at the
 desired points.</p>
-<section id="id121">
-<h4>Parameters<a class="headerlink" href="#id121" title="Link to this heading">#</a></h4>
+<section id="id123">
+<h4>Parameters<a class="headerlink" href="#id123" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>points: np.ndarray((N, 3), dtype=float)</dt><dd><p>Points at which to compute the electron density Laplacian.</p>
 </dd>
@@ -3140,8 +3172,8 @@ May be slightly more accurate.</p>
 </dd>
 </dl>
 </section>
-<section id="id122">
-<h4>Returns<a class="headerlink" href="#id122" title="Link to this heading">#</a></h4>
+<section id="id124">
+<h4>Returns<a class="headerlink" href="#id124" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>laplacian: np.ndarray((N,), dtype=float)</dt><dd><p>Electron density Laplacian of the promolecule evaluated at N points.</p>
 </dd>
@@ -3153,8 +3185,8 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.mass">
 <span class="sig-name descname"><span class="pre">mass</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.mass" title="Link to this definition">#</a></dt>
 <dd><p>Compute the mass of the promolecule.</p>
-<section id="id123">
-<h4>Returns<a class="headerlink" href="#id123" title="Link to this heading">#</a></h4>
+<section id="id125">
+<h4>Returns<a class="headerlink" href="#id125" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>mass: float</dt><dd><p>Mass of the promolecule.</p>
 </dd>
@@ -3166,15 +3198,15 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.mu">
 <span class="sig-name descname"><span class="pre">mu</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.mu" title="Link to this definition">#</a></dt>
 <dd><p>Compute the chemical potential of the promolecule.</p>
-<section id="id124">
-<h4>Parameters<a class="headerlink" href="#id124" title="Link to this heading">#</a></h4>
+<section id="id126">
+<h4>Parameters<a class="headerlink" href="#id126" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>p: int, default=1 (linear mean)</dt><dd><p>Type of mean used in the computation.</p>
 </dd>
 </dl>
 </section>
-<section id="id125">
-<h4>Returns<a class="headerlink" href="#id125" title="Link to this heading">#</a></h4>
+<section id="id127">
+<h4>Returns<a class="headerlink" href="#id127" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>mu: float</dt><dd><p>Chemical potential of the promolecule.</p>
 </dd>
@@ -3186,15 +3218,15 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.mult">
 <span class="sig-name descname"><span class="pre">mult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.mult" title="Link to this definition">#</a></dt>
 <dd><p>Compute the multiplicity of the promolecule.</p>
-<section id="id126">
-<h4>Parameters<a class="headerlink" href="#id126" title="Link to this heading">#</a></h4>
+<section id="id128">
+<h4>Parameters<a class="headerlink" href="#id128" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>p: int, default=1 (linear mean)</dt><dd><p>Type of mean used in the computation.</p>
 </dd>
 </dl>
 </section>
-<section id="id127">
-<h4>Returns<a class="headerlink" href="#id127" title="Link to this heading">#</a></h4>
+<section id="id129">
+<h4>Returns<a class="headerlink" href="#id129" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>mult: float</dt><dd><p>Multiplicity of the promolecule.</p>
 </dd>
@@ -3206,8 +3238,8 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.nelec">
 <span class="sig-name descname"><span class="pre">nelec</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.nelec" title="Link to this definition">#</a></dt>
 <dd><p>Compute the electron number of the promolecule.</p>
-<section id="id128">
-<h4>Returns<a class="headerlink" href="#id128" title="Link to this heading">#</a></h4>
+<section id="id130">
+<h4>Returns<a class="headerlink" href="#id130" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>nelec: float</dt><dd><p>Number of electrons in the promolecule.</p>
 </dd>
@@ -3219,15 +3251,15 @@ May be slightly more accurate.</p>
 <dt class="sig sig-object py" id="atomdb.promolecule.Promolecule.nspin">
 <span class="sig-name descname"><span class="pre">nspin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">p</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.Promolecule.nspin" title="Link to this definition">#</a></dt>
 <dd><p>Compute the spin number of the promolecule.</p>
-<section id="id129">
-<h4>Parameters<a class="headerlink" href="#id129" title="Link to this heading">#</a></h4>
+<section id="id131">
+<h4>Parameters<a class="headerlink" href="#id131" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>p: int, default=1 (linear mean)</dt><dd><p>Type of mean used in the computation.</p>
 </dd>
 </dl>
 </section>
-<section id="id130">
-<h4>Returns<a class="headerlink" href="#id130" title="Link to this heading">#</a></h4>
+<section id="id132">
+<h4>Returns<a class="headerlink" href="#id132" title="Link to this heading">#</a></h4>
 <dl class="simple">
 <dt>nspin: float</dt><dd><p>Spin number of the promolecule.</p>
 </dd>
@@ -3243,8 +3275,8 @@ May be slightly more accurate.</p>
 <span class="sig-prename descclassname"><span class="pre">atomdb.promolecule.</span></span><span class="sig-name descname"><span class="pre">make_promolecule</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atnums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coords</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mults</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remotepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://raw.githubusercontent.com/theochem/AtomDBdata/main/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.promolecule.make_promolecule" title="Link to this definition">#</a></dt>
 <dd><p>Construct a Promolecule instance from a set of atoms and their coordinates,
 charges, and multiplicities.</p>
-<section id="id131">
-<h3>Parameters<a class="headerlink" href="#id131" title="Link to this heading">#</a></h3>
+<section id="id133">
+<h3>Parameters<a class="headerlink" href="#id133" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>atnums: list of (str|int)</dt><dd><p>List of element number for each atom.</p>
 </dd>
@@ -3264,8 +3296,8 @@ charges, and multiplicities.</p>
 </dd>
 </dl>
 </section>
-<section id="id132">
-<h3>Returns<a class="headerlink" href="#id132" title="Link to this heading">#</a></h3>
+<section id="id134">
+<h3>Returns<a class="headerlink" href="#id134" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>promol: Promolecule</dt><dd><p>Promolecule instance.</p>
 </dd>
@@ -3286,8 +3318,8 @@ charges, and multiplicities.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.at_radius">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">at_radius</span></span><a class="headerlink" href="#atomdb.species.Species.at_radius" title="Link to this definition">#</a></dt>
 <dd><p>Atomic radius.</p>
-<section id="id133">
-<h3>Returns<a class="headerlink" href="#id133" title="Link to this heading">#</a></h3>
+<section id="id135">
+<h3>Returns<a class="headerlink" href="#id135" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>at_radius<span class="classifier">dict, float</span></dt><dd><p>The return dictionary contains atomic radii types
 <cite>wc</cite> and <cite>cr</cite>. For references corresponding to each type check
@@ -3301,8 +3333,8 @@ charges, and multiplicities.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.atmass">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">atmass</span></span><a class="headerlink" href="#atomdb.species.Species.atmass" title="Link to this definition">#</a></dt>
 <dd><p>Atomic mass in atomic units.</p>
-<section id="id134">
-<h3>Returns<a class="headerlink" href="#id134" title="Link to this heading">#</a></h3>
+<section id="id136">
+<h3>Returns<a class="headerlink" href="#id136" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>atmass<span class="classifier">dict</span></dt><dd><p>Two options are available: the isotopically averaged mass ‘stb’, and the mass of the most
 common isotope ‘nist’. For references corresponding to each type check
@@ -3316,8 +3348,8 @@ common isotope ‘nist’. For references corresponding to each type check
 <dt class="sig sig-object py" id="atomdb.species.Species.atnum">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">atnum</span></span><a class="headerlink" href="#atomdb.species.Species.atnum" title="Link to this definition">#</a></dt>
 <dd><p>Atomic number.</p>
-<section id="id135">
-<h3>Returns<a class="headerlink" href="#id135" title="Link to this heading">#</a></h3>
+<section id="id137">
+<h3>Returns<a class="headerlink" href="#id137" title="Link to this heading">#</a></h3>
 <p>atnum : int</p>
 </section>
 </dd></dl>
@@ -3330,8 +3362,8 @@ common isotope ‘nist’. For references corresponding to each type check
 \[Q = Z - N\]</div>
 <p>Where Q is the charge, Z the atomic number and N the total number of electrons stored in
 SpeciesData object.</p>
-<section id="id136">
-<h3>Returns<a class="headerlink" href="#id136" title="Link to this heading">#</a></h3>
+<section id="id138">
+<h3>Returns<a class="headerlink" href="#id138" title="Link to this heading">#</a></h3>
 <p>charge : int</p>
 </section>
 </dd></dl>
@@ -3340,8 +3372,8 @@ SpeciesData object.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.cov_radius">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cov_radius</span></span><a class="headerlink" href="#atomdb.species.Species.cov_radius" title="Link to this definition">#</a></dt>
 <dd><p>Covalent radius (derived from crystallographic data).</p>
-<section id="id137">
-<h3>Returns<a class="headerlink" href="#id137" title="Link to this heading">#</a></h3>
+<section id="id139">
+<h3>Returns<a class="headerlink" href="#id139" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>cov_radius<span class="classifier">dict, float</span></dt><dd><p>The return dictionary contains crystallographic covalent radii types <cite>cordero</cite>,
 <cite>bragg</cite> and <cite>slater</cite>. For references corresponding to each type check
@@ -3359,8 +3391,8 @@ SpeciesData object.</p>
 (a set of points along a 1-D grid) is modeled by a cubic spline. The property can
 be computed for the alpha, beta, alpha + beta, and alpha - beta components of the
 electron density.</p>
-<section id="id138">
-<h3>Parameters<a class="headerlink" href="#id138" title="Link to this heading">#</a></h3>
+<section id="id140">
+<h3>Parameters<a class="headerlink" href="#id140" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>spin<span class="classifier">str, optional</span></dt><dd><p>Type of occupied spin orbitals which can be either “a” (for alpha), “b” (for
 beta), “ab” (for alpha + beta), and, “m” (for alpha - beta), by default ‘ab’</p>
@@ -3373,8 +3405,8 @@ spin(s) are included</p>
 </dd>
 </dl>
 </section>
-<section id="id139">
-<h3>Returns<a class="headerlink" href="#id139" title="Link to this heading">#</a></h3>
+<section id="id141">
+<h3>Returns<a class="headerlink" href="#id141" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>Callable[[np.ndarray(N,), int] -&gt; np.ndarray(N,)]</dt><dd><p>a callable function evaluating the derivative of the density given a set of radial
 points (1-D array).</p>
@@ -3387,8 +3419,8 @@ points (1-D array).</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.dataset">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dataset</span></span><a class="headerlink" href="#atomdb.species.Species.dataset" title="Link to this definition">#</a></dt>
 <dd><p>Name of the type of dataset.</p>
-<section id="id140">
-<h3>Returns<a class="headerlink" href="#id140" title="Link to this heading">#</a></h3>
+<section id="id142">
+<h3>Returns<a class="headerlink" href="#id142" title="Link to this heading">#</a></h3>
 <p>dataset : string</p>
 </section>
 </dd></dl>
@@ -3397,36 +3429,6 @@ points (1-D array).</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.dd_dens_func">
 <span class="sig-name descname"><span class="pre">dd_dens_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.Species.dd_dens_func" title="Link to this definition">#</a></dt>
 <dd><p>Return a cubic spline of the electronic density Laplacian.</p>
-<section id="id141">
-<h3>Parameters<a class="headerlink" href="#id141" title="Link to this heading">#</a></h3>
-<dl class="simple">
-<dt>spin<span class="classifier">str, default=”t”</span></dt><dd><p>Type of occupied spin orbitals.
-Can be either “t” (for alpha + beta), “a” (for alpha),
-“b” (for beta), or “m” (for alpha - beta).</p>
-</dd>
-<dt>index<span class="classifier">sequence of int, optional</span></dt><dd><p>Sequence of integers representing the spin orbitals.
-These are indexed from 0 to the number of basis functions.
-By default, all orbitals of the given spin(s) are included.</p>
-</dd>
-<dt>log<span class="classifier">bool, default=False</span></dt><dd><p>Whether the logarithm of the density is used for interpolation.</p>
-</dd>
-</dl>
-</section>
-<section id="id142">
-<h3>Returns<a class="headerlink" href="#id142" title="Link to this heading">#</a></h3>
-<dl class="simple">
-<dt>DensitySpline</dt><dd><p>A DensitySpline instance for the density and its derivatives.
-Given a set of radial points, it can evaluate densities and
-derivatives up to order 2.</p>
-</dd>
-</dl>
-</section>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="atomdb.species.Species.dens_func">
-<span class="sig-name descname"><span class="pre">dens_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.Species.dens_func" title="Link to this definition">#</a></dt>
-<dd><p>Return a cubic spline of the electronic density.</p>
 <section id="id143">
 <h3>Parameters<a class="headerlink" href="#id143" title="Link to this heading">#</a></h3>
 <dl class="simple">
@@ -3453,12 +3455,42 @@ derivatives up to order 2.</p>
 </section>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="atomdb.species.Species.dens_func">
+<span class="sig-name descname"><span class="pre">dens_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.Species.dens_func" title="Link to this definition">#</a></dt>
+<dd><p>Return a cubic spline of the electronic density.</p>
+<section id="id145">
+<h3>Parameters<a class="headerlink" href="#id145" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>spin<span class="classifier">str, default=”t”</span></dt><dd><p>Type of occupied spin orbitals.
+Can be either “t” (for alpha + beta), “a” (for alpha),
+“b” (for beta), or “m” (for alpha - beta).</p>
+</dd>
+<dt>index<span class="classifier">sequence of int, optional</span></dt><dd><p>Sequence of integers representing the spin orbitals.
+These are indexed from 0 to the number of basis functions.
+By default, all orbitals of the given spin(s) are included.</p>
+</dd>
+<dt>log<span class="classifier">bool, default=False</span></dt><dd><p>Whether the logarithm of the density is used for interpolation.</p>
+</dd>
+</dl>
+</section>
+<section id="id146">
+<h3>Returns<a class="headerlink" href="#id146" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>DensitySpline</dt><dd><p>A DensitySpline instance for the density and its derivatives.
+Given a set of radial points, it can evaluate densities and
+derivatives up to order 2.</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
 <dl class="py property">
 <dt class="sig sig-object py" id="atomdb.species.Species.dispersion_c6">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dispersion_c6</span></span><a class="headerlink" href="#atomdb.species.Species.dispersion_c6" title="Link to this definition">#</a></dt>
 <dd><p>Isolated atom C6 dispersion coefficients.</p>
-<section id="id145">
-<h3>Returns<a class="headerlink" href="#id145" title="Link to this heading">#</a></h3>
+<section id="id147">
+<h3>Returns<a class="headerlink" href="#id147" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>dispersion_c6<span class="classifier">dict, float</span></dt><dd><p>The return dictionary contains isolated atom C6 dispersion coefficients types
 <cite>chu</cite>. For references corresponding to each type check
@@ -3472,8 +3504,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.elem">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">elem</span></span><a class="headerlink" href="#atomdb.species.Species.elem" title="Link to this definition">#</a></dt>
 <dd><p>Element symbol.</p>
-<section id="id146">
-<h3>Returns<a class="headerlink" href="#id146" title="Link to this heading">#</a></h3>
+<section id="id148">
+<h3>Returns<a class="headerlink" href="#id148" title="Link to this heading">#</a></h3>
 <p>elem : string</p>
 </section>
 </dd></dl>
@@ -3482,8 +3514,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.energy">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">energy</span></span><a class="headerlink" href="#atomdb.species.Species.energy" title="Link to this definition">#</a></dt>
 <dd><p>Energy.</p>
-<section id="id147">
-<h3>Returns<a class="headerlink" href="#id147" title="Link to this heading">#</a></h3>
+<section id="id149">
+<h3>Returns<a class="headerlink" href="#id149" title="Link to this heading">#</a></h3>
 <p>energy : float</p>
 </section>
 </dd></dl>
@@ -3492,8 +3524,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.eta">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">eta</span></span><a class="headerlink" href="#atomdb.species.Species.eta" title="Link to this definition">#</a></dt>
 <dd><p>Chemical hardness.</p>
-<section id="id148">
-<h3>Returns<a class="headerlink" href="#id148" title="Link to this heading">#</a></h3>
+<section id="id150">
+<h3>Returns<a class="headerlink" href="#id150" title="Link to this heading">#</a></h3>
 <p>eta : float</p>
 </section>
 </dd></dl>
@@ -3508,8 +3540,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.ip">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ip</span></span><a class="headerlink" href="#atomdb.species.Species.ip" title="Link to this definition">#</a></dt>
 <dd><p>Ionization potential.</p>
-<section id="id149">
-<h3>Returns<a class="headerlink" href="#id149" title="Link to this heading">#</a></h3>
+<section id="id151">
+<h3>Returns<a class="headerlink" href="#id151" title="Link to this heading">#</a></h3>
 <p>ip : float</p>
 </section>
 </dd></dl>
@@ -3518,8 +3550,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.ked_func">
 <span class="sig-name descname"><span class="pre">ked_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'t'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">log</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.Species.ked_func" title="Link to this definition">#</a></dt>
 <dd><p>Return a cubic spline of the kinetic energy density.</p>
-<section id="id150">
-<h3>Parameters<a class="headerlink" href="#id150" title="Link to this heading">#</a></h3>
+<section id="id152">
+<h3>Parameters<a class="headerlink" href="#id152" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>spin<span class="classifier">str, default=”t”</span></dt><dd><p>Type of occupied spin orbitals.
 Can be either “t” (for alpha + beta), “a” (for alpha),
@@ -3533,8 +3565,8 @@ By default, all orbitals of the given spin(s) are included.</p>
 </dd>
 </dl>
 </section>
-<section id="id151">
-<h3>Returns<a class="headerlink" href="#id151" title="Link to this heading">#</a></h3>
+<section id="id153">
+<h3>Returns<a class="headerlink" href="#id153" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>DensitySpline</dt><dd><p>A DensitySpline instance for the density and its derivatives.
 Given a set of radial points, it can evaluate densities and
@@ -3548,8 +3580,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.mu">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">mu</span></span><a class="headerlink" href="#atomdb.species.Species.mu" title="Link to this definition">#</a></dt>
 <dd><p>Chemical potential.</p>
-<section id="id152">
-<h3>Returns<a class="headerlink" href="#id152" title="Link to this heading">#</a></h3>
+<section id="id154">
+<h3>Returns<a class="headerlink" href="#id154" title="Link to this heading">#</a></h3>
 <p>mu : float</p>
 </section>
 </dd></dl>
@@ -3561,8 +3593,8 @@ derivatives up to order 2.</p>
 <div class="math notranslate nohighlight">
 \[M = \left|N_S\right| + 1\]</div>
 <p>Where <span class="math notranslate nohighlight">\(\left|N_S\right|\)</span> is the spin number.</p>
-<section id="id153">
-<h3>Returns<a class="headerlink" href="#id153" title="Link to this heading">#</a></h3>
+<section id="id155">
+<h3>Returns<a class="headerlink" href="#id155" title="Link to this heading">#</a></h3>
 <p>mult : int</p>
 </section>
 </dd></dl>
@@ -3571,8 +3603,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.nelec">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nelec</span></span><a class="headerlink" href="#atomdb.species.Species.nelec" title="Link to this definition">#</a></dt>
 <dd><p>Number of electrons.</p>
-<section id="id154">
-<h3>Returns<a class="headerlink" href="#id154" title="Link to this heading">#</a></h3>
+<section id="id156">
+<h3>Returns<a class="headerlink" href="#id156" title="Link to this heading">#</a></h3>
 <p>nelec : int</p>
 </section>
 </dd></dl>
@@ -3581,8 +3613,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.nexc">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">nexc</span></span><a class="headerlink" href="#atomdb.species.Species.nexc" title="Link to this definition">#</a></dt>
 <dd><p>Excitation number.</p>
-<section id="id155">
-<h3>Returns<a class="headerlink" href="#id155" title="Link to this heading">#</a></h3>
+<section id="id157">
+<h3>Returns<a class="headerlink" href="#id157" title="Link to this heading">#</a></h3>
 <p>nexc : int</p>
 </section>
 </dd></dl>
@@ -3597,8 +3629,8 @@ derivatives up to order 2.</p>
 <dt>Where <span class="math notranslate nohighlight">\(N_S\)</span> is the spin number and <span class="math notranslate nohighlight">\(N_α\)</span> and <span class="math notranslate nohighlight">\(N_β\)</span> number of alpha and </dt><dd><p>beta electrons.</p>
 </dd>
 </dl>
-<section id="id156">
-<h3>Returns<a class="headerlink" href="#id156" title="Link to this heading">#</a></h3>
+<section id="id158">
+<h3>Returns<a class="headerlink" href="#id158" title="Link to this heading">#</a></h3>
 <p>nspin : int</p>
 </section>
 </dd></dl>
@@ -3607,8 +3639,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.obasis_name">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">obasis_name</span></span><a class="headerlink" href="#atomdb.species.Species.obasis_name" title="Link to this definition">#</a></dt>
 <dd><p>Basis name.</p>
-<section id="id157">
-<h3>Returns<a class="headerlink" href="#id157" title="Link to this heading">#</a></h3>
+<section id="id159">
+<h3>Returns<a class="headerlink" href="#id159" title="Link to this heading">#</a></h3>
 <p>obasis_name : string</p>
 </section>
 </dd></dl>
@@ -3617,8 +3649,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.polarizability">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">polarizability</span></span><a class="headerlink" href="#atomdb.species.Species.polarizability" title="Link to this definition">#</a></dt>
 <dd><p>Isolated atom dipole polarizability.</p>
-<section id="id158">
-<h3>Returns<a class="headerlink" href="#id158" title="Link to this heading">#</a></h3>
+<section id="id160">
+<h3>Returns<a class="headerlink" href="#id160" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>polarizability<span class="classifier">dict, float</span></dt><dd><p>The return dictionary contains isolated atom dipole polarizability types
 <cite>crc</cite> and <cite>chu</cite>. For references corresponding to each type check
@@ -3632,8 +3664,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.spinpol">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spinpol</span></span><a class="headerlink" href="#atomdb.species.Species.spinpol" title="Link to this definition">#</a></dt>
 <dd><p>Spin polarization direction (±1).</p>
-<section id="id159">
-<h3>Returns<a class="headerlink" href="#id159" title="Link to this heading">#</a></h3>
+<section id="id161">
+<h3>Returns<a class="headerlink" href="#id161" title="Link to this heading">#</a></h3>
 <p>spinpol : int</p>
 </section>
 </dd></dl>
@@ -3654,8 +3686,8 @@ derivatives up to order 2.</p>
 <dt class="sig sig-object py" id="atomdb.species.Species.vdw_radius">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">vdw_radius</span></span><a class="headerlink" href="#atomdb.species.Species.vdw_radius" title="Link to this definition">#</a></dt>
 <dd><p>Van der Waals radii.</p>
-<section id="id160">
-<h3>Returns<a class="headerlink" href="#id160" title="Link to this heading">#</a></h3>
+<section id="id162">
+<h3>Returns<a class="headerlink" href="#id162" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>vdw_radius<span class="classifier">dict, float</span></dt><dd><p>The return dictionary contains van der wals radii types
 <cite>bondi</cite>, <cite>truhlar</cite>, <cite>rt</cite>, <cite>batsanov</cite>, <cite>dreiding</cite>, <cite>uff</cite> and <cite>mm3</cite>. For
@@ -3672,8 +3704,8 @@ references corresponding to each type check
 <dt class="sig sig-object py" id="atomdb.species.compile">
 <span class="sig-prename descclassname"><span class="pre">atomdb.species.</span></span><span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nexc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.compile" title="Link to this definition">#</a></dt>
 <dd><p>Compile an atomic or ionic species into the AtomDB database.</p>
-<section id="id161">
-<h3>Parameters<a class="headerlink" href="#id161" title="Link to this heading">#</a></h3>
+<section id="id163">
+<h3>Parameters<a class="headerlink" href="#id163" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>elem<span class="classifier">str</span></dt><dd><p>Element symbol.</p>
 </dd>
@@ -3695,8 +3727,8 @@ references corresponding to each type check
 <dt class="sig sig-object py" id="atomdb.species.dump">
 <span class="sig-prename descclassname"><span class="pre">atomdb.species.</span></span><span class="sig-name descname"><span class="pre">dump</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.dump" title="Link to this definition">#</a></dt>
 <dd><p>Dump the Species instance(s) to a MessagePack file in the database.</p>
-<section id="id162">
-<h3>Parameters<a class="headerlink" href="#id162" title="Link to this heading">#</a></h3>
+<section id="id164">
+<h3>Parameters<a class="headerlink" href="#id164" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>species: Iterable</dt><dd><p>Iterables of objects of class <cite>Species</cite></p>
 </dd>
@@ -3710,8 +3742,8 @@ references corresponding to each type check
 <dt class="sig sig-object py" id="atomdb.species.load">
 <span class="sig-prename descclassname"><span class="pre">atomdb.species.</span></span><span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nexc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remotepath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'https://raw.githubusercontent.com/theochem/AtomDBdata/main/'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.load" title="Link to this definition">#</a></dt>
 <dd><p>Load one or many atomic or ionic species from the AtomDB database.</p>
-<section id="id163">
-<h3>Parameters<a class="headerlink" href="#id163" title="Link to this heading">#</a></h3>
+<section id="id165">
+<h3>Parameters<a class="headerlink" href="#id165" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>elem<span class="classifier">str</span></dt><dd><p>Element symbol.</p>
 </dd>
@@ -3729,8 +3761,8 @@ references corresponding to each type check
 </dd>
 </dl>
 </section>
-<section id="id164">
-<h3>Returns<a class="headerlink" href="#id164" title="Link to this heading">#</a></h3>
+<section id="id166">
+<h3>Returns<a class="headerlink" href="#id166" title="Link to this heading">#</a></h3>
 <p>Object of class Species</p>
 </section>
 </dd></dl>
@@ -3741,8 +3773,8 @@ references corresponding to each type check
 <dd><p>Returns the local path to the raw data file of a species</p>
 <p>This function retrieves the raw data file of a species from the AtomDB cache if present. If the
 file is not found, it is downloaded from the remote URL.</p>
-<section id="id165">
-<h3>Parameters<a class="headerlink" href="#id165" title="Link to this heading">#</a></h3>
+<section id="id167">
+<h3>Parameters<a class="headerlink" href="#id167" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>suffix<span class="classifier">str</span></dt><dd><p>File extension of the raw data file.</p>
 </dd>
@@ -3762,8 +3794,8 @@ file is not found, it is downloaded from the remote URL.</p>
 </dd>
 </dl>
 </section>
-<section id="id166">
-<h3>Returns<a class="headerlink" href="#id166" title="Link to this heading">#</a></h3>
+<section id="id168">
+<h3>Returns<a class="headerlink" href="#id168" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>str</dt><dd><p>Path to the raw data file.</p>
 </dd>
@@ -3816,8 +3848,8 @@ table, with rows corresponding to atomic numbers and columns to charges.</p>
 which is the database’s limit.</p>
 <p>The charge range spans from <code class="docutils literal notranslate"><span class="pre">-2</span></code> to <code class="docutils literal notranslate"><span class="pre">max_atnum</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
 <p>Missing entries have multiplicities set to zero.</p>
-<section id="id167">
-<h3>Parameters<a class="headerlink" href="#id167" title="Link to this heading">#</a></h3>
+<section id="id169">
+<h3>Parameters<a class="headerlink" href="#id169" title="Link to this heading">#</a></h3>
 <dl class="simple">
 <dt>max_atnum<span class="classifier">int, default=100</span></dt><dd><p>Highest atomic number of the elements to be added to the table.</p>
 </dd>
@@ -3830,16 +3862,6 @@ which is the database’s limit.</p>
 </dd>
 </dl>
 </section>
-</dd></dl>
-
-</section>
-<section id="module-atomdb.version">
-<span id="atomdb-version-module"></span><h2>atomdb.version module<a class="headerlink" href="#module-atomdb.version" title="Link to this heading">#</a></h2>
-<p>AtomDB version information.</p>
-<dl class="py data">
-<dt class="sig sig-object py" id="atomdb.version.version">
-<span class="sig-prename descclassname"><span class="pre">atomdb.version.</span></span><span class="sig-name descname"><span class="pre">version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.0.1'</span></em><a class="headerlink" href="#atomdb.version.version" title="Link to this definition">#</a></dt>
-<dd><p>AtomDB version string.</p>
 </dd></dl>
 
 </section>
@@ -3978,6 +4000,7 @@ which is the database’s limit.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_number"><code class="docutils literal notranslate"><span class="pre">element_number()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_symbol"><code class="docutils literal notranslate"><span class="pre">element_symbol()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.make_promolecule"><code class="docutils literal notranslate"><span class="pre">make_promolecule()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.raw_datafile"><code class="docutils literal notranslate"><span class="pre">raw_datafile()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subpackages">Subpackages</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
@@ -4068,10 +4091,6 @@ which is the database’s limit.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.utils.MODULE_DATAPATH"><code class="docutils literal notranslate"><span class="pre">MODULE_DATAPATH</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.utils.MULTIPLICITIES"><code class="docutils literal notranslate"><span class="pre">MULTIPLICITIES</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.utils.generate_mult_csv"><code class="docutils literal notranslate"><span class="pre">generate_mult_csv()</span></code></a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-atomdb.version">atomdb.version module</a><ul class="nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.version.version"><code class="docutils literal notranslate"><span class="pre">version</span></code></a></li>
 </ul>
 </li>
 </ul>
