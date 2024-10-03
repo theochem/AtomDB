@@ -50,6 +50,7 @@ dependencies = [
     "pooch>=1.8.1",
 ]
 dynamic = ["version"]
+[tool.setuptools_scm]
 
 [project.urls]
 Documentation = "https://atomdb.qcdevs.org"
