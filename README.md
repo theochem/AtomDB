@@ -43,11 +43,11 @@ AtomDB's documentation, including installation and usage instructions, as well a
 - **Point dependent properties**
 
   AtomDB provides functions to calculate point-dependent properties, such as:
-  **Electron density** \\(\rho(r)\\),
-  **Electron density gradient** \\(\nabla \rho(r)\\),
-  **Electron density Laplacian** \\(\nabla^2 \rho(r)\\),
-  **Electron density Hessian** \\(\nabla^2 \rho(r)\\) (for these properties, only the radial part is provided),
-  and **Kinetic energy density** \\(ked(r)\\).
+  **Electron density** $\rho(r)$,
+  **Electron density gradient** $\nabla \rho(r)$,
+  **Electron density Laplacian** $\nabla^2 \rho(r)$,
+  **Electron density Hessian** $\nabla^2 \rho(r)$ (for these properties, only the radial part is provided),
+  and **Kinetic energy density** $ked(r)$.
 
   The computation of contributions per orbital, set of orbitals, or spin to these properties is also supported.
 
