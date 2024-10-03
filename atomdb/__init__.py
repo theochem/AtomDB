@@ -15,6 +15,9 @@
 
 r"""AtomDB, a database of atomic and ionic properties."""
 
+import importlib
+from importlib.metadata import PackageNotFoundError
+
 from atomdb.periodic import Element
 
 from atomdb.species import Species
@@ -26,8 +29,6 @@ from atomdb.periodic import element_number, element_symbol, element_name
 from atomdb.species import compile, load, dump, raw_datafile
 
 from atomdb.promolecule import make_promolecule
-
-from atomdb.version import version
 
 
 __all__ = [
@@ -41,9 +42,14 @@ __all__ = [
     "load",
     "dump",
     "raw_datafile",
-    "make_promolecule" "version",
+    "make_promolecule",
 ]
 
 
-__version__ = version
 r"""AtomDB version string."""
+
+try:
+    __version__ = importlib.metadata.version("qc-AtomDB")
+except PackageNotFoundError:
+    # Package is not installed
+    print("Package 'qc-AtomDB' is not installed.")
