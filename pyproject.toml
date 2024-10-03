@@ -18,7 +18,7 @@ requires = ["setuptools>=65.0", "setuptools_scm[toml]>=7.1.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AtomDB"
+name = "qc-AtomDB"
 authors = [
   { name="QC-Devs Community", email="qcdevs@gmail.com" },
 ]
@@ -47,7 +47,7 @@ dependencies = [
     "msgpack-numpy>=0.4.8",
     "h5py>=3.6.0",
     "importlib_resources>=3.0.0",
-    "pooch==1.8.1",
+    "pooch>=1.8.1",
 ]
 dynamic = ["version"]
 
@@ -111,5 +111,3 @@ addopts = "-m 'not dev'"
 markers = [
     "dev: mark a developer test, needs extra dependencies.",
 ]
-
-
