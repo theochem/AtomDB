@@ -14,11 +14,11 @@
 # along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
 [build-system]
-requires = ["setuptools>=65.0", "setuptools_scm[toml]>=7.1.0"]
+requires = ["setuptools>=65", "setuptools-scm>=8"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "AtomDB"
+name = "qc-AtomDB"
 authors = [
   { name="QC-Devs Community", email="qcdevs@gmail.com" },
 ]
@@ -27,7 +27,7 @@ readme = "README.rst"
 license = {text = "GPL-3.0-or-later"}
 requires-python = ">=3.9"
 classifiers = [
-   'Development Status :: 0 - Released',
+    'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
     'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',
     'Operating System :: POSIX :: Linux',
@@ -47,7 +47,7 @@ dependencies = [
     "msgpack-numpy>=0.4.8",
     "h5py>=3.6.0",
     "importlib_resources>=3.0.0",
-    "pooch==1.8.1",
+    "pooch>=1.8.1",
 ]
 dynamic = ["version"]
 
@@ -59,11 +59,15 @@ Changelog = "https://github.com/theochem/atomdb/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 dev = [
-    "pytest >=2.6",
+    "pytest>=8.3.3",
     "pyscf",
-    "qc-gbasis@git+https://github.com/theochem/gbasis.git@master",
-    "qc-grid@git+https://github.com/theochem/grid.git@master",
-    "qc-iodata@git+https://github.com/theochem/iodata.git@main",
+    # "qc-gbasis@git+https://github.com/theochem/gbasis.git@master",
+    "qc-gbasis",
+    # "qc-grid@git+https://github.com/theochem/grid.git@master",
+    # TODO: uncomment when grid is available on PyPI
+    # "qc-grid",
+    # "qc-iodata@git+https://github.com/theochem/iodata.git@main",
+    "qc-iodata",
 ]
 test_extra = [
     "pytest-md",
@@ -111,5 +115,3 @@ addopts = "-m 'not dev'"
 markers = [
     "dev: mark a developer test, needs extra dependencies.",
 ]
-
-
