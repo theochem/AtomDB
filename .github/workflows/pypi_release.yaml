@@ -35,6 +35,9 @@ jobs:
         python-version: "3.11"
     - name: Install pypa/build
       run: >-
+        # install from github
+        # TODO: change to pypi once the release of qc-grid is made
+        python -m pip install git+https://github.com/theochem/grid.git@master
         python -m pip install build
     - name: Build package
       run: >-
