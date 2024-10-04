@@ -3,6 +3,11 @@
 Installation
 ############
 
+.. note::
+   Because the dependency `PySCF <https://pyscf.org/user/install.html>`
+   does not support Windows, `AtomDB` is not supported on Windows. But we can use
+   `AtomDB` with `Windows Subsystem for Linux (WSL) <https://learn.microsoft.com/en-us/windows/wsl/>`_.
+
 Downloading Code
 ================
 

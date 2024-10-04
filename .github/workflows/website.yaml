@@ -3,30 +3,32 @@ name: build_website
 on:
 
   push:
-
     branches:
+      - master
+      - main
+
+  # this ensures that the website is built when a PR is opened, synchronized, reopened, or closed
+  # and the PR is not breaking the website building process
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
       - master
 
 permissions:
-
   contents: write
   deployments: write
   pages: write
 
 jobs:
-
   build:
-
     runs-on: ubuntu-latest
-
     permissions:
-
       contents: write
       deployments: write
       pages: write
 
     steps:
-
     - name: Checkout repository
       uses: actions/checkout@v4
 
@@ -57,8 +59,8 @@ jobs:
       # inspired by https://github.com/orgs/community/discussions/26724
       # only push to gh-pages if the master branch has been updated
     - name: GitHub Pages Action
-      # if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      uses: peaceiris/actions-gh-pages@v3
+      if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+      uses: peaceiris/actions-gh-pages@v4.0.0
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./website/_build/html
