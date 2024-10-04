@@ -17,7 +17,7 @@
 :func:`ip<atomdb.species.Species.ip>`;x;;x;x;
 :func:`mu<atomdb.species.Species.mu>`;x;;;;
 :func:`eta<atomdb.species.Species.eta>`;x;;;;
-:func:`dens_func<atomdb.species.Species.dens_func>`;x;x;x;x
-:func:`d_dens_func<atomdb.species.Species.d_dens_func>`;x;x;x;x
-:func:`dd_dens_fun<atomdb.species.Species.dd_dens_fun>`;x;x;x;x
-:func:`ked_func<atomdb.species.Species.ked_func>`;x;x;x
+:func:`dens_func<atomdb.species.Species.dens_func>`;;x;x;x;x
+:func:`d_dens_func<atomdb.species.Species.d_dens_func>`;;x;x;x;x
+:func:`dd_dens_func<atomdb.species.Species.dd_dens_func>`;;x;x;x;x
+:func:`ked_func<atomdb.species.Species.ked_func>`;;;x;x;x
