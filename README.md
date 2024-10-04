@@ -15,6 +15,11 @@ You should have received a copy of the GNU General Public License
 along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 -->
 
+<div style="text-align:left">
+  <!-- <h1 style="margin-right: 20px;">The Selector Library</h1> -->
+  <img src="https://github.com/theochem/AtomDB/blob/master/website/logo.png?raw=true" alt="Logo" style="width: 50%">
+</div>
+
 [![This project supports Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org/downloads)
 [![pytest](https://github.com/theochem/AtomDB/actions/workflows/pytest.yaml/badge.svg?branch=master)](https://github.com/theochem/AtomDB/actions/workflows/pytest.yaml)
 [![PyPI](https://img.shields.io/pypi/v/qc-AtomDB.svg)](https://pypi.python.org/pypi/qc-AtomDB/)

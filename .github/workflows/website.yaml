@@ -47,13 +47,6 @@ jobs:
       run: |
         sphinx-apidoc -o website/_autosummary atomdb -M -f
 
-    - name: Create soft links
-      run: |
-        cd website
-        cp -lR ../docs/notebooks ./examples
-        ln -s ../docs/source ./api
-        cd ../
-
     - name: Install Requirements
       run: |
         python3 -m pip install -r website/requirements.txt
