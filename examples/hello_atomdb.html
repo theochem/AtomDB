@@ -189,7 +189,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Example Tutorials</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="promolecule_intro.html">Promolecule properties: Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="promolecule_intro.html">Promolecule properties: introduction</a></li>
 <li class="toctree-l1"><a class="reference internal" href="promolecule_nci.html">Promolecular properties: water dimer</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
@@ -451,7 +451,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-outcomes">Learning outcomes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages-isntall-for-google-colab">Packages isntall for Google Colab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages-installation-for-google-colab">Packages installation for Google Colab</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-dumping-data">Loading/Dumping Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-atomic-properties">Getting Atomic Properties</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#promolecule-tool-making-a-pormolecule-and-evalauting-its-properties">Promolecule tool: making a pormolecule and evalauting its properties</a><ul class="nav section-nav flex-column">
@@ -480,8 +480,8 @@ document.write(`
 <li><p>Defining a pormolecule and evalauting its properties</p></li>
 </ul>
 </section>
-<section id="packages-isntall-for-google-colab">
-<h2>Packages isntall for Google Colab<a class="headerlink" href="#packages-isntall-for-google-colab" title="Link to this heading">#</a></h2>
+<section id="packages-installation-for-google-colab">
+<h2>Packages installation for Google Colab<a class="headerlink" href="#packages-installation-for-google-colab" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ! pip install git+https://github.com/theochem/iodata.git</span>
@@ -521,7 +521,7 @@ document.write(`
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import sys  </span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># import sys</span>
 <span class="c1"># sys.path.insert(0, &#39;../../&#39;)</span>
 </pre></div>
 </div>
@@ -558,10 +558,10 @@ document.write(`
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define species and load data</span>
-<span class="n">element</span> <span class="o">=</span> <span class="s1">&#39;Cl&#39;</span>
+<span class="n">element</span> <span class="o">=</span> <span class="s2">&quot;Cl&quot;</span>
 <span class="n">charge</span> <span class="o">=</span> <span class="mi">0</span>
 <span class="n">mult</span> <span class="o">=</span> <span class="mi">2</span>
-<span class="n">dataset</span> <span class="o">=</span> <span class="s1">&#39;slater&#39;</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="s2">&quot;slater&quot;</span>
 
 <span class="n">chl</span> <span class="o">=</span> <span class="n">atomdb</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="n">charge</span><span class="p">,</span> <span class="n">mult</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="p">)</span>
 </pre></div>
@@ -590,7 +590,7 @@ document.write(`
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atomic number: &quot;</span><span class="p">,</span> <span class="n">chl</span><span class="o">.</span><span class="n">natom</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Number of electrons: &quot;</span><span class="p">,</span> <span class="n">chl</span><span class="o">.</span><span class="n">nelec</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mass [a.u.]: &quot;</span><span class="p">,</span> <span class="n">chl</span><span class="o">.</span><span class="n">mass</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atomic radius [a.u.]: &quot;</span><span class="p">,</span> <span class="n">chl</span><span class="o">.</span><span class="n">vdw_radii</span><span class="p">[</span><span class="s1">&#39;bondi&#39;</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atomic radius [a.u.]: &quot;</span><span class="p">,</span> <span class="n">chl</span><span class="o">.</span><span class="n">vdw_radii</span><span class="p">[</span><span class="s2">&quot;bondi&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -632,7 +632,7 @@ Occupations (beta):  [1. 1. 1. 3. 2.]
 <!-- Optionally, one can select the type of orbitals included in the calculation and take a subset of them by specifying their spin component and index, respectively (by default, all occupied alpha and beta spin-orbitals are included, `spin=ab` and `index=None`). Also, density derivatives are accessible through the `deriv` parameter passed to the splines. --><div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define a uniform radial grid and evaluate density</span>
-<span class="n">rad_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">rad_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="n">dens_spline</span> <span class="o">=</span> <span class="n">chl</span><span class="o">.</span><span class="n">interpolate_dens</span><span class="p">(</span><span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="n">dens</span> <span class="o">=</span> <span class="n">dens_spline</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">)</span>
@@ -642,26 +642,28 @@ Occupations (beta):  [1. 1. 1. 3. 2.]
 </div>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pyplot</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span> <span class="o">=</span> <span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pyplot</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
 
 <span class="c1"># pyplot.rcParams.update({&#39;font.size&#39;: 16})</span>
-<span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;legend.fontsize&#39;</span><span class="p">:</span> <span class="s1">&#39;x-large&#39;</span><span class="p">,</span>
-         <span class="s1">&#39;axes.labelsize&#39;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
-         <span class="s1">&#39;axes.titlesize&#39;</span><span class="p">:</span><span class="mi">16</span><span class="p">,</span>
-         <span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">,</span>
-         <span class="s1">&#39;ytick.labelsize&#39;</span><span class="p">:</span><span class="mi">10</span><span class="p">}</span>
+<span class="n">params</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;legend.fontsize&quot;</span><span class="p">:</span> <span class="s2">&quot;x-large&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;axes.labelsize&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+    <span class="s2">&quot;axes.titlesize&quot;</span><span class="p">:</span> <span class="mi">16</span><span class="p">,</span>
+    <span class="s2">&quot;xtick.labelsize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+    <span class="s2">&quot;ytick.labelsize&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="p">}</span>
 <span class="n">pyplot</span><span class="o">.</span><span class="n">rcParams</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
 
 
 <span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">pyplot</span><span class="o">.</span><span class="n">subplots</span><span class="p">()</span>
 
-<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="s1">&#39;-r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 
 <span class="n">ax</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Radial distance [Bohr]&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Density [Bohr$^{-3}$]&quot;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Spherically averaged density&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">suptitle</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spherically averaged density&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -707,13 +709,13 @@ s(\mathbf{r}) = \frac{1}{2(3\pi^2)^{1/3}}\frac{|\nabla \rho (\mathbf{r})|}{\rho^
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the molecule (atoms and coordinates)</span>
-<span class="n">fname</span> <span class="o">=</span> <span class="s1">&#39;h2o&#39;</span>
-<span class="n">mol</span> <span class="o">=</span> <span class="n">load_one</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;data/</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1">_dimer.xyz&#39;</span><span class="p">)</span>
+<span class="n">fname</span> <span class="o">=</span> <span class="s2">&quot;h2o&quot;</span>
+<span class="n">mol</span> <span class="o">=</span> <span class="n">load_one</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">_dimer.xyz&quot;</span><span class="p">)</span>
 <span class="n">atnums</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atnums</span>
 <span class="n">atcoords</span> <span class="o">=</span> <span class="n">mol</span><span class="o">.</span><span class="n">atcoords</span>
 
 <span class="c1"># Build de promolecule</span>
-<span class="n">dimer_promol</span> <span class="o">=</span> <span class="n">make_promolecule</span><span class="p">(</span><span class="n">atnums</span><span class="p">,</span> <span class="n">atcoords</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;slater&#39;</span><span class="p">)</span>
+<span class="n">dimer_promol</span> <span class="o">=</span> <span class="n">make_promolecule</span><span class="p">(</span><span class="n">atnums</span><span class="p">,</span> <span class="n">atcoords</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;slater&quot;</span><span class="p">)</span>
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Atomic mass: &quot;</span><span class="p">,</span> <span class="n">dimer_promol</span><span class="o">.</span><span class="n">mass</span><span class="p">())</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Electronic energy: &quot;</span><span class="p">,</span> <span class="o">-</span><span class="n">dimer_promol</span><span class="o">.</span><span class="n">energy</span><span class="p">())</span>
@@ -731,7 +733,9 @@ Electronic energy:  -151.618796916
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Generate a grid</span>
-<span class="n">cubgrid</span> <span class="o">=</span> <span class="n">UniformGrid</span><span class="o">.</span><span class="n">from_molecule</span><span class="p">(</span><span class="n">atnums</span><span class="p">,</span> <span class="n">atcoords</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;Trapezoid&quot;</span><span class="p">)</span>
+<span class="n">cubgrid</span> <span class="o">=</span> <span class="n">UniformGrid</span><span class="o">.</span><span class="n">from_molecule</span><span class="p">(</span>
+    <span class="n">atnums</span><span class="p">,</span> <span class="n">atcoords</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">extension</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="s2">&quot;Trapezoid&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># Evaluate the pormolecule&#39;s density</span>
 <span class="n">dimer_promol_rho</span> <span class="o">=</span> <span class="n">dimer_promol</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="n">cubgrid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -744,7 +748,7 @@ Electronic energy:  -151.618796916
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Reduced density gradient</span>
 <span class="k">def</span> <span class="nf">reduced_density_gradient</span><span class="p">(</span><span class="n">rho</span><span class="p">,</span> <span class="n">nablarho</span><span class="p">):</span>
-    <span class="n">coeff</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+    <span class="n">coeff</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
     <span class="n">gradnorm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">nablarho</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">gradnorm</span> <span class="o">/</span> <span class="p">(</span><span class="n">coeff</span> <span class="o">*</span> <span class="n">rho</span> <span class="o">**</span> <span class="p">(</span><span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span><span class="p">))</span>
 
@@ -757,8 +761,8 @@ Electronic energy:  -151.618796916
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load desnity and reduced density data for a single H2O molecule</span>
-<span class="n">h2o_promol_rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;data/</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1">_promol_rho.npy&#39;</span><span class="p">)</span>
-<span class="n">h2o_red_gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;data/</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s1">_promol_reducedgradient.npy&#39;</span><span class="p">)</span>
+<span class="n">h2o_promol_rho</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">_promol_rho.npy&quot;</span><span class="p">)</span>
+<span class="n">h2o_red_gradient</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;data/</span><span class="si">{</span><span class="n">fname</span><span class="si">}</span><span class="s2">_promol_reducedgradient.npy&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -770,12 +774,12 @@ Electronic energy:  -151.618796916
 <span class="c1">#</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dimer_promol_rho</span><span class="p">,</span> <span class="n">dimer_red_gradient</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;H2O dimer&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">h2o_promol_rho</span><span class="p">,</span> <span class="n">h2o_red_gradient</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;H2O&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\rho(R)$&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Reduced gradient&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dimer_promol_rho</span><span class="p">,</span> <span class="n">dimer_red_gradient</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;H2O dimer&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">h2o_promol_rho</span><span class="p">,</span> <span class="n">h2o_red_gradient</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;H2O&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\rho(R)$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Reduced gradient&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -836,7 +840,7 @@ Electronic energy:  -151.618796916
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#learning-outcomes">Learning outcomes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages-isntall-for-google-colab">Packages isntall for Google Colab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#packages-installation-for-google-colab">Packages installation for Google Colab</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-dumping-data">Loading/Dumping Data</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#getting-atomic-properties">Getting Atomic Properties</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#promolecule-tool-making-a-pormolecule-and-evalauting-its-properties">Promolecule tool: making a pormolecule and evalauting its properties</a><ul class="nav section-nav flex-column">

@@ -62,7 +62,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="atomdb package" href="../_autosummary/atomdb.html" />
-    <link rel="prev" title="Promolecule properties: Introduction" href="promolecule_intro.html" />
+    <link rel="prev" title="Promolecule properties: introduction" href="promolecule_intro.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
   </head>
@@ -187,7 +187,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Example Tutorials</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="promolecule_intro.html">Promolecule properties: Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="promolecule_intro.html">Promolecule properties: introduction</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Promolecular properties: water dimer</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">API Documentation</span></p>
@@ -448,6 +448,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-dependencies-and-download-example-files">Install dependencies and download example files</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-water-dimer-data">Loading the water dimer data:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#define-grid-for-computing-the-properties">Define grid for computing the properties:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-the-promolecular-object-and-compute-the-properties-on-the-grid">Create the promolecular object and compute the properties on the grid:</a></li>
@@ -467,6 +468,34 @@ document.write(`
 <h1>Promolecular properties: water dimer<a class="headerlink" href="#promolecular-properties-water-dimer" title="Link to this heading">#</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">promolecule</span></code> module in QC-AtomDB constructs approximate molecular (promolecular) properties as linear combinations  of atomic properties. This allows for the fast calculation of the reduced density gradient for large molecular systems. The following examples show how to calculate several molecular properties. As model systems the water molecule dimer will be used:</p>
 <img src="images/h2o_dimer.png" alt="drawing" style="width: 300px;"/>
+<section id="install-dependencies-and-download-example-files">
+<h2>Install dependencies and download example files<a class="headerlink" href="#install-dependencies-and-download-example-files" title="Link to this heading">#</a></h2>
+<p>To run this notebook in Google Colab, the AtomDB, IOData and Grid libraries need to be installed. This can be done by uncommenting and running the next cell.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># # Install packages in Google Colab.</span>
+<span class="c1"># # Don&#39;t run this cell if packages/data is already in your environment</span>
+<span class="c1"># ! pip install git+https://github.com/theochem/iodata.git</span>
+<span class="c1"># ! pip install git+https://github.com/theochem/grid.git</span>
+<span class="c1"># ! python -m pip install git+https://github.com/theochem/AtomDB.git</span>
+
+<span class="c1"># # Download the example files</span>
+<span class="c1"># import os</span>
+<span class="c1"># from urllib.request import urlretrieve</span>
+
+<span class="c1"># fpath = &quot;data/&quot;</span>
+<span class="c1"># if not os.path.exists(fpath):</span>
+<span class="c1">#     os.makedirs(fpath, exist_ok=True)</span>
+
+<span class="c1"># urlretrieve(</span>
+<span class="c1">#     &quot;https://raw.githubusercontent.com/theochem/AtomDB/refs/heads/master/website/examples/data/h2o_dimer.xyz&quot;,</span>
+<span class="c1">#     os.path.join(fpath, &quot;h2o_dimer.xyz&quot;)</span>
+<span class="c1">#     )</span>
+</pre></div>
+</div>
+</div>
+</div>
+</section>
 <section id="loading-the-water-dimer-data">
 <h2>Loading the water dimer data:<a class="headerlink" href="#loading-the-water-dimer-data" title="Link to this heading">#</a></h2>
 <p>The following code loads geometry data for the water dimer. The <a class="reference external" href="https://iodata.readthedocs.io/en/latest/index.html">qc-iodata</a> package is used to read the data from a file.</p>
@@ -478,7 +507,7 @@ document.write(`
 <span class="kn">from</span> <span class="nn">importlib_resources</span> <span class="kn">import</span> <span class="n">files</span>
 
 <span class="c1"># Load the H2O dimer from a .xyz file</span>
-<span class="n">data_file</span><span class="o">=</span><span class="n">files</span><span class="p">(</span><span class="n">atomdb</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s1">&#39;../docs/notebooks/data/h2o_dimer.xyz&#39;</span><span class="p">)</span>
+<span class="n">data_file</span> <span class="o">=</span> <span class="n">files</span><span class="p">(</span><span class="n">atomdb</span><span class="p">)</span><span class="o">.</span><span class="n">joinpath</span><span class="p">(</span><span class="s2">&quot;../docs/notebooks/data/h2o_dimer.xyz&quot;</span><span class="p">)</span>
 <span class="n">mol_data</span> <span class="o">=</span> <span class="n">iodata</span><span class="o">.</span><span class="n">load_one</span><span class="p">(</span><span class="n">data_file</span><span class="p">)</span>
 
 <span class="n">atnums</span> <span class="o">=</span> <span class="n">mol_data</span><span class="o">.</span><span class="n">atcorenums</span>
@@ -496,7 +525,8 @@ document.write(`
 </div>
 </div>
 <div class="cell_output docutils container">
-<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Atomic numbers dimer:
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Package &#39;qc-AtomDB&#39; is not installed.
+Atomic numbers dimer:
  [8. 8. 1. 1. 1. 1.]
 Atomic coordinates dimer:
  [[-3.18178101e-03  2.86604567e+00  0.00000000e+00]
@@ -546,8 +576,8 @@ Number of grid points: 349440
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="n">dimer_promol</span> <span class="o">=</span> <span class="n">atomdb</span><span class="o">.</span><span class="n">make_promolecule</span><span class="p">(</span><span class="n">atnums</span><span class="o">=</span><span class="n">atnums</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">atcoords</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;slater&#39;</span><span class="p">)</span>
-<span class="n">mono_promol</span> <span class="o">=</span> <span class="n">atomdb</span><span class="o">.</span><span class="n">make_promolecule</span><span class="p">(</span><span class="n">atnums</span><span class="o">=</span><span class="n">atnums_mono</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">atcoords_mono</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;slater&#39;</span><span class="p">)</span>
+<span class="n">dimer_promol</span> <span class="o">=</span> <span class="n">atomdb</span><span class="o">.</span><span class="n">make_promolecule</span><span class="p">(</span><span class="n">atnums</span><span class="o">=</span><span class="n">atnums</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">atcoords</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;slater&quot;</span><span class="p">)</span>
+<span class="n">mono_promol</span> <span class="o">=</span> <span class="n">atomdb</span><span class="o">.</span><span class="n">make_promolecule</span><span class="p">(</span><span class="n">atnums</span><span class="o">=</span><span class="n">atnums_mono</span><span class="p">,</span> <span class="n">coords</span><span class="o">=</span><span class="n">atcoords_mono</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;slater&quot;</span><span class="p">)</span>
 
 <span class="c1"># compute the density and gradient of the density at the grid points</span>
 <span class="n">dimer_rho</span> <span class="o">=</span> <span class="n">dimer_promol</span><span class="o">.</span><span class="n">density</span><span class="p">(</span><span class="n">cubgrid</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -598,7 +628,7 @@ s(\mathbf{r}) = \frac{1}{2(3\pi^2)^{1/3}}\frac{|\nabla \rho (\mathbf{r})|}{\rho^
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1"># compute the reduced density gradient for the dimer</span>
-<span class="n">coeff</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">coeff</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="mi">3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span><span class="p">)</span>
 <span class="n">dimer_grad_norm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">dimer_grad_rho</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">dimer_rdg</span> <span class="o">=</span> <span class="n">dimer_grad_norm</span> <span class="o">/</span> <span class="p">(</span><span class="n">coeff</span> <span class="o">*</span> <span class="n">dimer_rho</span> <span class="o">**</span> <span class="p">(</span><span class="mi">4</span> <span class="o">/</span> <span class="mi">3</span><span class="p">))</span>
 
@@ -609,10 +639,10 @@ s(\mathbf{r}) = \frac{1}{2(3\pi^2)^{1/3}}\frac{|\nabla \rho (\mathbf{r})|}{\rho^
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
 <span class="c1"># Plot the reduced gradient as a function of the density</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dimer_rho</span><span class="p">,</span> <span class="n">dimer_rdg</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Water dimer&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">mono_rho</span><span class="p">,</span> <span class="n">mono_rdg</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Water monomer&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;$\rho(R)$&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Reduced gradient&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">dimer_rho</span><span class="p">,</span> <span class="n">dimer_rdg</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Water dimer&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">mono_rho</span><span class="p">,</span> <span class="n">mono_rdg</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;Water monomer&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;$\rho(R)$&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Reduced gradient&quot;</span><span class="p">)</span>
 
 <span class="c1"># Set y-axis limits from 0 to 1</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">ylim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
@@ -668,7 +698,7 @@ s(\mathbf{r}) = \frac{1}{2(3\pi^2)^{1/3}}\frac{|\nabla \rho (\mathbf{r})|}{\rho^
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">Promolecule properties: Introduction</p>
+        <p class="prev-next-title">Promolecule properties: introduction</p>
       </div>
     </a>
     <a class="right-next"
@@ -696,6 +726,7 @@ s(\mathbf{r}) = \frac{1}{2(3\pi^2)^{1/3}}\frac{|\nabla \rho (\mathbf{r})|}{\rho^
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-dependencies-and-download-example-files">Install dependencies and download example files</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#loading-the-water-dimer-data">Loading the water dimer data:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#define-grid-for-computing-the-properties">Define grid for computing the properties:</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#create-the-promolecular-object-and-compute-the-properties-on-the-grid">Create the promolecular object and compute the properties on the grid:</a></li>
