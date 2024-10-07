@@ -484,9 +484,15 @@ document.write(`
 <h2>Packages installation for Google Colab<a class="headerlink" href="#packages-installation-for-google-colab" title="Link to this heading">#</a></h2>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ! pip install git+https://github.com/theochem/iodata.git</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># # Install packages in Google Colab.</span>
+<span class="c1"># # Don&#39;t run this cell if packages/data is already in your environment</span>
+<span class="c1"># ! pip install git+https://github.com/theochem/iodata.git</span>
 <span class="c1"># ! pip install git+https://github.com/theochem/grid.git</span>
-<span class="c1"># ! pip install git+https://github.com/theochem/AtomDB.git@dev</span>
+<span class="c1">## Install the AtomDB package</span>
+<span class="c1">## prefer to use the release from PyPI</span>
+<span class="c1">#! pip install qc-AtomDB</span>
+<span class="c1">## alternatively, install the development version from GitHub</span>
+<span class="c1"># ! python -m pip install git+https://github.com/theochem/AtomDB.git</span>
 </pre></div>
 </div>
 </div>

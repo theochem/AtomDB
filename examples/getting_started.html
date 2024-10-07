@@ -476,7 +476,11 @@ document.write(`
 <p>To run this notebook in Google Colab, the AtomDB library and its dependencies need to be installed. This can be done by uncommenting and running the following cell.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># ! python -m pip install git+https://github.com/theochem/AtomDB.git</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1">## Install the AtomDB package</span>
+<span class="c1">## prefer to use the release from PyPI</span>
+<span class="c1">#! pip install qc-AtomDB</span>
+<span class="c1">## alternatively, install the development version from GitHub</span>
+<span class="c1"># ! python -m pip install git+https://github.com/theochem/AtomDB.git</span>
 </pre></div>
 </div>
 </div>
@@ -522,7 +526,7 @@ charge 0 and spin multiplicity 3 (ground state). Due to the large amount of data
 in the variable c_0_3_json_output only three properties are parsed and printed.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">bash</span> 
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="o">%%</span><span class="k">bash</span>
 c_0_3_json_output=$(python -m atomdb -q slater C 0 3)
 
 # Define an array of keys
@@ -561,7 +565,7 @@ atmass: 21893.98446012775
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">atomdb</span> <span class="kn">import</span> <span class="n">load</span>
 
-<span class="n">c_slater</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">elem</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mult</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s1">&#39;slater&#39;</span><span class="p">)</span>
+<span class="n">c_slater</span> <span class="o">=</span> <span class="n">load</span><span class="p">(</span><span class="n">elem</span><span class="o">=</span><span class="s2">&quot;C&quot;</span><span class="p">,</span> <span class="n">charge</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">mult</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="s2">&quot;slater&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -632,10 +636,10 @@ Orbital energies (beta): [-11.3255187  -0.7056273  -0.4333405  -0.4333405  -0.43
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># Define a uniform radial grid and evaluate the density</span>
-<span class="n">rad_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="n">rad_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="c1"># density and kinetic energy density functions (total)</span>
-<span class="n">dens_spline</span> <span class="o">=</span> <span class="n">c_slater</span><span class="o">.</span><span class="n">dens_func</span><span class="p">(</span><span class="n">spin</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">,</span><span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="n">ked_spline</span> <span class="o">=</span> <span class="n">c_slater</span><span class="o">.</span><span class="n">ked_func</span><span class="p">(</span><span class="n">spin</span><span class="o">=</span><span class="s1">&#39;t&#39;</span><span class="p">)</span>
+<span class="n">dens_spline</span> <span class="o">=</span> <span class="n">c_slater</span><span class="o">.</span><span class="n">dens_func</span><span class="p">(</span><span class="n">spin</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ked_spline</span> <span class="o">=</span> <span class="n">c_slater</span><span class="o">.</span><span class="n">ked_func</span><span class="p">(</span><span class="n">spin</span><span class="o">=</span><span class="s2">&quot;t&quot;</span><span class="p">)</span>
 
 <span class="n">dens</span> <span class="o">=</span> <span class="n">dens_spline</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">)</span>
 <span class="n">ked</span> <span class="o">=</span> <span class="n">ked_spline</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">)</span>
@@ -662,14 +666,14 @@ density of the Carbon atom with charge 0 and spin multiplicity 3.</p>
 <span class="n">ax1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">121</span><span class="p">)</span>
 <span class="n">ax2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">122</span><span class="p">)</span>
 
-<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="s1">&#39;-r&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">,</span> <span class="n">dens</span><span class="p">,</span> <span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Radial distance [Bohr]&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;Density [Bohr$^{-3}$]&quot;</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_yscale</span><span class="p">(</span><span class="s2">&quot;log&quot;</span><span class="p">)</span>
 <span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">(</span><span class="n">top</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">bottom</span><span class="o">=</span><span class="mf">0.00001</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
-<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Spherically averaged density&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="n">left</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">right</span><span class="o">=</span><span class="mi">6</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Spherically averaged density&quot;</span><span class="p">)</span>
 
-<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">,</span> <span class="n">ked</span><span class="p">,</span> <span class="s1">&#39;-b&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">rad_grid</span><span class="p">,</span> <span class="n">ked</span><span class="p">,</span> <span class="s2">&quot;-b&quot;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
 <span class="n">ax2</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">xlabel</span><span class="o">=</span><span class="s2">&quot;Radial distance [Bohr]&quot;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s2">&quot;KED E$_</span><span class="si">{h}</span><span class="s2">$ Bohr$^{-3}$&quot;</span><span class="p">)</span>
 <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
@@ -689,7 +693,7 @@ Due to the large amount of data, only the first 90 characters are printed.</p>
 <div class="cell docutils container">
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Dumping Data to a JSON string</span>
-<span class="n">c_slater_json</span><span class="o">=</span> <span class="n">c_slater</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+<span class="n">c_slater_json</span> <span class="o">=</span> <span class="n">c_slater</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
 
 <span class="c1"># Print the first 90 characters of the JSON string</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">c_slater_json</span><span class="p">[:</span><span class="mi">90</span><span class="p">])</span>
