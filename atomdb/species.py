@@ -47,7 +47,7 @@ from atomdb.periodic import element_symbol
 
 __all__ = [
     "Species",
-    "compile",
+    "compile_species",
     "dump",
     "load",
     "raw_datafile",
@@ -712,7 +712,7 @@ class Species:
         pass
 
 
-def compile(
+def compile_species(
     elem,
     charge,
     mult,
