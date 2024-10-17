@@ -73,9 +73,7 @@ We recommend using Python 3.9 or later. The `qc-grid` is need to run `AtomDB`. Y
 from source for now:
 
 ```bash
-git clone git@github.com:theochem/grid.git
-cd qc-grid
-pip install .
+pip install git+https://github.com/theochem/grid.git
 ```
 
 Then,
