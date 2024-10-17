@@ -18,7 +18,7 @@ along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 
 <div style="text-align:left">
   <!-- <h1 style="margin-right: 20px;">The Selector Library</h1> -->
-  <img src="https://github.com/theochem/AtomDB/blob/master/website/logo_small.png?raw=true" alt="Logo" width="300">
+  <img src="https://github.com/theochem/AtomDB/blob/master/website/logo_small.png?raw=true" alt="Logo" width="200">
 </div>
 
 
