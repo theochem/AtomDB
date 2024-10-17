@@ -26,7 +26,7 @@ from atomdb.promolecule import Promolecule
 
 from atomdb.periodic import element_number, element_symbol, element_name
 
-from atomdb.species import compile, load, dump, raw_datafile
+from atomdb.species import compile_species, load, dump, raw_datafile
 
 from atomdb.promolecule import make_promolecule
 
@@ -38,7 +38,7 @@ __all__ = [
     "element_number",
     "element_symbol",
     "element_name",
-    "compile",
+    "compile_species",
     "load",
     "dump",
     "raw_datafile",
