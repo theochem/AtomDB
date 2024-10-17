@@ -16,7 +16,10 @@ along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 -->
 
 
-![logo](website/logo_small.png)
+<div style="text-align:left">
+  <!-- <h1 style="margin-right: 20px;">The Selector Library</h1> -->
+  <img src="https://github.com/theochem/AtomDB/blob/master/website/logo_small.png?raw=true" alt="Logo" width="200">
+</div>
 
 
 [![This project supports Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org/downloads)
