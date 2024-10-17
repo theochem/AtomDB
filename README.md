@@ -15,10 +15,9 @@ You should have received a copy of the GNU General Public License
 along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 -->
 
-<div style="text-align:left">
-  <!-- <h1 style="margin-right: 20px;">The Selector Library</h1> -->
-  <img src="https://github.com/theochem/AtomDB/blob/master/website/logo_small.png?raw=true" alt="Logo" style="width: 25%">
-</div>
+
+![logo](website/logo_small.png)
+
 
 [![This project supports Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org/downloads)
 [![pytest](https://github.com/theochem/AtomDB/actions/workflows/pytest.yaml/badge.svg?branch=master)](https://github.com/theochem/AtomDB/actions/workflows/pytest.yaml)
@@ -73,9 +72,7 @@ We recommend using Python 3.9 or later. The `qc-grid` is need to run `AtomDB`. Y
 from source for now:
 
 ```bash
-git clone git@github.com:theochem/grid.git
-cd qc-grid
-pip install .
+pip install git+https://github.com/theochem/grid.git
 ```
 
 Then,
