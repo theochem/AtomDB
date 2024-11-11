@@ -201,9 +201,11 @@ class DensitySpline:
                 # d^2(ρ(r)) = d^2(log(ρ(r))) * ρ(r) + [d(ρ(r))]^2/ρ(r)
                 dlogy = self._obj(x, nu=1)
                 d2logy = self._obj(x, nu=2)
-                y = d2logy.flatten() * y + dlogy.flatten() ** 2 * y
+                y = d2logy.flatten() * y + dlogy.flatten() ** 2 / y
         else:
             y = self._obj(x, nu=deriv)
+        np.nan_to_num(y, nan=0., copy=False)
+        y[x > 2 * self._obj.x[-1]] = 0
         return y
 
 
