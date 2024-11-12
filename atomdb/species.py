@@ -166,7 +166,7 @@ class DensitySpline:
         self._log = log
         self._obj = CubicSpline(
             x,
-            np.log(y) if log else y,
+            np.log(y.clip(min=np.finfo(float).eps ** 2)) if log else y,
             axis=0,
             bc_type="not-a-knot",
             extrapolate=True,
@@ -192,7 +192,8 @@ class DensitySpline:
         if not (0 <= deriv <= 2):
             raise ValueError(f"Invalid derivative order {deriv}; must be 0 <= `deriv` <= 2")
         elif self._log:
-            y = np.exp(self._obj(x))
+            with np.errstate(over="ignore"):
+                y = np.exp(self._obj(x))
             if deriv == 1:
                 # d(ρ(r)) = d(log(ρ(r))) * ρ(r)
                 dlogy = self._obj(x, nu=1)
