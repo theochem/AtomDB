@@ -78,23 +78,23 @@ def scalar(method):
     r"""Expose a SpeciesData field."""
     name = method.__name__
 
-    # Map the name of the method in the SpeciesData class to the name in the Elements class
-    # This dict can be removed if the Elements csv file uses the same names as the SpeciesData class.
-    namemap = {
-        "cov_radius": "cov_radius",
-        "vdw_radius": "vdw_radius",
-        "at_radius": "at_radius",
-        "polarizability": "pold",
-        "dispersion_c6": "c6",
-    }
-
     @property
     def wrapper(self):
-        rf"""{method.__doc__}"""
+
+        # Map the name of the method in the SpeciesData class to the name in the Elements class
+        # This dict can be removed if the Elements csv file uses the same names as the SpeciesData class.
+        namemap = {
+            "cov_radius": "cov_radius",
+            "vdw_radius": "vdw_radius",
+            "at_radius": "at_radius",
+            "polarizability": "pold",
+            "dispersion_c6": "c6",
+        }
+
         if name in namemap:
             charge = self._data.atnum - self._data.nelec
-            val = getattr(Element(self._data.elem), namemap[name]) if charge == 0 else None
-            return val
+            return getattr(Element(self._data.elem), namemap[name]) if charge == 0 else None
+
         return getattr(self._data, name)
 
     # conserve the docstring of the method
