@@ -683,6 +683,35 @@ class Species:
         """
         pass
 
+    def dd_dens_lapl_func(self, spin="t", index=None, log=False):
+        r"""
+        Return the function for the electronic density Laplacian.
+
+        .. math::
+            
+            \nabla^2 \rho(\mathbf{r}) = \frac{d^2 \rho(r)}{dr^2} + \frac{2}{r} \frac{d \rho(r)}{dr}
+
+        Parameters
+        ----------
+        spin : str, default="t"
+            Type of occupied spin orbitals.
+            Can be either "t" (for alpha + beta), "a" (for alpha),
+            "b" (for beta), or "m" (for alpha - beta).
+        index : sequence of int, optional
+            Sequence of integers representing the spin orbitals.
+            These are indexed from 0 to the number of basis functions.
+            By default, all orbitals of the given spin(s) are included.
+        log : bool, default=False
+            Whether the logarithm of the density is used for interpolation.
+
+        """
+        dd_dens_spline = self.dd_dens_func(spin=spin, index=index, log=log)
+        d_dens_sp_spline = self.d_dens_func(spin=spin, index=index, log=log)
+        def lapl_spline_mock_function(rgrid):
+            # This helper function does not return a DensitySpline instance
+            return dd_dens_spline(rgrid) + 2 * d_dens_sp_spline(rgrid) / rgrid
+        return lapl_spline_mock_function
+
     @spline
     def ked_func(self):
         r"""
