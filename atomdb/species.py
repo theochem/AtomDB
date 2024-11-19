@@ -468,7 +468,7 @@ class Species:
         """
         pass
 
-    @property
+    @scalar
     def atmass(self):
         r"""Atomic mass in atomic units.
 
