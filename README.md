@@ -15,10 +15,12 @@ You should have received a copy of the GNU General Public License
 along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
 -->
 
+
 <div style="text-align:left">
   <!-- <h1 style="margin-right: 20px;">The Selector Library</h1> -->
-  <img src="https://github.com/theochem/AtomDB/blob/master/website/logo_small.png?raw=true" alt="Logo" style="width: 25%">
+  <img src="https://github.com/theochem/AtomDB/blob/master/website/logo_small.png?raw=true" alt="Logo" width="200">
 </div>
+
 
 [![This project supports Python 3.9+](https://img.shields.io/badge/Python-3.9+-blue.svg)](https://python.org/downloads)
 [![pytest](https://github.com/theochem/AtomDB/actions/workflows/pytest.yaml/badge.svg?branch=master)](https://github.com/theochem/AtomDB/actions/workflows/pytest.yaml)
@@ -73,9 +75,7 @@ We recommend using Python 3.9 or later. The `qc-grid` is need to run `AtomDB`. Y
 from source for now:
 
 ```bash
-git clone git@github.com:theochem/grid.git
-cd qc-grid
-pip install .
+pip install git+https://github.com/theochem/grid.git
 ```
 
 Then,
@@ -99,14 +99,14 @@ For further information and inquiries, please contact us at [qcdevs@gmail.com](m
 Please use the following citation in any publication using AtomDB:
 
 ```bibtex
-@article{atomdb,
-        author  = {S{\'a}nchez D{\'\i}az, Gabriela and Richer, Michelle and
-                   Mart{\'\i}nez Gonz{\'a}lez, Marco and {v}an Zyl, Maximilian and
-                   Pujal, Leila and Tehrani, Alireza and Bianchi, Julianna and
-                   Ayers, Paul W. and Heidar-Zadeh, Farnaz},
-        title   = {{AtomDB: A Python Library for Atomic and Promolecular Properties}},
-        journal = {-},
-        year    = {2024},
-        url     = {https://atomdb.qcdevs.org/},
-    }
+@Article{atomdb,
+    author  = {S{\'a}nchez D{\'i}az, Gabriela and Richer, Michelle and
+               Mart\'{i}nez Gonz\'{a}lez, Marco and van Zyl, Maximilian and
+               Pujal, Leila and Tehrani, Alireza and Bianchi, Julianna and
+               Chuiko, Valerii and Erhard, Jannis and Ayers, Paul W. and
+               Heidar-Zadeh, Farnaz},
+    title   = {{AtomDB: A Python Library for Atomic and Promolecular Properties}},
+    journal = {-},
+    year    = {2024},
+    url     = {https://atomdb.qcdevs.org/},
 ```

@@ -151,3 +151,7 @@ atomdb/datasets/*/raw/
 
 # Generated documentation
 docs/source/api/
+
+# MacOS
+.DS_Store
+

@@ -17,7 +17,7 @@ r"""AtomDB console script."""
 
 from argparse import ArgumentParser
 
-from atomdb import compile, load
+from atomdb import compile_species, load
 
 
 # Initialize command line argument parser
@@ -31,7 +31,7 @@ command = parser.add_argument_group("commands")
 command_group = command.add_mutually_exclusive_group(required=True)
 
 command_group.add_argument(
-    "-c", "--compile", action="store_true", help="compile a species into the database"
+    "-c", "--compile_species", action="store_true", help="compile_species a species into the database"
 )
 
 command_group.add_argument(
@@ -60,7 +60,7 @@ if __name__ == "__main__":
 
     if args.compile:
 
-        compile(args.elem, args.charge, args.mult, args.exc, args.dataset)
+        compile_species(args.elem, args.charge, args.mult, args.exc, args.dataset)
 
     elif args.query:
 
