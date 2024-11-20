@@ -71,7 +71,7 @@ def test_get_attributes():
         },
         "at_radius": {"wc": 0.529192875 * ANGSTROM, "cr": 0.53 * ANGSTROM},
         "eneg": {"pauling": 2.2},
-        "pold": {"crc": 0.666793 * ANGSTROM**3, "chu": 4.5},
+        "pold": {"crc": 0.666793 * ANGSTROM**3, "chu": 4.5, "sn": 4.50711},
         "c6": {"chu": 6.499026705},
         "mass": {"stb": 1.007975 * AMU, "nist": 1.007825032 * AMU},
     }
@@ -98,7 +98,7 @@ def test_get_attributes():
         },
         "at_radius": {"wc": 0.62 * ANGSTROM, "cr": 0.67 * ANGSTROM},
         "eneg": {"pauling": 2.55},
-        "pold": {"crc": 1.76 * ANGSTROM**3, "chu": 12.0},
+        "pold": {"crc": 1.76 * ANGSTROM**3, "chu": 12.0, "sn": 11.3},
         "c6": {"chu": 46.6},
         "mass": {"stb": 12.0106 * AMU, "nist": 12.000 * AMU},
     }
