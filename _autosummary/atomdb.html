@@ -445,7 +445,7 @@
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.Species.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Species.vdw_radius</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.compile"><code class="docutils literal notranslate"><span class="pre">compile()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.compile_species"><code class="docutils literal notranslate"><span class="pre">compile_species()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.dump"><code class="docutils literal notranslate"><span class="pre">dump()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_name"><code class="docutils literal notranslate"><span class="pre">element_name()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_number"><code class="docutils literal notranslate"><span class="pre">element_number()</span></code></a></li>
@@ -529,7 +529,7 @@
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.Species.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Species.vdw_radius</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.compile"><code class="docutils literal notranslate"><span class="pre">compile()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.compile_species"><code class="docutils literal notranslate"><span class="pre">compile_species()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.dump"><code class="docutils literal notranslate"><span class="pre">dump()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.raw_datafile"><code class="docutils literal notranslate"><span class="pre">raw_datafile()</span></code></a></li>
@@ -1945,8 +1945,8 @@ references corresponding to each type check
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="atomdb.compile">
-<span class="sig-prename descclassname"><span class="pre">atomdb.</span></span><span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nexc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.compile" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="atomdb.compile_species">
+<span class="sig-prename descclassname"><span class="pre">atomdb.</span></span><span class="sig-name descname"><span class="pre">compile_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nexc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.compile_species" title="Link to this definition">#</a></dt>
 <dd><p>Compile an atomic or ionic species into the AtomDB database.</p>
 <section id="id69">
 <h2>Parameters<a class="headerlink" href="#id69" title="Link to this heading">#</a></h2>
@@ -3682,8 +3682,8 @@ references corresponding to each type check
 </dd></dl>
 
 <dl class="py function">
-<dt class="sig sig-object py" id="atomdb.species.compile">
-<span class="sig-prename descclassname"><span class="pre">atomdb.species.</span></span><span class="sig-name descname"><span class="pre">compile</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nexc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.compile" title="Link to this definition">#</a></dt>
+<dt class="sig sig-object py" id="atomdb.species.compile_species">
+<span class="sig-prename descclassname"><span class="pre">atomdb.species.</span></span><span class="sig-name descname"><span class="pre">compile_species</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">elem</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charge</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mult</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nexc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dataset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'slater'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">datapath</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'/home/runner/.local/lib/python3.10/site-packages/atomdb/datasets'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.species.compile_species" title="Link to this definition">#</a></dt>
 <dd><p>Compile an atomic or ionic species into the AtomDB database.</p>
 <section id="id163">
 <h3>Parameters<a class="headerlink" href="#id163" title="Link to this heading">#</a></h3>
@@ -3976,7 +3976,7 @@ which is the database’s limit.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.Species.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Species.vdw_radius</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.compile"><code class="docutils literal notranslate"><span class="pre">compile()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.compile_species"><code class="docutils literal notranslate"><span class="pre">compile_species()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.dump"><code class="docutils literal notranslate"><span class="pre">dump()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_name"><code class="docutils literal notranslate"><span class="pre">element_name()</span></code></a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.element_number"><code class="docutils literal notranslate"><span class="pre">element_number()</span></code></a></li>
@@ -4060,7 +4060,7 @@ which is the database’s limit.</p>
 <li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.Species.vdw_radius"><code class="docutils literal notranslate"><span class="pre">Species.vdw_radius</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.compile"><code class="docutils literal notranslate"><span class="pre">compile()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.compile_species"><code class="docutils literal notranslate"><span class="pre">compile_species()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.dump"><code class="docutils literal notranslate"><span class="pre">dump()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.load"><code class="docutils literal notranslate"><span class="pre">load()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.species.raw_datafile"><code class="docutils literal notranslate"><span class="pre">raw_datafile()</span></code></a></li>
