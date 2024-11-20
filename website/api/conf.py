@@ -18,13 +18,13 @@ module = importlib.import_module("atomdb")
 # Module info
 #
 
-project = "AtomDB"
+project = "qc-AtomDB"
 
 project_copyright = "2024, QC-Devs"
 
 author = "QC-Devs"
 
-version = getattr(module, "version")
+version = importlib.metadata.version("qc-AtomDB")
 
 release = version
 

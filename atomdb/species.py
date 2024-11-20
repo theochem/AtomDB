@@ -42,7 +42,7 @@ import requests
 from scipy.interpolate import CubicSpline
 
 from atomdb.utils import DEFAULT_DATASET, DEFAULT_DATAPATH, DEFAULT_REMOTE
-from atomdb.periodic import element_symbol
+from atomdb.periodic import element_symbol, Element
 
 
 __all__ = [
@@ -80,7 +80,21 @@ def scalar(method):
 
     @property
     def wrapper(self):
-        rf"""{method.__doc__}"""
+
+        # Map the name of the method in the SpeciesData class to the name in the Elements class
+        # This dict can be removed if the Elements csv file uses the same names as the SpeciesData class.
+        namemap = {
+            "cov_radius": "cov_radius",
+            "vdw_radius": "vdw_radius",
+            "at_radius": "at_radius",
+            "polarizability": "pold",
+            "dispersion_c6": "c6",
+        }
+
+        if name in namemap:
+            charge = self._data.atnum - self._data.nelec
+            return getattr(Element(self._data.elem), namemap[name]) if charge == 0 else None
+
         return getattr(self._data, name)
 
     # conserve the docstring of the method
@@ -466,7 +480,7 @@ class Species:
             https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
 
         """
-        pass
+        return Element(self._data.elem).mass
 
     @scalar
     def cov_radius(self):
@@ -525,7 +539,7 @@ class Species:
         """
         pass
 
-    @property
+    @scalar
     def dispersion_c6(self):
         r"""Isolated atom C6 dispersion coefficients.
 
@@ -537,9 +551,7 @@ class Species:
             https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
 
         """
-        if self._data.dispersion is None:
-            return None
-        return self._data.dispersion["C6"]
+        pass
 
     @scalar
     def nexc(self):
