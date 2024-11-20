@@ -99,14 +99,14 @@ For further information and inquiries, please contact us at [qcdevs@gmail.com](m
 Please use the following citation in any publication using AtomDB:
 
 ```bibtex
-@article{atomdb,
-        author  = {S{\'a}nchez D{\'\i}az, Gabriela and Richer, Michelle and
-                   Mart{\'\i}nez Gonz{\'a}lez, Marco and {v}an Zyl, Maximilian and
-                   Pujal, Leila and Tehrani, Alireza and Bianchi, Julianna and
-                   Ayers, Paul W. and Heidar-Zadeh, Farnaz},
-        title   = {{AtomDB: A Python Library for Atomic and Promolecular Properties}},
-        journal = {-},
-        year    = {2024},
-        url     = {https://atomdb.qcdevs.org/},
-    }
+@Article{atomdb,
+    author  = {S{\'a}nchez D{\'i}az, Gabriela and Richer, Michelle and
+               Mart\'{i}nez Gonz\'{a}lez, Marco and van Zyl, Maximilian and
+               Pujal, Leila and Tehrani, Alireza and Bianchi, Julianna and
+               Chuiko, Valerii and Erhard, Jannis and Ayers, Paul W. and
+               Heidar-Zadeh, Farnaz},
+    title   = {{AtomDB: A Python Library for Atomic and Promolecular Properties}},
+    journal = {-},
+    year    = {2024},
+    url     = {https://atomdb.qcdevs.org/},
 ```
