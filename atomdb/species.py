@@ -703,14 +703,32 @@ class Species:
             By default, all orbitals of the given spin(s) are included.
         log : bool, default=False
             Whether the logarithm of the density is used for interpolation.
+        
+        Returns
+        -------
+        callable
+            A function evaluating the Laplacian of the density given a set of radial points.
+        
+        Notes
+        -----
+        When this function is evaluated at a point close to zero, the Laplacian becomes undefined.
+        In this case, this function returns zero.
 
         """
-        dd_dens_spline = self.dd_dens_func(spin=spin, index=index, log=log)
+        # Obtain cubic spline functions for the first and second derivatives of the density
         d_dens_sp_spline = self.d_dens_func(spin=spin, index=index, log=log)
-        def lapl_spline_mock_function(rgrid):
-            # This helper function does not return a DensitySpline instance
-            return dd_dens_spline(rgrid) + 2 * d_dens_sp_spline(rgrid) / rgrid
-        return lapl_spline_mock_function
+        dd_dens_spline = self.dd_dens_func(spin=spin, index=index, log=log)
+
+        # Define the Laplacian function
+        # spline_mock_func = lambda rs: dd_dens_spline(rs) + 2 * d_dens_sp_spline(rs) / rs
+        def spline_mock_func(rs):
+            # Avoid division by zero and handle small values of r
+            with np.errstate(divide='ignore'):
+                laplacian = dd_dens_spline(rs) + 2 * d_dens_sp_spline(rs) / rs
+                laplacian = np.where(rs < 1e-10, 0.0, laplacian)
+            return laplacian
+        
+        return spline_mock_func
 
     @spline
     def ked_func(self):
