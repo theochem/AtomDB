@@ -99,6 +99,48 @@ def load_numerical_hf_data():
     return species
 
 
+def eval_radial_dd_density(gradient, laplacian, points, err='ignore', tol=1e-10):
+    """Helper function to compute the radial second derivative of the density.
+
+    From a set of radial points :math:`r`, the gradient of the density, :math:`df/dr`, and the
+    Laplacian of the density, :math:`\nabla^2 f`, the radial second derivative of the density is
+    computed as:
+    
+    .. math::
+        d/dr (df/dr) = \nabla^2 f - 2/r * df/dr
+    
+    Parameters
+    ----------
+    gradient : np.ndarray
+        Gradient of the density.
+    laplacian : np.ndarray
+        Laplacian of the density.
+    points : np.ndarray
+        Radial points where the density gradient and Laplacian are evaluated.
+    err : str, optional
+        Error handling for division by zero.
+    tol : float, optional
+        Tolerance for the points close to zero.
+    
+    Returns
+    -------
+    d2dens : np.ndarray
+        Radial second derivative of the density.
+    
+    Notes
+    -----
+    When the points are close to zero, the radial second derivative of the density tends to infinity.
+    In this case, this function returns zero.
+
+    """
+    # Handle the case when the points are close to zero
+    with np.errstate(divide=err):
+        # Compute the radial second derivative of the density
+        d2dens =  laplacian - 2 * gradient / points
+        d2dens = np.where(points < tol, 0.0, d2dens)
+    return d2dens
+
+
 DOCSTRING = """Numeric Dataset
 
 Load data from desnity.out file into a `SpeciesTable`.
@@ -165,6 +207,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     lapl_tot = data["laplacian"]
     ked_tot = None
 
+    # Compute the second derivative of the density
+    dd_dens_tot = eval_radial_dd_density(d_dens_tot, lapl_tot, points)
+
     # Return Species instance
     fields = dict(
         elem=elem,
@@ -183,7 +228,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         rs=points,
         dens_tot=dens_tot,
         d_dens_tot=d_dens_tot,
-        dd_dens_tot=lapl_tot,
+        dd_dens_tot=dd_dens_tot,
         ked_tot=ked_tot,
     )
     return atomdb.Species(dataset, fields)
