@@ -658,7 +658,7 @@ class Species:
     @spline
     def dd_dens_func(self):
         r"""
-        Return a cubic spline of the electronic density Laplacian.
+        Return a cubic spline of the second derivative of the electronic density.
 
         Parameters
         ----------
@@ -675,10 +675,9 @@ class Species:
 
         Returns
         -------
-        DensitySpline
-            A DensitySpline instance for the density and its derivatives.
-            Given a set of radial points, it can evaluate densities and
-            derivatives up to order 2.
+        Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
+            a callable function evaluating the second derivative of the density given a set of radial
+            points (1-D array).
 
         """
         pass
@@ -706,8 +705,9 @@ class Species:
         
         Returns
         -------
-        callable
-            A function evaluating the Laplacian of the density given a set of radial points.
+        Callable[np.ndarray(N,) -> np.ndarray(N,)]
+            a callable function evaluating the Laplacian of the density given a set of radial
+            points (1-D array).
         
         Notes
         -----
@@ -720,15 +720,14 @@ class Species:
         dd_dens_spline = self.dd_dens_func(spin=spin, index=index, log=log)
 
         # Define the Laplacian function
-        # spline_mock_func = lambda rs: dd_dens_spline(rs) + 2 * d_dens_sp_spline(rs) / rs
-        def spline_mock_func(rs):
+        def densityspline_like_func(rs):
             # Avoid division by zero and handle small values of r
             with np.errstate(divide='ignore'):
                 laplacian = dd_dens_spline(rs) + 2 * d_dens_sp_spline(rs) / rs
                 laplacian = np.where(rs < 1e-10, 0.0, laplacian)
             return laplacian
         
-        return spline_mock_func
+        return densityspline_like_func
 
     @spline
     def ked_func(self):
