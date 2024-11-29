@@ -31,13 +31,17 @@ import numpy as np
 
 import atomdb
 
-from atomdb.utils import MULTIPLICITIES
+from atomdb.utils import MULTIPLICITIES, DEFAULT_DATAPATH
 
 from atomdb.periodic import Element
 
 
-def load_numerical_hf_data():
+def load_numerical_hf_data(data_path=None):
     """Load data from desnity.out file into a `SpeciesTable`."""
+    # set the data path
+    if data_path is None:
+        data_path = DEFAULT_DATAPATH
+    data_path = os.path.join(data_path, "numeric", "raw")
 
     from io import StringIO
 
@@ -56,7 +60,7 @@ def load_numerical_hf_data():
         return data[:, 0], data[:, 1], data[:, 2], data[:, 3]
 
     species = {}
-    with open(os.path.join(os.path.dirname(__file__), "raw/density.out"), "r") as f:
+    with open(os.path.join(data_path, "density.out"), "r") as f:
         line = f.readline()
         while line:
             if line.startswith(" 1st line is atomic no"):
@@ -176,7 +180,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
             f"Expected multiplicity is {expected_mult}."
         )
 
-    species_table = load_numerical_hf_data()
+    species_table = load_numerical_hf_data(data_path=datapath)
     data = species_table[(atnum, nelec)]
 
     #
