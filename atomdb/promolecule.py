@@ -24,9 +24,9 @@ from warnings import warn
 import numpy as np
 from scipy.optimize import linprog
 
-from atomdb.utils import DEFAULT_DATAPATH, DEFAULT_REMOTE, DEFAULT_DATASET, MULTIPLICITIES
 from atomdb.periodic import element_number, element_symbol
 from atomdb.species import load
+from atomdb.utils import DEFAULT_DATAPATH, DEFAULT_DATASET, DEFAULT_REMOTE, MULTIPLICITIES
 
 __all__ = [
     "Promolecule",
@@ -566,6 +566,10 @@ def make_promolecule(
         Promolecule instance.
 
     """
+    # Convert single coord [x, y, z] to list of coords [[x, y, z]]
+    coords = np.asarray(coords, dtype=float)
+    if coords.ndim == 1:
+        coords = coords.reshape(1, -1)
     # Check coordinate units
     if units is None or units.lower() == "bohr":
         coords = [coord / 1 for coord in coords]
@@ -574,9 +578,12 @@ def make_promolecule(
     else:
         raise ValueError(f"Invalid `units` parameter '{units}'; " "must be 'bohr' or 'angstrom'")
 
+    # Convert single atnum to list of atnums [atnum]
+    if isinstance(atnums, (Integral, str)):
+        atnums = [atnums]
     # Get atomic symbols/numbers from inputs
-    atoms = [element_symbol(atom) for atom in atnums]
     atnums = [element_number(atom) for atom in atnums]
+    atoms = [element_symbol(atom) for atom in atnums]
 
     # Handle default charge parameters
     if charges is None:
