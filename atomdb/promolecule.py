@@ -17,7 +17,7 @@ r"""AtomDB promolecule submodule."""
 
 from copy import deepcopy
 from itertools import chain, combinations
-from numbers import Integral
+from numbers import Integral, Number
 from operator import itemgetter
 from warnings import warn
 
@@ -588,6 +588,8 @@ def make_promolecule(
     # Handle default charge parameters
     if charges is None:
         charges = [0 for _ in atnums]
+    elif isinstance(charges, Number):
+        charges = [charges]
 
     # Handle default multiplicity parameters
     if mults is None:
@@ -597,6 +599,8 @@ def make_promolecule(
         else:
             # set each multiplicity to None
             mults = [None for _ in atnums]
+    elif isinstance(mults, Number):
+        mults = [mults]
 
     # Construct linear combination of species
     promol = Promolecule()
