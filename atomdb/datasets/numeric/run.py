@@ -36,11 +36,22 @@ from atomdb.utils import MULTIPLICITIES, DEFAULT_DATAPATH
 from atomdb.periodic import Element
 
 
-def load_numerical_hf_data(data_path=None):
-    """Load data from desnity.out file into a `SpeciesTable`."""
-    # set the data path
-    if data_path is None:
-        data_path = DEFAULT_DATAPATH
+def load_numerical_hf_data(data_path):
+    """Load data from desnity.out file into a `SpeciesTable`.
+    
+    Parameters
+    ----------
+    data_path : str
+        Path to the directory containing a folder named `raw` where the desnity.out file is stored.
+    
+    Returns
+    -------
+    species : dict
+        Dictionary of atomic species containing the information from the numeric Hartree-Fock calculation.
+        This is energy components, grid, density, gradient, and laplacian values.
+    
+    """
+    # set the path to the raw data
     data_path = os.path.join(data_path, "numeric", "raw")
 
     from io import StringIO
@@ -180,7 +191,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
             f"Expected multiplicity is {expected_mult}."
         )
 
-    species_table = load_numerical_hf_data(data_path=datapath)
+    species_table = load_numerical_hf_data(datapath)
     data = species_table[(atnum, nelec)]
 
     #
