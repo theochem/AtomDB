@@ -21,13 +21,12 @@
 #
 # --
 
-import pytest
-
 import os
+from numbers import Number
 
 import numpy as np
-
 import numpy.testing as npt
+import pytest
 
 from atomdb import make_promolecule
 
@@ -91,6 +90,16 @@ TEST_CASES_MAKE_PROMOLECULE = [
                 ],
                 dtype=float,
             ),
+            "dataset": "uhf_augccpvdz",
+        },
+        id="Be floating point charge/floating point mult",
+    ),
+    pytest.param(
+        {
+            "atnums": 4,
+            "charges": 1.2,
+            "mults": 1.2,
+            "coords": np.asarray([0.0, 0.0, 0.0], dtype=float),
             "dataset": "uhf_augccpvdz",
         },
         id="Be floating point charge/floating point mult",
@@ -166,6 +175,13 @@ def test_make_promolecule(case):
         datapath=TEST_DATAPATH,
         remotepath=None,
     )
+
+    if isinstance(atnums, (Number, str)):
+        atnums = [atnums]
+    if isinstance(charges, Number):
+        charges = [charges]
+    if isinstance(mults, Number):
+        mults = [mults]
 
     # Check that coefficients add up to (# centers)
     npt.assert_allclose(sum(promol.coeffs), len(atnums))
