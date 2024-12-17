@@ -19,7 +19,6 @@ from argparse import ArgumentParser
 
 from atomdb import compile_species, load
 
-
 # Initialize command line argument parser
 #
 parser = ArgumentParser(prog="atomdb", description="Compile or query an AtomDB entry.")
@@ -58,7 +57,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    if args.compile:
+    if args.compile_species:
 
         compile_species(args.elem, args.charge, args.mult, args.exc, args.dataset)
 

@@ -701,7 +701,7 @@ def make_promolecule(
             promol._extend(*(min(good_combs, key=itemgetter(0))[1:]))
         else:
             raise ValueError(
-                "Unable to construct species with non-integer" "charge/spin from database entries"
+                "Unable to construct species with non-integer charge/spin from database entries"
             )
 
     # Return Promolecule instance
