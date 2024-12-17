@@ -147,7 +147,7 @@ cython_debug/
 .vscode/
 
 # Raw data files
-atomdb/datasets/*/raw/
+atomdb/datasets/*/db/
 
 # Generated documentation
 docs/source/api/

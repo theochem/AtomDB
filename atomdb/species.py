@@ -154,7 +154,7 @@ class DensitySpline:
         self._log = log
         self._obj = CubicSpline(
             x,
-            # Clip y values to >=ε^2 if using log because they have to be above 0;
+            # Clip y values to >= ε^2 if using log because they have to be above 0;
             # having them be at least ε^2 seems to work based on my testing
             np.log(y.clip(min=np.finfo(float).eps ** 2)) if log else y,
             axis=0,
@@ -198,8 +198,8 @@ class DensitySpline:
             y = self._obj(x, nu=deriv)
         # Handle errors from the y = exp(log y) operation -- set NaN to zero
         np.nan_to_num(y, nan=0., copy=False)
-        # Cutoff value: assume y(x) is zero where x >= 2 times final given point x_n
-        y[x > 2 * self._obj.x[-1]] = 0
+        # Cutoff value: assume y(x) is zero where x > final given point x_n
+        y[x > self._obj.x[-1]] = 0
         return y
 
 
