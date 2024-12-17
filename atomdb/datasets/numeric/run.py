@@ -31,13 +31,28 @@ import numpy as np
 
 import atomdb
 
-from atomdb.utils import MULTIPLICITIES
+from atomdb.utils import MULTIPLICITIES, DEFAULT_DATAPATH
 
 from atomdb.periodic import Element
 
 
-def load_numerical_hf_data():
-    """Load data from desnity.out file into a `SpeciesTable`."""
+def load_numerical_hf_data(data_path):
+    """Load data from desnity.out file into a `SpeciesTable`.
+    
+    Parameters
+    ----------
+    data_path : str
+        Path to the directory containing a folder named `raw` where the desnity.out file is stored.
+    
+    Returns
+    -------
+    species : dict
+        Dictionary of atomic species containing the information from the numeric Hartree-Fock calculation.
+        This is energy components, grid, density, gradient, and laplacian values.
+    
+    """
+    # set the path to the raw data
+    data_path = os.path.join(data_path, "numeric", "raw")
 
     from io import StringIO
 
@@ -56,7 +71,7 @@ def load_numerical_hf_data():
         return data[:, 0], data[:, 1], data[:, 2], data[:, 3]
 
     species = {}
-    with open(os.path.join(os.path.dirname(__file__), "raw/density.out"), "r") as f:
+    with open(os.path.join(data_path, "density.out"), "r") as f:
         line = f.readline()
         while line:
             if line.startswith(" 1st line is atomic no"):
@@ -99,6 +114,48 @@ def load_numerical_hf_data():
     return species
 
 
+def eval_radial_dd_density(gradient, laplacian, points, err='ignore', tol=1e-10):
+    """Helper function to compute the radial second derivative of the density.
+
+    From a set of radial points :math:`r`, the gradient of the density, :math:`df/dr`, and the
+    Laplacian of the density, :math:`\nabla^2 f`, the radial second derivative of the density is
+    computed as:
+    
+    .. math::
+        d/dr (df/dr) = \nabla^2 f - 2/r * df/dr
+    
+    Parameters
+    ----------
+    gradient : np.ndarray
+        Gradient of the density.
+    laplacian : np.ndarray
+        Laplacian of the density.
+    points : np.ndarray
+        Radial points where the density gradient and Laplacian are evaluated.
+    err : str, optional
+        Error handling for division by zero.
+    tol : float, optional
+        Tolerance for the points close to zero.
+    
+    Returns
+    -------
+    d2dens : np.ndarray
+        Radial second derivative of the density.
+    
+    Notes
+    -----
+    When the points are close to zero, the radial second derivative of the density tends to infinity.
+    In this case, this function returns zero.
+
+    """
+    # Handle the case when the points are close to zero
+    with np.errstate(divide=err):
+        # Compute the radial second derivative of the density
+        d2dens =  laplacian - 2 * gradient / points
+        d2dens = np.where(points < tol, 0.0, d2dens)
+    return d2dens
+
+
 DOCSTRING = """Numeric Dataset
 
 Load data from desnity.out file into a `SpeciesTable`.
@@ -134,7 +191,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
             f"Expected multiplicity is {expected_mult}."
         )
 
-    species_table = load_numerical_hf_data()
+    species_table = load_numerical_hf_data(datapath)
     data = species_table[(atnum, nelec)]
 
     #
@@ -165,6 +222,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     lapl_tot = data["laplacian"]
     ked_tot = None
 
+    # Compute the second derivative of the density
+    dd_dens_tot = eval_radial_dd_density(d_dens_tot, lapl_tot, points)
+
     # Return Species instance
     fields = dict(
         elem=elem,
@@ -183,7 +243,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         rs=points,
         dens_tot=dens_tot,
         d_dens_tot=d_dens_tot,
-        dd_dens_tot=lapl_tot,
+        dd_dens_tot=dd_dens_tot,
         ked_tot=ked_tot,
     )
     return atomdb.Species(dataset, fields)
