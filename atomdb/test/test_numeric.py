@@ -67,10 +67,10 @@ def test_numerical_hf_data_h():
     gradient = sp.d_dens_func(log=False)(sp._data.rs)
 
     # check interpolated gradient values against reference values from numerical HF raw files
-    # close to the nuclei 
-    assert np.allclose(gradient[:2], [-0.636619761671399, -0.613581739284137], atol=1e-10) 
-    # away from the nuclei     
-    assert np.allclose(gradient[-2:], [0., 0.], atol=1e-10)
+    # close to the nuclei
+    assert np.allclose(gradient[:2], [-0.636619761671399, -0.613581739284137], atol=1e-10)
+    # away from the nuclei
+    assert np.allclose(gradient[-2:], [0.0, 0.0], atol=1e-10)
 
 
 def test_numerical_hf_data_h_anion():
@@ -116,7 +116,7 @@ def test_numerical_hf_data_h_anion():
     # check interpolated gradient values against reference values from numerical HF raw files
     assert np.allclose(gradient[:2], [-0.618386750431843, -0.594311093621533], atol=1e-10)
     assert np.allclose(gradient[20:22], [-0.543476018733641, -0.538979599233911], atol=1e-10)
-    assert np.allclose(gradient[-20:], [0.] * 20, atol=1e-10)
+    assert np.allclose(gradient[-20:], [0.0] * 20, atol=1e-10)
 
 
 @pytest.mark.parametrize(
@@ -152,7 +152,11 @@ def test_numerical_hf_atomic_density(atom, mult, npoints, nelec):
     assert all(sp._data.dens_tot >= 0.0)
 
     # check the density integrates to the correct number of electrons
-    assert_almost_equal(4 * np.pi * np.trapezoid(grid**2 * dens, grid), nelec, decimal=2)
+    if hasattr(np, "trapezoid"):
+        int_density = 4.0 * np.pi * np.trapezoid(grid**2 * dens, grid)
+    else:
+        int_density = 4.0 * np.pi * np.trapz(grid**2 * dens, grid)
+    assert_almost_equal(int_density, nelec, decimal=2)
 
     # get density spline and check its values
     spline = sp.dens_func(spin="t", log=True)
@@ -199,10 +203,10 @@ def test_numerical_hf_dd_density(atom, charge, mult):
     assert dd_dens.shape == sp._data.rs.shape
 
     # check interpolated density derivative values against reference values
-    # far away from the nuclei, the second derivative of the density is close to zero 
-    assert np.allclose(dd_dens[-10:], [0.]*10, atol=1e-10)
+    # far away from the nuclei, the second derivative of the density is close to zero
+    assert np.allclose(dd_dens[-10:], [0.0] * 10, atol=1e-10)
     # for r=0, the second derivative of the density is set to zero
-    assert np.allclose(dd_dens[0], [0.], atol=1e-10)
+    assert np.allclose(dd_dens[0], [0.0], atol=1e-10)
 
     # WARNING: The values of the second order derivative of the density at intermediate r distances
     # are not tested. Comparisong agains deriv=2 of the density spline:
@@ -224,8 +228,8 @@ def test_numerical_hf_density_laplacian(atom, charge, mult):
     id = f"{str(sp.atnum).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
     fname = f"{id}_numeric_laplacian.npy"
     ref_lapl = np.load(f"{TEST_DATAPATH}/numeric/db/{fname}")
-    
+
     # check interpolated Laplacian of density values against reference values
     assert np.allclose(laplacian_dens, ref_lapl, atol=1e-10)
     # for r=0, the Laplacian function in not well defined and is set to zero
-    assert np.allclose(laplacian_dens[0], [0.], atol=1e-10)
+    assert np.allclose(laplacian_dens[0], [0.0], atol=1e-10)
