@@ -60,6 +60,8 @@
     <script async="async" src="../_static/sphinx-thebe.js?v=c100c467"></script>
     <script>var togglebuttonSelector = '.toggle, .admonition.dropdown';</script>
     <script>const THEBE_JS_URL = "https://unpkg.com/thebe@0.8.2/lib/index.js"; const thebe_selector = ".thebe,.cell"; const thebe_selector_input = "pre"; const thebe_selector_output = ".output, .cell_output"</script>
+    <script>window.MathJax = {"options": {"processHtmlClass": "tex2jax_process|mathjax_process|math|output_area"}}</script>
+    <script defer="defer" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_autosummary/atomdb.datasets.numeric';</script>
     <link rel="icon" href="../_static/favicon.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -387,6 +389,7 @@
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-atomdb.datasets.numeric.run">atomdb.datasets.numeric.run module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.datasets.numeric.run.eval_radial_dd_density"><code class="docutils literal notranslate"><span class="pre">eval_radial_dd_density()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.datasets.numeric.run.load_numerical_hf_data"><code class="docutils literal notranslate"><span class="pre">load_numerical_hf_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.datasets.numeric.run.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
 </ul>
@@ -412,9 +415,61 @@
 <span id="atomdb-datasets-numeric-run-module"></span><h2>atomdb.datasets.numeric.run module<a class="headerlink" href="#module-atomdb.datasets.numeric.run" title="Link to this heading">#</a></h2>
 <p>Numerical Hartree-Fock Data on a Grid.</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="atomdb.datasets.numeric.run.eval_radial_dd_density">
+<span class="sig-prename descclassname"><span class="pre">atomdb.datasets.numeric.run.</span></span><span class="sig-name descname"><span class="pre">eval_radial_dd_density</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">gradient</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">laplacian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">err</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ignore'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-10</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.datasets.numeric.run.eval_radial_dd_density" title="Link to this definition">#</a></dt>
+<dd><p>Helper function to compute the radial second derivative of the density.</p>
+<blockquote>
+<div><p>From a set of radial points <span class="math notranslate nohighlight">\(r\)</span>, the gradient of the density, <span class="math notranslate nohighlight">\(df/dr\)</span>, and the
+Laplacian of the density, :math:<a href="#id1"><span class="problematic" id="id2">`</span></a></p>
+</div></blockquote>
+<dl>
+<dt>abla^2 f`, the radial second derivative of the density is</dt><dd><p>computed as:</p>
+<div class="math notranslate nohighlight">
+\[d/dr (df/dr) = \]</div>
+</dd>
+</dl>
+<p>abla^2 f - 2/r * df/dr</p>
+<blockquote>
+<div><dl class="simple">
+<dt>gradient<span class="classifier">np.ndarray</span></dt><dd><p>Gradient of the density.</p>
+</dd>
+<dt>laplacian<span class="classifier">np.ndarray</span></dt><dd><p>Laplacian of the density.</p>
+</dd>
+<dt>points<span class="classifier">np.ndarray</span></dt><dd><p>Radial points where the density gradient and Laplacian are evaluated.</p>
+</dd>
+<dt>err<span class="classifier">str, optional</span></dt><dd><p>Error handling for division by zero.</p>
+</dd>
+<dt>tol<span class="classifier">float, optional</span></dt><dd><p>Tolerance for the points close to zero.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>d2dens<span class="classifier">np.ndarray</span></dt><dd><p>Radial second derivative of the density.</p>
+</dd>
+</dl>
+<p>When the points are close to zero, the radial second derivative of the density tends to infinity.
+In this case, this function returns zero.</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="atomdb.datasets.numeric.run.load_numerical_hf_data">
-<span class="sig-prename descclassname"><span class="pre">atomdb.datasets.numeric.run.</span></span><span class="sig-name descname"><span class="pre">load_numerical_hf_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.datasets.numeric.run.load_numerical_hf_data" title="Link to this definition">#</a></dt>
+<span class="sig-prename descclassname"><span class="pre">atomdb.datasets.numeric.run.</span></span><span class="sig-name descname"><span class="pre">load_numerical_hf_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#atomdb.datasets.numeric.run.load_numerical_hf_data" title="Link to this definition">#</a></dt>
 <dd><p>Load data from desnity.out file into a <cite>SpeciesTable</cite>.</p>
+<section id="parameters">
+<h3>Parameters<a class="headerlink" href="#parameters" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>data_path<span class="classifier">str</span></dt><dd><p>Path to the directory containing a folder named <cite>raw</cite> where the desnity.out file is stored.</p>
+</dd>
+</dl>
+</section>
+<section id="returns">
+<h3>Returns<a class="headerlink" href="#returns" title="Link to this heading">#</a></h3>
+<dl class="simple">
+<dt>species<span class="classifier">dict</span></dt><dd><p>Dictionary of atomic species containing the information from the numeric Hartree-Fock calculation.
+This is energy components, grid, density, gradient, and laplacian values.</p>
+</dd>
+</dl>
+</section>
 </dd></dl>
 
 <dl class="py function">
@@ -493,6 +548,7 @@
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#submodules">Submodules</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-atomdb.datasets.numeric.run">atomdb.datasets.numeric.run module</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.datasets.numeric.run.eval_radial_dd_density"><code class="docutils literal notranslate"><span class="pre">eval_radial_dd_density()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.datasets.numeric.run.load_numerical_hf_data"><code class="docutils literal notranslate"><span class="pre">load_numerical_hf_data()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#atomdb.datasets.numeric.run.run"><code class="docutils literal notranslate"><span class="pre">run()</span></code></a></li>
 </ul>
