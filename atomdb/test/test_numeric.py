@@ -64,18 +64,13 @@ def test_numerical_hf_data_h():
     assert np.allclose(sp._data.dens_tot[-2:], [0.0, 0.0], atol=1e-10)
 
     # evaluate radial density gradient (first derivative of density spline)
-    dens = sp.dens_func(spin="t", log=True)
-    gradient = dens(sp._data.rs, deriv=1)
+    gradient = sp.d_dens_func(log=False)(sp._data.rs)
 
-    # load gradient reference values from numerical HF raw files
-    fname = "001_q000_m02_numeric_gradient.npy"
-    ref_grad = np.load(f"{TEST_DATAPATH}/numeric/db/{fname}")
-
-    # check interpolated gradient values against reference
-    # close to the nuclei the spline derivative does not describe the gradient well
-    assert np.allclose(gradient[:2], ref_grad[:2], atol=1e-3)
-    # away from the nuclei the spline derivative describes the gradient well
-    assert np.allclose(gradient[-2:], ref_grad[-2:], atol=1e-10)
+    # check interpolated gradient values against reference values from numerical HF raw files
+    # close to the nuclei
+    assert np.allclose(gradient[:2], [-0.636619761671399, -0.613581739284137], atol=1e-10)
+    # away from the nuclei
+    assert np.allclose(gradient[-2:], [0.0, 0.0], atol=1e-10)
 
 
 def test_numerical_hf_data_h_anion():
@@ -116,18 +111,12 @@ def test_numerical_hf_data_h_anion():
     assert np.allclose(sp._data.dens_tot[-20:], 0.0, atol=1e-10)
 
     # evaluate radial density gradient (first derivative of density spline)
-    dens = sp.dens_func(spin="t", log=True)
-    gradient = dens(sp._data.rs, deriv=1)
+    gradient = sp.d_dens_func(log=False)(sp._data.rs)
 
-    # load gradient reference values from numerical HF raw files
-    fname = "001_q-01_m01_numeric_gradient.npy"
-    ref_grad = np.load(f"{TEST_DATAPATH}/numeric/db/{fname}")
-
-    # check interpolated gradient values against reference
-    # close to the nuclei the spline derivative does not describe the gradient well
-    assert np.allclose(gradient[:2], ref_grad[:2], atol=1e-3)
-    # away from the nuclei the spline derivative describes the gradient well
-    assert np.allclose(gradient[-2:], ref_grad[-2:], atol=1e-10)
+    # check interpolated gradient values against reference values from numerical HF raw files
+    assert np.allclose(gradient[:2], [-0.618386750431843, -0.594311093621533], atol=1e-10)
+    assert np.allclose(gradient[20:22], [-0.543476018733641, -0.538979599233911], atol=1e-10)
+    assert np.allclose(gradient[-20:], [0.0] * 20, atol=1e-10)
 
 
 @pytest.mark.parametrize(
@@ -163,7 +152,11 @@ def test_numerical_hf_atomic_density(atom, mult, npoints, nelec):
     assert all(sp._data.dens_tot >= 0.0)
 
     # check the density integrates to the correct number of electrons
-    assert_almost_equal(4 * np.pi * np.trapz(grid**2 * dens, grid), nelec, decimal=2)
+    if hasattr(np, "trapezoid"):
+        int_density = 4.0 * np.pi * np.trapezoid(grid**2 * dens, grid)
+    else:
+        int_density = 4.0 * np.pi * np.trapz(grid**2 * dens, grid)
+    assert_almost_equal(int_density, nelec, decimal=2)
 
     # get density spline and check its values
     spline = sp.dens_func(spin="t", log=True)
@@ -195,26 +188,48 @@ def test_numerical_hf_density_gradient(atom, charge, mult):
     assert np.allclose(gradient[indx_radii], ref_grad[indx_radii], atol=1e-3)
 
 
-@pytest.mark.xfail(reason="High errors in spline derivative of order 2")
+@pytest.mark.xfail(reason="High errors in spline derivative of order 2 at intermediate distances")
 @pytest.mark.parametrize(
-    "atom, charge, mult", [("H", 0, 2), ("H", -1, 1), ("Be", 0, 1), ("Cl", 0, 3), ("Ne", 0, 1)]
+    "atom, charge, mult", [("H", 0, 2), ("H", -1, 1), ("Be", 0, 1), ("Cl", 0, 2), ("Ne", 0, 1)]
+)
+def test_numerical_hf_dd_density(atom, charge, mult):
+    # load atomic and density data
+    sp = load(atom, charge, mult, dataset="numeric", datapath=TEST_DATAPATH)
+
+    # evaluate the second derivative of the density on the radial grid
+    dd_dens = sp.dd_dens_func(log=False)(sp._data.rs)
+
+    # check shape of arrays
+    assert dd_dens.shape == sp._data.rs.shape
+
+    # check interpolated density derivative values against reference values
+    # far away from the nuclei, the second derivative of the density is close to zero
+    assert np.allclose(dd_dens[-10:], [0.0] * 10, atol=1e-10)
+    # for r=0, the second derivative of the density is set to zero
+    assert np.allclose(dd_dens[0], [0.0], atol=1e-10)
+
+    # WARNING: The values of the second order derivative of the density at intermediate r distances
+    # are not tested. Comparisong agains deriv=2 of the density spline:
+    # ref_dd_dens = sp.dens_func(log=True)(sp._data.rs, deriv=2)
+    # results in high errors, rendering this test case as unreliable.
+
+
+@pytest.mark.parametrize(
+    "atom, charge, mult", [("H", 0, 2), ("H", -1, 1), ("Be", 0, 1), ("Cl", 0, 2), ("Ne", 0, 1)]
 )
 def test_numerical_hf_density_laplacian(atom, charge, mult):
     # load atomic and density data
     sp = load(atom, charge, mult, dataset="numeric", datapath=TEST_DATAPATH)
 
-    # evaluate density and laplacian (second derivative of density spline) on the radial grid
-    grid = sp._data.rs
-    spline = sp.dens_func(spin="t", log=False)
-    lapl = spline(grid, deriv=2)
-
-    # check shape of arrays
-    assert lapl.shape == grid.shape
+    # evaluate the Laplacian of the density on the radial grid
+    laplacian_dens = sp.dd_dens_lapl_func(log=False)(sp._data.rs)
 
     # load reference values from numerical HF raw files
     id = f"{str(sp.atnum).zfill(3)}_q{str(charge).zfill(3)}_m{mult:02d}"
     fname = f"{id}_numeric_laplacian.npy"
     ref_lapl = np.load(f"{TEST_DATAPATH}/numeric/db/{fname}")
 
-    # interpolated laplacian values against reference
-    assert np.allclose(lapl, ref_lapl, atol=1e-6)
+    # check interpolated Laplacian of density values against reference values
+    assert np.allclose(laplacian_dens, ref_lapl, atol=1e-10)
+    # for r=0, the Laplacian function in not well defined and is set to zero
+    assert np.allclose(laplacian_dens[0], [0.0], atol=1e-10)

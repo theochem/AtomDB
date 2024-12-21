@@ -666,7 +666,7 @@ class Species:
     @spline
     def dd_dens_func(self):
         r"""
-        Return a cubic spline of the electronic density Laplacian.
+        Return a cubic spline of the second derivative of the electronic density.
 
         Parameters
         ----------
@@ -683,13 +683,59 @@ class Species:
 
         Returns
         -------
-        DensitySpline
-            A DensitySpline instance for the density and its derivatives.
-            Given a set of radial points, it can evaluate densities and
-            derivatives up to order 2.
+        Callable[[np.ndarray(N,), int] -> np.ndarray(N,)]
+            a callable function evaluating the second derivative of the density given a set of radial
+            points (1-D array).
 
         """
         pass
+
+    def dd_dens_lapl_func(self, spin="t", index=None, log=False):
+        r"""
+        Return the function for the electronic density Laplacian.
+
+        .. math::
+            
+            \nabla^2 \rho(\mathbf{r}) = \frac{d^2 \rho(r)}{dr^2} + \frac{2}{r} \frac{d \rho(r)}{dr}
+
+        Parameters
+        ----------
+        spin : str, default="t"
+            Type of occupied spin orbitals.
+            Can be either "t" (for alpha + beta), "a" (for alpha),
+            "b" (for beta), or "m" (for alpha - beta).
+        index : sequence of int, optional
+            Sequence of integers representing the spin orbitals.
+            These are indexed from 0 to the number of basis functions.
+            By default, all orbitals of the given spin(s) are included.
+        log : bool, default=False
+            Whether the logarithm of the density is used for interpolation.
+        
+        Returns
+        -------
+        Callable[np.ndarray(N,) -> np.ndarray(N,)]
+            a callable function evaluating the Laplacian of the density given a set of radial
+            points (1-D array).
+        
+        Notes
+        -----
+        When this function is evaluated at a point close to zero, the Laplacian becomes undefined.
+        In this case, this function returns zero.
+
+        """
+        # Obtain cubic spline functions for the first and second derivatives of the density
+        d_dens_sp_spline = self.d_dens_func(spin=spin, index=index, log=log)
+        dd_dens_spline = self.dd_dens_func(spin=spin, index=index, log=log)
+
+        # Define the Laplacian function
+        def densityspline_like_func(rs):
+            # Avoid division by zero and handle small values of r
+            with np.errstate(divide='ignore'):
+                laplacian = dd_dens_spline(rs) + 2 * d_dens_sp_spline(rs) / rs
+                laplacian = np.where(rs < 1e-10, 0.0, laplacian)
+            return laplacian
+        
+        return densityspline_like_func
 
     @spline
     def ked_func(self):
