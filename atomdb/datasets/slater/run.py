@@ -522,32 +522,12 @@ class AtomicDensity:
         orb_ked : np.ndarray(K_orb, N)
             orbitals kinetic energy density values at a set of grid points (N).
         """
-        phi_matrix = np.zeros((len(points), len(self.orbitals)))
-        for index, orbital in enumerate(self.orbitals):
-            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            slater = AtomicDensity.slater_orbital(exps, number, points)
-            # derivative
-            deriv_pref = (number.T - 1.0) - exps.T * np.reshape(points, (points.shape[0], 1))
-            deriv = deriv_pref * slater
-            phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
-
-        angular = []  # Angular numbers are l(l + 1)
-        for index, orbital in enumerate(self.orbitals):
-            if "S" in orbital:
-                angular.append(0.0)
-            elif "P" in orbital:
-                angular.append(2.0)
-            elif "D" in orbital:
-                angular.append(6.0)
-            elif "F" in orbital:
-                angular.append(12.0)
 
         orb_occs = self.orbitals_occupation
-        orbs_ked = phi_matrix**2.0 * orb_occs.ravel() / 2.0
-        # Add other term
-        molecular = self.phi_matrix(points) ** 2.0 * np.array(angular)
-        orbs_ked += molecular * orb_occs.ravel() / 2.0
-        return orbs_ked.T
+        # 1/2 factor by normalization factor 1/4pi
+        ked_factor = 0.5 / (4 * np.pi)
+        ked_orbs = self.phi_matrix(points, deriv=1) ** 2 * self.orbitals_occupation.ravel()
+        return ked_factor * ked_orbs
 
     def eval_ked_positive_definite(self, points):
         r"""
@@ -570,32 +550,8 @@ class AtomicDensity:
 
         """
 
-        phi_matrix = np.zeros((len(points), len(self.orbitals)))
-        for index, orbital in enumerate(self.orbitals):
-            exps, number = self.orbitals_exp[orbital[1]], self.basis_numbers[orbital[1]]
-            slater = AtomicDensity.slater_orbital(exps, number, points)
-            # derivative
-            deriv_pref = (number.T - 1.0) - exps.T * np.reshape(points, (points.shape[0], 1))
-            deriv = deriv_pref * slater
-            phi_matrix[:, index] = np.dot(deriv, self.orbitals_coeff[orbital]).ravel()
-
-        angular = []  # Angular numbers are l(l + 1)
-        for index, orbital in enumerate(self.orbitals):
-            if "S" in orbital:
-                angular.append(0.0)
-            elif "P" in orbital:
-                angular.append(2.0)
-            elif "D" in orbital:
-                angular.append(6.0)
-            elif "F" in orbital:
-                angular.append(12.0)
-
-        orb_occs = self.orbitals_occupation
-        energy = np.dot(phi_matrix**2.0, orb_occs).ravel() / 2.0
-        # Add other term
-        molecular = self.phi_matrix(points) ** 2.0 * np.array(angular)
-        energy += np.dot(molecular, orb_occs).ravel() / 2.0
-        return energy
+        orbs_ked = self.eval_orbs_ked_positive_definite(points)
+        return np.sum(orbs_ked, axis=0)
 
     def eval_radial_d_density(self, points):
         r"""
