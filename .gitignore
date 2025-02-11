@@ -147,7 +147,7 @@ cython_debug/
 .vscode/
 
 # Data files
-*.msg
+#*.msg
 repo_data.txt
 atomdb/datasets/*/raw/
 
