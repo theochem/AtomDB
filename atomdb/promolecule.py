@@ -248,7 +248,7 @@ class Promolecule:
         def f(atom):
             return atom.nspin
 
-        return _intensive_property(self.atoms, self.coeffs, f, p=1)
+        return _intensive_property_exclude_zero(self.atoms, self.coeffs, f, p=1)
 
     def mult(self, p=1):
         r"""Compute the multiplicity of the promolecule.
@@ -784,6 +784,32 @@ def _intensive_property(atoms, coeffs, f, p=1):
     # P-mean of each atom's property value
     return (sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs)) / sum(coeffs)) ** (
         1 / p
+    )
+
+
+def _intensive_property_exclude_zero(atoms, coeffs, f, p=1):
+    r"""Helper function for computing intensive properties (excluding zero-electron proatoms).
+
+    Parameters
+    ----------
+    atoms: list of Species
+        Species instances.
+    coeffs: np.ndarray((N,), dtype=float)
+        Coefficients of each species.
+    f: callable
+        Property function.
+    p: int, default=1 (linear mean)
+        Type of mean used in the computation.
+
+    Returns
+    -------
+    prop: float
+        Intensive property.
+    """
+    # P-mean of each atom's property value
+    return (
+            sum(coeff * f(atom) ** p for atom, coeff in zip(atoms, coeffs) if atom.nelec != 0)
+                / sum(coeff for atom, coeff in zip(atoms, coeffs) if atom.nelec != 0) ** (1 / p)
     )
 
 
