@@ -77,9 +77,13 @@ def scalar(method):
             "at_radius": "at_radius",
             "polarizability": "pold",
             "dispersion_c6": "c6",
+            "atmass": "mass",
         }
 
+        if name == "atmass":
+            return getattr(Element(self._data.elem), namemap[name])
         if name in namemap:
+            # Only return Element property if neutral, otherwise None
             charge = self._data.atnum - self._data.nelec
             return getattr(Element(self._data.elem), namemap[name]) if charge == 0 else None
 
@@ -476,7 +480,7 @@ class Species:
             https://github.com/theochem/AtomDB/blob/master/atomdb/data/data_info.csv
 
         """
-        return Element(self._data.elem).mass
+        pass
 
     @scalar
     def cov_radius(self):
