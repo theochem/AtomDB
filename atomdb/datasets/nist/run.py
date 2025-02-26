@@ -19,8 +19,6 @@ import os
 
 import numpy as np
 
-from scipy import constants
-
 import h5py as h5
 
 import csv
@@ -91,6 +89,60 @@ def load_nist_spectra_data(atnum, nelec, datafile):
     return output
 
 
+def get_energy(atnum, nelec, ip, datafile):
+    """Retrieve the ground state energy from NIST spectra database.
+
+    Parameters
+    ----------
+    atnum : int
+        Atomic number.
+    nelec : int
+        Number of electrons.
+    ip : float
+        Ionization potential of the anion (in Ha).
+    datafile : str
+        HDF5 file containing the NIST atomic spectra data (file database_beta_1.3.0.h5).
+    
+    Returns
+    -------
+    float
+        Ground state energy of the species (in Ha).
+    
+    Notes
+    -----
+    Dianion species get a default energy value of None. For anions with charge=-1, the energy is computed
+    as E_anion = E_neutral - IP_anion, where E_neutral is the ground state energy of the neutral species
+    and IP_anion is the ionization potential of the anion. The IP_anion is obtained from the conceptual-DFT
+    data in the file data/c6cp04533b1.csv.
+
+    """
+    # Set an energy default value in case there isn't available NIST data
+    energy = None
+    charge = atnum - nelec
+    hdf5_path = os.path.join(MODULE_DATAPATH, datafile)
+
+    # Load NIST atomic spectra database data (contains neutral and cationic species).
+    if charge == -2:
+        return energy
+    
+    if charge == -1:
+        nelec = atnum
+    spectra_data = load_nist_spectra_data(atnum, nelec, hdf5_path)
+    energies = spectra_data["energy"]
+
+    # Energy for neutral or cationic species
+    if charge >= 0:
+        # energies = spectra_data["energy"]
+        # Convert energy to Hartree from cm^{-1} if available
+        return energies[0] / CMINV if len(energies) != 0 else energy
+    
+    # Energy for anions with charge=-1
+    elif charge == -1 and ip not in [None, 0]: # check IP is not zero or None
+        # neutral_energy = load_nist_spectra_data(atnum, atnum, hdf5_path)["energy"]
+        # Convert energy to Hartree from cm^{-1} if available
+        return (energies[0] / CMINV - ip) if len(energies) != 0 else energy
+
+
 def run(elem, charge, mult, nexc, dataset, datapath):
     r"""Parse NIST related data and compile the AtomDB database entry."""
     # Check arguments
@@ -126,23 +178,15 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         polarizability = atom.pold
         dispersion = {"C6": atom.c6}
 
-    #
-    # Get the ground state energy from database_beta_1.3.0.h5.
-    #
-    # Set an energy default value since there is no data for anions in database_beta_1.3.0.h5.
-    energy = None
-    h5path = os.path.join(MODULE_DATAPATH, "database_beta_1.3.0.h5")
-    if charge >= 0:  # neutral or cationic species
-        spectra_data = load_nist_spectra_data(atnum, nelec, h5path)
-        energies = spectra_data["energy"]
-        # Convert energy to Hartree from cm^{-1} if available
-        energy = energies[0] * CMINV if len(energies) != 0 else energy
-
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
     csvpath = os.path.join(MODULE_DATAPATH, "c6cp04533b1.csv")
     data = list(csv.reader(open(csvpath, "r")))
     tabid = [i for i, row in enumerate(data) if "Element" in row]
+    # Check that the CSV file has not been modified and it has the expected number of tables (3)
+    if len(tabid) != 3:
+        raise ValueError(f"Unexpected conceptual-DFT CSV file format; expected 3 tables, got {len(tabid)}.")
+
     # Assign each conceptual-DFT data table to a variable.
     # Remove empty and header rows
     table_ips = data[tabid[0] : tabid[1]]
@@ -158,6 +202,28 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     mu = float(table_mus[atnum][colid]) * EV if len(table_mus[atnum][colid]) > 1 else None
     colid = table_etas[0].index(str(charge))
     eta = float(table_etas[atnum][colid]) * EV if len(table_etas[atnum][colid]) > 1 else None
+
+    # # Get the ground state energy from database_beta_1.3.0.h5.
+    # # Set an energy default value since there is no data for anions in database_beta_1.3.0.h5.
+    # energy = None
+    # h5path = os.path.join(MODULE_DATAPATH, "database_beta_1.3.0.h5")
+    # if charge >= 0:  # neutral or cationic species
+    #     spectra_data = load_nist_spectra_data(atnum, nelec, h5path)
+    #     energies = spectra_data["energy"]
+    #     # Convert energy to Hartree from cm^{-1} if available
+    #     energy = energies[0] / CMINV if len(energies) != 0 else energy
+    
+    # # Compute the ground state energy for anions with charge=-1
+    # # Use the ground state energy of the neutral species from database_beta_1.3.0.h5
+    # # and subtract the ionization potential of the anion from the conceptual-DFT data c6cp04533b1.csv
+    # # This is: E_anion = E_neutral - IP_anion.
+    # # This procedure does not work if there is no GS data for the neutral species, or if the anion's IP 
+    # # is zero or None.
+    # if charge == -1 and ip not in [None, 0]: # check IP is not zero or None
+    #     neutral_energy = load_nist_spectra_data(atnum, atnum, h5path)["energy"]
+    #     # Convert energy to Hartree from cm^{-1} if available
+    #     energy = (neutral_energy[0] / CMINV - ip) if len(neutral_energy) != 0 else energy
+    energy = get_energy(atnum, nelec, ip, "database_beta_1.3.0.h5")
 
     # Return Species instance
     fields = dict(
