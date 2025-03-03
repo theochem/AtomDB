@@ -149,6 +149,22 @@ TEST_CASES_MAKE_PROMOLECULE = [
         },
         id="Be floating point charge/integer mult (neg)",
     ),
+    pytest.param(
+        {
+            "atnums": [3, 1],
+            "charges": [0, 1],
+            "mults": [2, 1],
+            "coords": np.asarray(
+                [
+                    [0.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0],
+                ],
+                dtype=float,
+            ),
+            "dataset": "gaussian",
+        },
+        id="LiH with zero electrons on the hydrogen center",
+    ),
 ]
 
 

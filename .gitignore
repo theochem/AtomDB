@@ -146,8 +146,10 @@ cython_debug/
 .spyproject
 .vscode/
 
-# Raw data files
-atomdb/datasets/*/db/
+# Data files
+#*.msg
+repo_data.txt
+atomdb/datasets/*/raw/
 
 # Generated documentation
 docs/source/api/

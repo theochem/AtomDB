@@ -18,35 +18,25 @@ r"""Gaussian density compile function."""
 import os
 
 import numpy as np
-
-from gbasis.wrappers import from_iodata
-
 from gbasis.evals.density import evaluate_density as eval_dens
-from gbasis.evals.density import evaluate_density_gradient
-from gbasis.evals.density import evaluate_density_hessian
 from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
-from gbasis.evals.eval_deriv import evaluate_deriv_basis
 from gbasis.evals.eval import evaluate_basis
-
+from gbasis.wrappers import from_iodata
+from grid.atomgrid import AtomGrid
 from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
-from grid.atomgrid import AtomGrid
-
 from iodata import load_one
 
 import atomdb
-
-from atomdb.periodic import Element
 from atomdb.datasets.tools import (
+    eval_orb_ked,
     eval_orbs_density,
     eval_orbs_radial_d_density,
     eval_orbs_radial_dd_density,
-    eval_orb_ked,
     eval_radial_d_density,
     eval_radial_dd_density,
-    eval_orb_ked,
 )
-
+from atomdb.periodic import Element
 
 __all__ = [
     "run",
@@ -123,7 +113,11 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Load data from fchk
     obasis_name = "def2-svpd"
-    data = _load_fchk(atnum, elem, nelec, mult, obasis_name, datapath)
+    if nelec == 0:
+        # For zero-electron case. use 1-electron case as a base
+        data = _load_fchk(atnum, elem, 1, 2, obasis_name, datapath)
+    else:
+        data = _load_fchk(atnum, elem, nelec, mult, obasis_name, datapath)
 
     # Unrestricted Hartree-Fock SCF results
     energy = data.energy
@@ -137,7 +131,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     coeffs_b = mo_coeffs[:, norba:]
 
     # check for inconsistencies in filenames
-    if not np.allclose(np.array([n_up, n_dn]), np.array([sum(occs_up), sum(occs_dn)])):
+    if nelec != 0 and not np.allclose([n_up, n_dn], [sum(occs_up), sum(occs_dn)]):
         raise ValueError(f"Inconsistent data in fchk file for N: {atnum}, M: {mult} CH: {charge}")
 
     # Prepare data for computing Species properties
@@ -234,12 +228,37 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Conceptual-DFT properties (WIP)
     # NOTE: Only the alpha component of the MOs is used bellow
+    # NOTE: Handle zero-electron case here
     mo_energy_occ_up = mo_e_up[:n_up]
     mo_energy_virt_up = mo_e_up[n_up:]
-    ip = -mo_energy_occ_up[-1]  # - energy_HOMO_alpha
-    ea = -mo_energy_virt_up[0]  # - energy_LUMO_alpha
+    ip = -mo_energy_occ_up[-1] if nelec != 0 else 0 # - energy_HOMO_alpha
+    ea = -mo_energy_virt_up[0] if nelec != 0 else 0 # - energy_LUMO_alpha
     mu = None
     eta = None
+
+    # Set appropriate values to zero for zero-electron case
+    if nelec == 0:
+        energy=0.0,
+        mo_e_up[...] = 0
+        mo_e_dn[...] = 0
+        occs_up[...] = 0
+        occs_dn[...] = 0
+        # Density
+        orb_dens_avg_up[...] = 0
+        orb_dens_avg_dn[...] = 0
+        dens_avg_tot[...] = 0
+        # Density gradient
+        orb_d_dens_avg_up[...] = 0
+        orb_d_dens_avg_dn[...] = 0
+        d_dens_avg_tot[...] = 0
+        # Density laplacian
+        orb_dd_dens_avg_up[...] = 0
+        orb_dd_dens_avg_dn[...] = 0
+        dd_dens_avg_tot[...] = 0
+        # KED
+        orb_ked_avg_up[...] = 0
+        orb_ked_avg_dn[...] = 0
+        ked_avg_tot[...] = 0
 
     # Return Species instance
     fields = dict(
@@ -261,6 +280,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         mo_occs_a=occs_up,
         mo_occs_b=occs_dn,
         ip=ip,
+        # ea=ea,
         mu=mu,
         eta=eta,
         rs=rs,
