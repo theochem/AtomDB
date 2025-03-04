@@ -36,7 +36,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "at_radius": {"wc": 0.529192875 * ANGSTROM, "cr": 0.53 * ANGSTROM},
             "polarizability": {"crc": 0.666793 * ANGSTROM**3, "chu": 4.5, "sn": 4.50711},
             "dispersion_c6": {"chu": 6.499026705},
-            "energy": -109678.77174307 * CMINV,
+            "energy": -109678.77174307 / CMINV,
             "ip": 13.598443 * EV,
             "mu": -7.18 * EV,
             "eta": 12.84 * EV,
@@ -70,7 +70,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "at_radius": {"wc": 0.62 * ANGSTROM, "cr": 0.67 * ANGSTROM},
             "polarizability": {"crc": 1.76 * ANGSTROM**3, "chu": 12.0, "sn": 11.3},
             "dispersion_c6": {"chu": 46.6},
-            "energy": -8308396.1899999995 * CMINV,
+            "energy": -8308396.1899999995 / CMINV,
             "ip": 11.2603 * EV,
             "mu": -6.26 * EV,
             "eta": 10 * EV,
@@ -92,7 +92,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "at_radius": None,
             "polarizability": None,
             "dispersion_c6": None,
-            "energy": -8217575.77 * CMINV,
+            "energy": -8217575.77 / CMINV,
             "ip": 24.3833 * EV,
             "mu": -17.82 * EV,
             "eta": 13.12 * EV,
@@ -114,12 +114,34 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "at_radius": None,
             "polarizability": None,
             "dispersion_c6": None,
-            "energy": None,
+            "energy": (-8308396.1899999995 / CMINV) - (1.262118 * EV),
             "ip": 1.262118 * EV,
             "mu": 2.08 * EV,
             "eta": 8.02 * EV,
         },
         id="C anion",
+    ),
+    pytest.param(
+        {
+            "dataset": "nist",
+            "elem": "C",
+            "atnum": 6,
+            "obasis_name": None,
+            "nelec": 8,
+            "nspin": 2,
+            "nexc": 0,
+            "atmass": {"stb": 12.0106 * AMU, "nist": 12 * AMU},
+            "cov_radius": None,
+            "vdw_radius": None,
+            "at_radius": None,
+            "polarizability": None,
+            "dispersion_c6": None,
+            "energy": None,
+            "ip": None,
+            "mu": 8.41 * EV,
+            "eta": 0 * EV,
+        },
+        id="C dianion",
     ),
 ]
 
@@ -140,4 +162,4 @@ def test_nist_data(case):
         #     data_value = getattr(sp, attr)
         # except AttributeError:
         #     data_value = getattr(sp._data, attr)
-        assert data_value == value, f"{elem} {attr} is not as expected."
+        assert data_value == pytest.approx(value), f"{elem} {attr} is not as expected."
