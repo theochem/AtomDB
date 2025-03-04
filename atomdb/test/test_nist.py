@@ -158,8 +158,4 @@ def test_nist_data(case):
 
     for attr, value in case.items():
         data_value = getattr(sp, attr)
-        # try:
-        #     data_value = getattr(sp, attr)
-        # except AttributeError:
-        #     data_value = getattr(sp._data, attr)
         assert data_value == pytest.approx(value), f"{elem} {attr} is not as expected."
