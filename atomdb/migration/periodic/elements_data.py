@@ -36,28 +36,28 @@ def create_data_for_tables(hdf5_file, parent_folder, table_name, table_descripti
     table = hdf5_file.create_table(parent_folder, table_name, row_description, table_description)
 
     for col in columns:
-        if pd.notna(row_data[col]):
-            source = sources_data.get(col, 'unknown')
-            unit = units_data.get(col, 'unknown')
-            value = np.nan
+        source = sources_data.get(col, 'unknown')
+        unit = units_data.get(col, 'unknown')
+        value = np.nan
 
-            if pd.notna(row_data[col]) and str(row_data[col]).strip():
-                try:
-                    value = float(row_data[col])
-                except (ValueError, TypeError):
-                    value = np.nan
+        if pd.notna(row_data[col]) and str(row_data[col]).strip():
+            try:
+                value = float(row_data[col])
+            except (ValueError, TypeError):
+                value = np.nan
 
-            row = table.row
-            row['source'] = source.encode('utf-8') if source else ''
-            row['unit'] = unit.encode('utf-8') if unit else ''
-            row['value'] = value
-            row.append()
+        row = table.row
+        row['source'] = source.encode('utf-8') if source else ''
+        row['unit'] = unit.encode('utf-8') if unit else ''
+        row['value'] = value
+        row.append()
 
     table.flush()
     return table
 
 
-csv_file = '/home/enjy/work/Gsoc/repo/AtomDB/atomdb/data/elements_data.csv'
+elements_data_csv = '/home/enjy/work/Gsoc/repo/AtomDB/atomdb/data/elements_data.csv'
+data_info_csv = '/home/enjy/work/Gsoc/repo/AtomDB/atomdb/data/data_info.csv'
 hdf5_file = "elements_data.h5"
 
 property_configs = [
@@ -78,10 +78,8 @@ property_configs = [
 
 
 
-elements_data_df = pd.read_csv(csv_file, comment='#', header=None, dtype=str)
+elements_data_df = pd.read_csv(elements_data_csv, comment='#', header=None, dtype=str)
 elements_data_df.dropna(how='all', inplace=True)
-
-
 
 headers = elements_data_df.iloc[0].str.strip().to_list()
 unique_headers = []
@@ -104,11 +102,17 @@ sources_data = dict(zip(unique_headers, sources))
 units_data = dict(zip(unique_headers, units))
 
 
+data_info_df = pd.read_csv(data_info_csv, sep=',', comment=None, dtype=str)
+data_info_df.dropna(how='all', inplace=True)
+data_info_df.columns = [col.lstrip('#').strip() for col in data_info_df.columns]
+
+
 
 
 try:
     with pt.open_file(hdf5_file, mode='w', title='Periodic Data') as h5file:
         elements_group = h5file.create_group('/', 'elements', 'Elements Data' )
+        data_info_group = h5file.create_group('/', 'data_info', 'Data Info')
 
         for idx, row in data.iterrows():
             atnum = int(row['atnum']) if pd.notna(row['atnum']) else 0
@@ -154,6 +158,28 @@ try:
                     parent = element_group
 
                 create_data_for_tables(h5file, parent, config['table_name'], config['description'], property_values, columns, row, sources_data, units_data)
+
+        property_info_table = h5file.create_table(data_info_group, 'property_info', data_info,
+                                                  'Property Information')
+
+        for _, row in data_info_df.iterrows():
+            table_row = property_info_table.row
+            table_row['property_key'] = row['Property key'].encode('utf-8') if pd.notna(
+                row['Property key']) else ''
+            table_row['property_name'] = row['Property name'].encode('utf-8') if pd.notna(
+                row['Property name']) else ''
+            table_row['source_key'] = row['Source key'].encode('utf-8') if pd.notna(
+                row['Source key']) else ''
+            table_row['property_description'] = row['Property description'].encode(
+                'utf-8') if pd.notna(
+                row['Property description']) else ''
+            table_row['reference'] = row['Reference'].encode('utf-8') if pd.notna(
+                row['Reference']) else ''
+            table_row['doi'] = row['doi'].encode('utf-8') if pd.notna(row['doi']) else ''
+            table_row['notes'] = row['Notes'].encode('utf-8') if pd.notna(row['Notes']) else ''
+            table_row.append()
+
+        property_info_table.flush()
 
 
 
