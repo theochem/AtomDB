@@ -1,45 +1,70 @@
 import csv
 import tables as pt
-# import pandas as pd  ## Note: consider using csv module instead of pandas
 import numpy as np
 from importlib_resources import \
-files  ## Note: alternatively use python path library, see utils.py file
-
+files
 import warnings
+
+# Suppresses NaturalNameWarning warnings from PyTables.
 warnings.filterwarnings('ignore', category=pt.NaturalNameWarning)
 
-## Note: suggestion, place set-up variables at the top of the file
-elements_data_csv = files("atomdb.data").joinpath("elements_data.csv")  ## Note: replace harcoded paths to make script more portable
+
+# Set-up variables
+elements_data_csv = files("atomdb.data").joinpath("elements_data.csv")
 data_info_csv = files("atomdb.data").joinpath("data_info.csv")
 hdf5_file = "elements_data.h5"
 
-property_configs = [
-    {'property': 'cov_radius', 'group': 'Radius', 'table_name': 'cov_radius',
-     'description': 'Covalent Radius'},
 
-    {'property': 'vdw_radius', 'group': 'Radius', 'table_name': 'vdw_radius',
-     'description': 'Van der Waals Radius'},
-
-    {'property': 'at_radius', 'group': 'Radius', 'table_name': 'at_radius',
-     'description': 'Atomic Radius'},
-
-    {'property': 'mass', 'group': None, 'table_name': 'atmass', 'description': 'Atomic Mass'},
-
-    {'property': 'pold', 'group': None, 'table_name': 'polarizability', 'description': 'Polarizability'},
-
-    {'property': 'c6', 'group': None, 'table_name': 'dispersion_c6',
-     'description': 'C6 Dispersion Coefficient'},
-
-    {'property': 'eneg', 'group': None, 'table_name': 'eneg', 'description': 'Electronegativity'}
+# Properties of each element in the HDF5 file.
+PROPERTY_CONFIGS = [
+    {
+        'property': 'cov_radius',
+        'group': 'Radius',
+        'table_name': 'cov_radius',
+        'description': 'Covalent Radius'
+    },
+    {
+        'property': 'vdw_radius',
+        'group': 'Radius',
+        'table_name': 'vdw_radius',
+        'description': 'Van der Waals Radius'
+    },
+    {
+        'property': 'at_radius',
+        'group': 'Radius',
+        'table_name': 'at_radius',
+        'description': 'Atomic Radius'
+    },
+    {
+        'property': 'mass',
+        'group': None,
+        'table_name': 'atmass',
+        'description': 'Atomic Mass'
+    },
+    {
+        'property': 'pold',
+        'group': None,
+        'table_name': 'polarizability',
+        'description': 'Polarizability'
+    },
+    {
+        'property': 'c6',
+        'group': None,
+        'table_name': 'dispersion_c6',
+        'description': 'C6 Dispersion Coefficient'
+    },
+    {
+        'property': 'eneg',
+        'group': None,
+        'table_name': 'eneg',
+        'description': 'Electronegativity'
+    }
 ]
 
 
-# Periodic table data schema definition
+# Periodic tables data schema definitions
 class ElementDescription(pt.IsDescription):
-    """
-    pos: pos of the property in the column
-    pt.StringCol(2): max num of characters
-    """
+    """Schema for the basic_properties table for each element."""
     atnum = pt.Int32Col(pos=0)
     symbol = pt.StringCol(2, pos=1)
     name = pt.StringCol(25, pos=2)
@@ -49,12 +74,14 @@ class ElementDescription(pt.IsDescription):
 
 
 class PropertyValues(pt.IsDescription):
+    """Schema for property value tables."""
     source = pt.StringCol(30, pos=0)
     unit = pt.StringCol(20, pos=1)
     value = pt.Float64Col(pos=2)
 
 
 class ElementsDataInfo(pt.IsDescription):
+    """Schema for the property_info table."""
     property_key = pt.StringCol(20, pos=0)
     property_name = pt.StringCol(50, pos=1)
     source_key = pt.StringCol(30, pos=2)
@@ -64,13 +91,29 @@ class ElementsDataInfo(pt.IsDescription):
     notes = pt.StringCol(600, pos=5)
 
 
-def create_data_for_tables(hdf5_file, parent_folder, table_name, table_description, row_description,
-                           columns, row_data, sources_data, units_data):
+def create_data_for_tables(hdf5_file, parent_folder, table_name, table_description, row_description, columns, row_data, sources_data, units_data):
+    """
+        Create a table in the HDF5 file for a specific properties.
+
+        Args:
+            hdf5_file: PyTables file object.
+            parent_folder: Group where the table will be created.
+            table_name (str): Name of the table.
+            table_description (str): Description of the table.
+            row_description: PyTables IsDescription class for the table schema.
+            columns (list): List of column names from the CSV to include.
+            row_data (dict): Data for the current element.
+            sources_data (dict): sources of each property.
+            units_data (dict): units of each property.
+        """
+
+    # Creates a new table in the HDF5 file.
     table = hdf5_file.create_table(parent_folder, table_name, row_description, table_description)
 
+    # Iterates over the list of columns relevant to the current table.
     for col in columns:
-        source = sources_data.get(col, 'unknown')
-        unit = units_data.get(col, 'unknown')
+        source = sources_data.get(col, 'unknown') # defaulting to 'unknown' if not found.
+        unit = units_data.get(col, 'unknown')     # defaulting to 'unknown' if not found.
         value = np.nan
 
         if col in row_data and row_data[col].strip():
@@ -79,25 +122,40 @@ def create_data_for_tables(hdf5_file, parent_folder, table_name, table_descripti
             except (ValueError, TypeError):
                 value = np.nan
 
+        # Creates a new row in the table.
         row = table.row
         row['source'] = source.encode('utf-8') if source else ''
         row['unit'] = unit.encode('utf-8') if unit else ''
         row['value'] = value
         row.append()
 
+    # Flushes the table to ensure all data is written to the HDF5 file.
     table.flush()
-    # return table   ## Note: not needed, as the table is already created in the hdf5 file
 
 
 def read_elements_data_csv(elements_data_csv):
+    """
+        Read the elements_data.csv file.
+
+        Args:
+            elements_data_csv: Path to the elements_data.csv file.
+
+        Returns:
+            - data: List of dictionaries containing element data.
+            - unique_headers: List of unique column headers.
+            - sources_data (dict): sources of each property.
+            - units_data (dict): units of each property.
+        """
+
+    # Opens the csv file, filters out comment lines (starting with #) and empty lines.
     with open(elements_data_csv, 'r') as f:
         reader = csv.reader(f)
         lines = [line for line in reader if not line[0].startswith('#') and any(line)]
 
-    headers = [h.strip() for h in lines[0]]
-    sources = [s.strip() for s in lines[1]]
-    units = [u.strip() for u in lines[2]]
-    data_rows = lines[3:]
+    headers = [header.strip() for header in lines[0]] # first row as column headers
+    sources = [source.strip() for source in lines[1]] # second row as sources
+    units = [unit.strip() for unit in lines[2]]       # third row as units
+    data_rows = lines[3:]                            # remaining rows as data
 
     # Process headers to make them unique
     unique_headers = []
@@ -105,7 +163,7 @@ def read_elements_data_csv(elements_data_csv):
     for header in headers:
         if header in header_counts:
             header_counts[header] += 1
-            unique_headers.append(f"{header}.{header_counts[header]}")
+            unique_headers.append(f"{header}.{header_counts[header]}") # creates suffix (header.1, header.2) for duplicate headers
         else:
             header_counts[header] = 0
             unique_headers.append(header)
@@ -121,7 +179,19 @@ def read_elements_data_csv(elements_data_csv):
     return data, unique_headers, sources_data, units_data
 
 
+
 def read_data_info_csv(data_info_csv):
+    """
+        Read and parse the data_info.csv file containing metadata.
+
+        Args:
+            data_info_csv: Path to the data_info.csv file.
+
+        Returns:
+            data_info: List of dictionaries containing metadata for each property.
+        """
+
+    # # Opens the csv file, filters out comment lines (starting with #) and empty lines.
     with open(data_info_csv, 'r') as f:
         reader = csv.reader(f)
         lines = []
@@ -130,10 +200,9 @@ def read_data_info_csv(data_info_csv):
                 lines.append([item.strip() for item in line])
 
     # Get headers (first row)
-    headers = [h.lstrip('#').strip() for h in lines[0]]
+    headers = [header.lstrip('#').strip() for header in lines[0]]
     data_rows = lines[1:]
 
-    # Create list of dictionaries
     data_info = []
     for row in data_rows:
         data_info.append(dict(zip(headers, row)))
@@ -144,13 +213,17 @@ def read_data_info_csv(data_info_csv):
 
 def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
     """
-    Write the periodic table data to an HDF5 file.
+    Write element data to an HDF5 file.
+
+    Args:
+        data: List of dictionaries containing element data.
+        unique_headers: List of unique column headers.
+        sources_data (dict): sources of each property.
+        units_data (dict): units of each property.
     """
 
     # Open a file in "w"rite mode
-    # with pt.open_file(hdf5_file, mode='w', title='Periodic Data') as h5file:
-    h5file = pt.open_file(hdf5_file, mode="w",
-                          title='Periodic Data')  ## Note: removing one indentation level
+    h5file = pt.open_file(hdf5_file, mode="w", title='Periodic Data')
 
     # Create the Elements group
     elements_group = h5file.create_group('/', 'Elements', 'Elements Data')
@@ -164,7 +237,7 @@ def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
         mult = int(row['mult']) if 'mult' in row and row['mult'].strip() else 0
 
         # Create a new group
-        element_group_name = f"{atnum:03d}"  ## Note: change to just label by atomic number, e.g. 001
+        element_group_name = f"{atnum:03d}"
         element_group = h5file.create_group(elements_group, element_group_name, f'Data for {name}')
 
         # Create the basic properties table and fill it with data
@@ -179,11 +252,12 @@ def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
         basic_properties_row.append()
         basic_properties_table.flush()
 
-        # flag to track if we need to create size folder or it already exists
+        # flag to track whether a radius group has been created for the element.
         radius_group_created = False
         radius_group = None
 
-        for config in property_configs:
+        # For each property configuration, finds all columns that start with the property’s prefix.
+        for config in PROPERTY_CONFIGS:
             columns = [col for col in unique_headers if col.startswith(config['property'])]
 
             if not columns:
@@ -206,6 +280,15 @@ def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
 
 
 def write_data_info_to_hdf5(data_info_list):
+    """
+        Write dara from data_info.csv to the HDF5 file.
+
+        Args:
+            data_info_list: List of dictionaries containing metadata.
+        """
+
+
+    # Opens the HDF5 file in append mode ("a") --> add metadata without overwriting existing data.
     with pt.open_file(hdf5_file, mode='a', title='Periodic Data') as h5file:
         data_info_group = h5file.create_group('/', 'data_info', 'Data Info')
 
