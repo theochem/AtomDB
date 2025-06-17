@@ -56,7 +56,7 @@ PROPERTY_CONFIGS = [
     {
         'property': 'eneg',
         'group': None,
-        'table_name': 'eneg',
+        'table_name': 'Energy',
         'description': 'Electronegativity'
     }
 ]
@@ -87,8 +87,8 @@ class ElementsDataInfo(pt.IsDescription):
     source_key = pt.StringCol(30, pos=2)
     property_description = pt.StringCol(250, pos=3)
     reference = pt.StringCol(250, pos=4)
-    doi = pt.StringCol(150, pos=4)
-    notes = pt.StringCol(600, pos=5)
+    doi = pt.StringCol(150, pos=5)
+    notes = pt.StringCol(500, pos=6)
 
 
 def create_data_for_tables(hdf5_file, parent_folder, table_name, table_description, row_description, columns, row_data, sources_data, units_data):
@@ -155,7 +155,7 @@ def read_elements_data_csv(elements_data_csv):
     headers = [header.strip() for header in lines[0]] # first row as column headers
     sources = [source.strip() for source in lines[1]] # second row as sources
     units = [unit.strip() for unit in lines[2]]       # third row as units
-    data_rows = lines[3:]                            # remaining rows as data
+    data_rows = lines[3:]                             # remaining rows as data
 
     # Process headers to make them unique
     unique_headers = []
@@ -182,33 +182,41 @@ def read_elements_data_csv(elements_data_csv):
 
 def read_data_info_csv(data_info_csv):
     """
-        Read and parse the data_info.csv file containing metadata.
+    Read and parse the data_info.csv file containing metadata.
 
-        Args:
-            data_info_csv: Path to the data_info.csv file.
+    Args:
+        data_info_csv: Path to the data_info.csv file.
 
-        Returns:
-            data_info: List of dictionaries containing metadata for each property.
-        """
-
-    # # Opens the csv file, filters out comment lines (starting with #) and empty lines.
+    Returns:
+        data_info: List of dictionaries containing metadata for each property.
+    """
+    # Opens the csv file, filters out comment lines (starting with #) and empty lines.
     with open(data_info_csv, 'r') as f:
-        reader = csv.reader(f)
         lines = []
-        for line in reader:
-            if line and not line[0].startswith('#'):
-                lines.append([item.strip() for item in line])
+        for line in f:
+            stripped = line.strip()
+            if stripped and not stripped.startswith('#'):
+                lines.append(stripped)
 
-    # Get headers (first row)
-    headers = [header.lstrip('#').strip() for header in lines[0]]
-    data_rows = lines[1:]
+        # hardcode the headers
+        data_info_headers = [
+            'Property key',
+            'Property name',
+            'Source key',
+            'Property description',
+            'Reference',
+            'doi',
+            'Notes'
+        ]
 
-    data_info = []
-    for row in data_rows:
-        data_info.append(dict(zip(headers, row)))
+        reader = csv.reader(lines)
+        data_rows = list(reader)
+
+        data_info = []
+        for row in data_rows:
+            data_info.append(dict(zip(data_info_headers, row)))
 
     return data_info
-
 
 
 def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
@@ -304,9 +312,7 @@ def write_data_info_to_hdf5(data_info_list):
             table_row['doi'] = row.get('doi', '').encode('utf-8')
             table_row['notes'] = row.get('Notes', '').encode('utf-8')
             table_row.append()
-
         property_info_table.flush()
-
 
 
 
