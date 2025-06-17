@@ -23,11 +23,11 @@ property_configs = [
     {'property': 'at_radius', 'group': 'Radius', 'table_name': 'at_radius',
      'description': 'Atomic Radius'},
 
-    {'property': 'mass', 'group': None, 'table_name': 'mass', 'description': 'Atomic Mass'},
+    {'property': 'mass', 'group': None, 'table_name': 'atmass', 'description': 'Atomic Mass'},
 
-    {'property': 'pold', 'group': None, 'table_name': 'pold', 'description': 'Polarizability'},
+    {'property': 'pold', 'group': None, 'table_name': 'polarizability', 'description': 'Polarizability'},
 
-    {'property': 'c6', 'group': None, 'table_name': 'c6',
+    {'property': 'c6', 'group': None, 'table_name': 'dispersion_c6',
      'description': 'C6 Dispersion Coefficient'},
 
     {'property': 'eneg', 'group': None, 'table_name': 'eneg', 'description': 'Electronegativity'}
@@ -35,7 +35,7 @@ property_configs = [
 
 
 # Periodic table data schema definition
-class basic_properties(pt.IsDescription):
+class ElementDescription(pt.IsDescription):
     """
     pos: pos of the property in the column
     pt.StringCol(2): max num of characters
@@ -48,15 +48,15 @@ class basic_properties(pt.IsDescription):
     mult = pt.Int32Col(pos=5)
 
 
-class property_values(pt.IsDescription):
+class PropertyValues(pt.IsDescription):
     source = pt.StringCol(30, pos=0)
     unit = pt.StringCol(20, pos=1)
     value = pt.Float64Col(pos=2)
 
 
-class data_info(pt.IsDescription):
+class ElementsDataInfo(pt.IsDescription):
     property_key = pt.StringCol(20, pos=0)
-    property_name = pt.StringCol(25, pos=1)
+    property_name = pt.StringCol(50, pos=1)
     source_key = pt.StringCol(30, pos=2)
     property_description = pt.StringCol(250, pos=3)
     reference = pt.StringCol(250, pos=4)
@@ -168,8 +168,7 @@ def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
         element_group = h5file.create_group(elements_group, element_group_name, f'Data for {name}')
 
         # Create the basic properties table and fill it with data
-        basic_properties_table = h5file.create_table(element_group, 'basic_properties',
-                                                     basic_properties, 'Basic Properties')
+        basic_properties_table = h5file.create_table(element_group, 'basic_properties', ElementDescription, 'Basic Properties')
         basic_properties_row = basic_properties_table.row
         basic_properties_row['atnum'] = atnum
         basic_properties_row['symbol'] = symbol.encode('utf-8') if symbol else ''
@@ -199,7 +198,7 @@ def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
                 parent = element_group
 
             create_data_for_tables(h5file, parent, config['table_name'], config['description'],
-                                   property_values, columns, row, sources_data, units_data)
+                                   PropertyValues, columns, row, sources_data, units_data)
 
     # Close the file
     h5file.close()
@@ -210,8 +209,7 @@ def write_data_info_to_hdf5(data_info_list):
     with pt.open_file(hdf5_file, mode='a', title='Periodic Data') as h5file:
         data_info_group = h5file.create_group('/', 'data_info', 'Data Info')
 
-        property_info_table = h5file.create_table(data_info_group, 'property_info', data_info,
-                                                  'Property Information')
+        property_info_table = h5file.create_table(data_info_group, 'property_info', ElementsDataInfo,'Property Information')
 
         for row in data_info_list:
             table_row = property_info_table.row
