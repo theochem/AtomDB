@@ -18,14 +18,55 @@ hdf5_file = "elements_data.h5"
 # Properties of each element in the HDF5 file.
 PROPERTY_CONFIGS = [
     {
+        'basic_property': 'atnum',
+        'table_name': 'atnum',
+        'description': 'Atom Number',
+        'type': 'int',
+    },
+
+    {
+        'basic_property': 'symbol',
+        'table_name': 'symbol',
+        'description': 'Atom Symbol',
+        'type': 'string',
+    },
+
+    {
+        'basic_property': 'name',
+        'table_name': 'name',
+        'description': 'Atom Name',
+        'type': 'string',
+
+    },
+
+    {
+        'basic_property': 'group',
+        'table_name': 'group',
+        'description': 'Atom Group',
+        'type': 'int',
+    },
+
+    {
+        'basic_property': 'period',
+        'table_name': 'period',
+        'description': 'Atom Period',
+        'type': 'int',
+    },
+
+    {
+        'basic_property': 'mult',
+        'table_name': 'mult',
+        'description': 'Atom multiplicity',
+        'type': 'int',
+    },
+
+    {
         'property': 'cov_radius',
-        'group': 'Radius',
         'table_name': 'cov_radius',
         'description': 'Covalent Radius'
     },
     {
         'property': 'vdw_radius',
-        'group': 'Radius',
         'table_name': 'vdw_radius',
         'description': 'Van der Waals Radius'
     },
@@ -37,40 +78,43 @@ PROPERTY_CONFIGS = [
     },
     {
         'property': 'mass',
-        'group': None,
         'table_name': 'atmass',
         'description': 'Atomic Mass'
     },
     {
         'property': 'pold',
-        'group': None,
         'table_name': 'polarizability',
         'description': 'Polarizability'
     },
     {
         'property': 'c6',
-        'group': None,
         'table_name': 'dispersion_c6',
         'description': 'C6 Dispersion Coefficient'
     },
     {
         'property': 'eneg',
-        'group': None,
         'table_name': 'Energy',
         'description': 'Electronegativity'
     }
 ]
 
+#
+# # Periodic tables data schema definitions
+# class ElementDescription(pt.IsDescription):
+#     """Schema for the basic_properties table for each element."""
+#     atnum = pt.Int32Col(pos=0)
+#     symbol = pt.StringCol(2, pos=1)
+#     name = pt.StringCol(25, pos=2)
+#     group = pt.Int32Col(pos=3)
+#     period = pt.Int32Col(pos=4)
+#     mult = pt.Int32Col(pos=5)
+#
 
-# Periodic tables data schema definitions
-class ElementDescription(pt.IsDescription):
-    """Schema for the basic_properties table for each element."""
-    atnum = pt.Int32Col(pos=0)
-    symbol = pt.StringCol(2, pos=1)
-    name = pt.StringCol(25, pos=2)
-    group = pt.Int32Col(pos=3)
-    period = pt.Int32Col(pos=4)
-    mult = pt.Int32Col(pos=5)
+class NumberElementDescription(pt.IsDescription):
+    value = pt.Int32Col()
+
+class StringElementDescription(pt.IsDescription):
+    value = pt.StringCol(25)
 
 
 class PropertyValues(pt.IsDescription):
@@ -91,7 +135,7 @@ class ElementsDataInfo(pt.IsDescription):
     notes = pt.StringCol(500, pos=6)
 
 
-def create_data_for_tables(hdf5_file, parent_folder, table_name, table_description, row_description, columns, row_data, sources_data, units_data):
+def create_properties_tables(hdf5_file, parent_folder, table_name, table_description, row_description, columns, row_data, sources_data, units_data):
     """
         Create a table in the HDF5 file for a specific properties.
 
@@ -132,6 +176,27 @@ def create_data_for_tables(hdf5_file, parent_folder, table_name, table_descripti
     # Flushes the table to ensure all data is written to the HDF5 file.
     table.flush()
 
+def create_basic_properties_tables(hdf5_file, parent_folder, table_name, row_description, table_description, value, prop_type):
+    """
+    Create a table for a single basic property.
+
+    Args:
+        hdf5_file: PyTables file object.
+        parent_folder: Group where the table will be created.
+        table_name (str): Name of the table.
+        row_description: PyTables IsDescription class for the table schema.
+        table_description (str): Description of the table.
+        value: The value to store in the table (integer or string).
+    """
+    table = hdf5_file.create_table(parent_folder, table_name, row_description, table_description)
+    row = table.row
+    if prop_type == 'int':
+        row['value'] = value
+    if prop_type == 'string':
+        row['value'] = value.encode('utf-8') if value else ''
+
+    row.append()
+    table.flush()
 
 def read_elements_data_csv(elements_data_csv):
     """
@@ -179,7 +244,6 @@ def read_elements_data_csv(elements_data_csv):
     return data, unique_headers, sources_data, units_data
 
 
-
 def read_data_info_csv(data_info_csv):
     """
     Read and parse the data_info.csv file containing metadata.
@@ -220,71 +284,40 @@ def read_data_info_csv(data_info_csv):
 
 
 def write_elements_data_to_hdf5(data, unique_headers, sources_data, units_data):
-    """
-    Write element data to an HDF5 file.
-
-    Args:
-        data: List of dictionaries containing element data.
-        unique_headers: List of unique column headers.
-        sources_data (dict): sources of each property.
-        units_data (dict): units of each property.
-    """
-
-    # Open a file in "w"rite mode
+    """Write element data to an HDF5 file."""
     h5file = pt.open_file(hdf5_file, mode="w", title='Periodic Data')
-
-    # Create the Elements group
     elements_group = h5file.create_group('/', 'Elements', 'Elements Data')
 
     for row in data:
         atnum = int(row['atnum']) if 'atnum' in row and row['atnum'].strip() else 0
-        symbol = row['symbol'] if 'symbol' in row and row['symbol'].strip() else ''
         name = row['name'] if 'name' in row and row['name'].strip() else ''
-        group = int(row['group']) if 'group' in row and row['group'].strip() else 0
-        period = int(row['period']) if 'period' in row and row['period'].strip() else 0
-        mult = int(row['mult']) if 'mult' in row and row['mult'].strip() else 0
-
-        # Create a new group
         element_group_name = f"{atnum:03d}"
         element_group = h5file.create_group(elements_group, element_group_name, f'Data for {name}')
 
-        # Create the basic properties table and fill it with data
-        basic_properties_table = h5file.create_table(element_group, 'basic_properties', ElementDescription, 'Basic Properties')
-        basic_properties_row = basic_properties_table.row
-        basic_properties_row['atnum'] = atnum
-        basic_properties_row['symbol'] = symbol.encode('utf-8') if symbol else ''
-        basic_properties_row['name'] = name.encode('utf-8') if name else ''
-        basic_properties_row['group'] = group
-        basic_properties_row['period'] = period
-        basic_properties_row['mult'] = mult
-        basic_properties_row.append()
-        basic_properties_table.flush()
-
-        # flag to track whether a radius group has been created for the element.
-        radius_group_created = False
-        radius_group = None
-
-        # For each property configuration, finds all columns that start with the property’s prefix.
+        # Handle basic properties
         for config in PROPERTY_CONFIGS:
-            columns = [col for col in unique_headers if col.startswith(config['property'])]
+            if 'basic_property' in config:
+                property_name = config['basic_property']
+                table_name = config['table_name']
+                description = config['description']
+                prop_type = config['type']
 
-            if not columns:
-                continue
+                if prop_type == 'int':
+                    row_description = NumberElementDescription
+                    value = int(row[property_name]) if property_name in row and row[property_name].strip() else 0
+                elif prop_type == 'string':
+                    row_description = StringElementDescription
+                    value = row[property_name] if property_name in row and row[property_name].strip() else ''
 
-            if config['group']:
-                if not radius_group_created:
-                    radius_group = h5file.create_group(element_group, 'Radius', 'Radius Properties')
-                    radius_group_created = True
-                parent = radius_group
-            else:
-                parent = element_group
+                create_basic_properties_tables(h5file, element_group, table_name, row_description, description, value, prop_type)
 
-            create_data_for_tables(h5file, parent, config['table_name'], config['description'],
-                                   PropertyValues, columns, row, sources_data, units_data)
+        for config in PROPERTY_CONFIGS:
+            if 'property' in config:
+                columns = [col for col in unique_headers if col.startswith(config['property'])]
+                if columns:
+                    create_properties_tables(h5file, element_group, config['table_name'], config['description'], PropertyValues, columns, row, sources_data, units_data)
 
-    # Close the file
     h5file.close()
-
 
 
 def write_data_info_to_hdf5(data_info_list):
@@ -315,7 +348,6 @@ def write_data_info_to_hdf5(data_info_list):
         property_info_table.flush()
 
 
-
 if __name__ == "__main__":
     # Read the elements data from the CSV file
     data, unique_headers, sources_data, units_data = read_elements_data_csv(elements_data_csv)
@@ -328,4 +360,3 @@ if __name__ == "__main__":
 
     # Write the provenance data to the HDF5 file
     write_data_info_to_hdf5(data_info_df)
-
