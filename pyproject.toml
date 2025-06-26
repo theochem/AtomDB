@@ -49,7 +49,7 @@ dependencies = [
     "h5py>=3.6.0",
     "importlib_resources>=3.0.0",
     "pooch>=1.8.1",
-    "tables>=3.10.1",
+    "tables>=3.9.2",
 ]
 dynamic = ["version"]
 [tool.setuptools_scm]
