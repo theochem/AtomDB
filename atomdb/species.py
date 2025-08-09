@@ -19,19 +19,23 @@ import json
 import re
 from dataclasses import asdict, dataclass, field
 from importlib import import_module
-from numbers import Integral
 from os import makedirs, path
 
 import numpy as np
 import pooch
 import requests
-from msgpack import packb, unpackb
-from msgpack_numpy import decode, encode
 from numpy import ndarray
 from scipy.interpolate import CubicSpline
 
-from atomdb.periodic import Element, element_symbol
+from atomdb.periodic_test import element_symbol_map, PROPERTY_NAME_MAP, get_scalar_data, ElementAttr
 from atomdb.utils import DEFAULT_DATAPATH, DEFAULT_DATASET, DEFAULT_REMOTE
+from importlib_resources import files
+import tables as pt
+from numbers import Integral
+
+datasets_hdf5_file = files("atomdb.datasets").joinpath("datasets_data.h5")
+DATASETS_H5FILE = pt.open_file(datasets_hdf5_file, mode="a")
+
 
 __all__ = [
     "Species",
@@ -68,28 +72,12 @@ def scalar(method):
 
     @property
     def wrapper(self):
+        # Checking if the property is not in PROPERTY_NAME_MAP, if not then fetch it from SpeciesData
+        if name not in PROPERTY_NAME_MAP:
+            return getattr(self._data, name)
 
-        # Map the name of the method in the SpeciesData class to the name in the Elements class
-        # This dict can be removed if the Elements csv file uses the same names as the SpeciesData class.
-        namemap = {
-            "cov_radius": "cov_radius",
-            "vdw_radius": "vdw_radius",
-            "at_radius": "at_radius",
-            "polarizability": "pold",
-            "dispersion_c6": "c6",
-            "atmass": "mass",
-        }
+        get_scalar_data(name, self._data.atnum, self._data.nelec)
 
-        if name == "atmass":
-            return getattr(Element(self._data.elem), namemap[name])
-        if name in namemap:
-            # Only return Element property if neutral, otherwise None
-            charge = self._data.atnum - self._data.nelec
-            return getattr(Element(self._data.elem), namemap[name]) if charge == 0 else None
-
-        return getattr(self._data, name)
-
-    # conserve the docstring of the method
     wrapper.__doc__ = method.__doc__
     return wrapper
 
@@ -201,7 +189,7 @@ class DensitySpline:
         else:
             y = self._obj(x, nu=deriv)
         # Handle errors from the y = exp(log y) operation -- set NaN to zero
-        np.nan_to_num(y, nan=0., copy=False)
+        np.nan_to_num(y, nan=0.0, copy=False)
         # Cutoff value: assume y(x) is zero where x > final given point x_n
         y[x > self._obj.x[-1]] = 0
         return y
@@ -231,66 +219,6 @@ class _AtomicOrbitals:
         self.nbasis = self.norba  # number of spatial basis functions
 
 
-@dataclass(eq=False, order=False)
-class SpeciesData:
-    r"""Database entry fields for atomic and ionic species."""
-
-    # Species info
-    elem: str = field(default_factory=default_required("elem", "str"))
-    atnum: int = field(default_factory=default_required("atnum", "int"))
-    nelec: int = field(default_factory=default_required("nelec", "int"))
-    nspin: int = field(default_factory=default_required("nspin", "int"))
-    nexc: int = field(default_factory=default_required("nexc", "int"))
-
-    # Scalar properties
-    atmass: float = field(default=None)
-    cov_radius: float = field(default=None)
-    vdw_radius: float = field(default=None)
-    at_radius: float = field(default=None)
-    polarizability: float = field(default=None)
-    dispersion: float = field(default=None)
-
-    # Scalar energy and CDFT-related properties
-    energy: float = field(default=None)
-    ip: float = field(default=None)
-    mu: float = field(default=None)
-    eta: float = field(default=None)
-
-    # Basis set name
-    obasis_name: str = field(default=None)
-
-    # Radial grid
-    rs: ndarray = field(default_factory=default_vector)
-
-    # Orbital energies
-    mo_energy_a: ndarray = field(default_factory=default_vector)
-    mo_energy_b: ndarray = field(default_factory=default_vector)
-
-    # Orbital occupations
-    mo_occs_a: ndarray = field(default_factory=default_vector)
-    mo_occs_b: ndarray = field(default_factory=default_vector)
-
-    # Orbital densities
-    mo_dens_a: ndarray = field(default_factory=default_matrix)
-    mo_dens_b: ndarray = field(default_factory=default_matrix)
-    dens_tot: ndarray = field(default_factory=default_matrix)
-
-    # Orbital density gradients
-    mo_d_dens_a: ndarray = field(default_factory=default_matrix)
-    mo_d_dens_b: ndarray = field(default_factory=default_matrix)
-    d_dens_tot: ndarray = field(default_factory=default_matrix)
-
-    # Orbital density Laplacian
-    mo_dd_dens_a: ndarray = field(default_factory=default_matrix)
-    mo_dd_dens_b: ndarray = field(default_factory=default_matrix)
-    dd_dens_tot: ndarray = field(default_factory=default_matrix)
-
-    # Orbital kinetic energy densities
-    mo_ked_a: ndarray = field(default_factory=default_matrix)
-    mo_ked_b: ndarray = field(default_factory=default_matrix)
-    ked_tot: ndarray = field(default_factory=default_matrix)
-
-
 class Species:
     r"""Properties of atomic and ionic species."""
 
@@ -308,7 +236,11 @@ class Species:
 
         """
         self._dataset = dataset.lower()
-        self._data = SpeciesData(**fields)
+        # converting fields from dict to DefinitionClass
+        submodule = import_module(f"atomdb.datasets.{dataset}.run")
+        fields = submodule.DefinitionClass(**fields)
+
+        self._data = fields
         self.spinpol = spinpol
         self.ao = _AtomicOrbitals(self._data)
 
@@ -699,7 +631,7 @@ class Species:
         Return the function for the electronic density Laplacian.
 
         .. math::
-            
+
             \nabla^2 \rho(\mathbf{r}) = \frac{d^2 \rho(r)}{dr^2} + \frac{2}{r} \frac{d \rho(r)}{dr}
 
         Parameters
@@ -714,13 +646,13 @@ class Species:
             By default, all orbitals of the given spin(s) are included.
         log : bool, default=False
             Whether the logarithm of the density is used for interpolation.
-        
+
         Returns
         -------
         Callable[np.ndarray(N,) -> np.ndarray(N,)]
             a callable function evaluating the Laplacian of the density given a set of radial
             points (1-D array).
-        
+
         Notes
         -----
         When this function is evaluated at a point close to zero, the Laplacian becomes undefined.
@@ -734,11 +666,11 @@ class Species:
         # Define the Laplacian function
         def densityspline_like_func(rs):
             # Avoid division by zero and handle small values of r
-            with np.errstate(divide='ignore'):
+            with np.errstate(divide="ignore"):
                 laplacian = dd_dens_spline(rs) + 2 * d_dens_sp_spline(rs) / rs
                 laplacian = np.where(rs < 1e-10, 0.0, laplacian)
             return laplacian
-        
+
         return densityspline_like_func
 
     @spline
@@ -796,33 +728,27 @@ def compile_species(
         Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
 
     """
-    # Ensure directories exist
-    makedirs(path.join(datapath, dataset.lower(), "db"), exist_ok=True)
-    makedirs(path.join(datapath, dataset.lower(), "raw"), exist_ok=True)
-    # Import the compile script for the appropriate dataset
+    # import the selected dataset compile script and get fields
     submodule = import_module(f"atomdb.datasets.{dataset}.run")
-    # Compile the Species instance and dump the database entry
-    species = submodule.run(elem, charge, mult, nexc, dataset, datapath)
-    dump(species, datapath=datapath)
+    fields = submodule.run(elem, charge, mult, nexc, dataset, datapath)
+
+    # dump the data to the HDF5 file
+    dump(fields, dataset, mult)
 
 
-def dump(*species, datapath=DEFAULT_DATAPATH):
-    r"""Dump the Species instance(s) to a MessagePack file in the database.
+def dump(fields, dataset, mult):
+    r"""Dump the compiled species data to an HDF5 file in the AtomDB database.
 
     Parameters
     ----------
-    species: Iterable
-        Iterables of objects of class `Species`
-    datapath : str, optional
-        Path to the local AtomDB cache, by default DEFAULT_DATAPATH variable value.
-
+    fields (dataclass): A dataclass containing the fields to store in the HDF5 file.
+    dataset (str): Name of the dataset.
+    mult (int): Multiplicity.
     """
-    for s in species:
-        fn = datafile(
-            s._data.elem, s.charge, s.mult, nexc=s.nexc, dataset=s.dataset, datapath=datapath
-        )
-        with open(fn, "wb") as f:
-            f.write(packb(asdict(s._data), default=encode))
+
+    # Save data to the HDF5 file
+    element_folder_creator = import_module(f"atomdb.datasets.{dataset}.h5file_creator")
+    element_folder_creator.create_hdf5_file(DATASETS_H5FILE, fields, dataset, mult)
 
 
 def load(
@@ -858,24 +784,31 @@ def load(
     Object of class Species
 
     """
-    fn = datafile(
-        elem,
-        charge,
-        mult,
-        nexc=nexc,
-        dataset=dataset,
-        datapath=datapath,
-        remotepath=remotepath,
-    )
-    if Ellipsis in (elem, charge, mult, nexc):
-        obj = []
 
-        for file in fn:
-            with open(file, "rb") as f:
-                obj.append(Species(dataset, unpackb(f.read(), object_hook=decode)))
+    # Construct the dataset path
+    dataset_path = f"/Datasets/{dataset}"
+
+    # import the selected dataset HDF5 file creator to access property configurations
+    dataset_submodule = import_module(f"atomdb.datasets.{dataset}.h5file_creator")
+    DATASET_PROPERTY_CONFIGS = getattr(dataset_submodule, f"{dataset.upper()}_PROPERTY_CONFIGS")
+
+    # Handle wildcard case for loading multiple species
+    if Ellipsis in (elem, charge, mult, nexc):
+        data_paths = datafile(elem, charge, mult, nexc=nexc, dataset=dataset)
+        # create a list to hold all species objects
+        obj = []
+        for data_path in data_paths:
+            elem = data_path.split("/")[-2]
+            # Construct the specific data path for each species
+            fields = get_species_data(data_path, elem, DATASET_PROPERTY_CONFIGS)
+            obj.append(Species(dataset, fields))
     else:
-        with open(fn, "rb") as f:
-            obj = Species(dataset, unpackb(f.read(), object_hook=decode))
+        # Construct the specific data path for a single species
+        data_path = f"{dataset_path}/{elem}/{elem}_{charge:03d}_{mult:03d}_{nexc:03d}"
+        # get the species data and then create a species object
+        fields = get_species_data(data_path, elem, DATASET_PROPERTY_CONFIGS)
+        obj = Species(dataset, fields)
+
     return obj
 
 
@@ -888,19 +821,16 @@ def datafile(
     datapath=DEFAULT_DATAPATH,
     remotepath=DEFAULT_REMOTE,
 ):
-    r"""Return the name of the database file for a species.
-
-    This function returns the local path to the database file of a species in the AtomDB cache. If
-    the file is not found, it is downloaded from the remote URL.
+    r"""Return the paths to the database files for a species in AtomDB.
 
     Parameters
     ----------
-    elem : str | Ellipsis
-        Element symbol or Ellipsis for wildcard.
-    charge : int | Ellipsis
-        Charge or Ellipsis for wildcard.
-    mult : int | Ellipsis
-        Multiplicity or Ellipsis for wildcard.
+    elem : str
+        Element symbol.
+    charge : int
+        Charge.
+    mult : int
+        Multiplicity.
     nexc : int, optional
         Excitation level, by default 0.
     dataset : str, optional
@@ -912,59 +842,107 @@ def datafile(
 
     Returns
     -------
-    str
-        Local path to the database file of a species in the AtomDB cache
+    list
+        paths to the database file of a species in AtomDB.
 
     """
-    elem = "[^_]" if elem is Ellipsis else element_symbol(elem)
-    charge = "[^_]" if charge is Ellipsis else f"{charge:03d}"
-    mult = "[^_]" if mult is Ellipsis else f"{mult:03d}"
-    nexc = "[^_]" if nexc is Ellipsis else f"{nexc:03d}"
+    group_paths = []
+    conditions = []
 
-    # Wildcard search for multiple species, use repodata.txt for matching
-    if "[^_]" in (elem, charge, mult, nexc):
-        # try to retrieve the repodata file from the remote URL
-        try:
-            repodata = pooch.retrieve(
-                url=f"{remotepath}{dataset.lower()}/db/repodata.txt",
-                known_hash=None,
-                path=path.join(datapath, dataset.lower(), "db"),
-                fname="repo_data.txt",
-            )
-        # if the file is not found or remote was not valid, use the local repodata file
-        except (requests.exceptions.HTTPError, ValueError):
-            repodata = path.join(datapath, dataset.lower(), "db", "repo_data.txt")
+    # Access the dataset folder in the HDF5 file
+    dataset_path = f"/Datasets/{dataset}"
+    dataset_folder = DATASETS_H5FILE.get_node(dataset_path)
 
-        with open(repodata) as f:
-            data = f.read()
-            files = re.findall(rf"\b{elem}+_{charge}+_{mult}+_{nexc}\.msg\b", data)
-            species_list = []
-            for file in files:
-                # try to retrieve the file from the remote URL
-                try:
-                    element = pooch.retrieve(
-                        url=f"{remotepath}{dataset.lower()}/db/{file}",
-                        known_hash=None,
-                        path=path.join(datapath, dataset.lower(), "db"),
-                        fname=f"{file}",
-                    )
-                # if the file is not found, use the local file
-                except (requests.exceptions.HTTPError, ValueError):
-                    element = path.join(datapath, dataset.lower(), "db", file)
-                species_list.append(element)
-            return species_list
-    # try to retrieve the file from the remote URL
-    try:
-        species = pooch.retrieve(
-            url=f"{remotepath}{dataset.lower()}/db/{elem}_{charge}_{mult}_{nexc}.msg",
-            known_hash=None,
-            path=path.join(datapath, dataset.lower(), "db"),
-            fname=f"{elem}_{charge}_{mult}_{nexc}.msg",
-        )
-    # if the file is not found, use the local file
-    except (requests.exceptions.HTTPError, ValueError):
-        species = path.join(datapath, dataset.lower(), "db", f"{elem}_{charge}_{mult}_{nexc}.msg")
-    return species
+    if elem is not Ellipsis:
+        conditions.append(f'(elem == b"{elem}")')  # b for bytes comparison
+    if charge is not Ellipsis:
+        conditions.append(f"(charge == {charge})")
+    if mult is not Ellipsis:
+        conditions.append(f"(mult == {mult})")
+    if nexc is not Ellipsis:
+        conditions.append(f"(nexc == {nexc})")
+
+    if conditions:
+        query_result = " & ".join(conditions) if conditions else None
+
+        for elem, elem_folder in dataset_folder._v_groups.items():
+            for species_folder in elem_folder._v_groups:
+                properties_folder = DATASETS_H5FILE.get_node(
+                    f"/Datasets/{dataset}/{elem}/{species_folder}/Properties"
+                )
+                species_info_table = properties_folder._f_get_child("species_info")
+
+                matched_species = list(species_info_table.where(query_result))
+                if matched_species:
+                    group_paths.append(f"{dataset_path}/{elem}/{species_folder}")
+
+    # if there are no conditions, return all species
+    else:
+        for elem, elem_folder in dataset_folder._v_groups.items():
+            for species_folder in elem_folder._v_groups:
+                group_paths.append(f"{dataset_path}/{elem}/{species_folder}")
+
+    return group_paths
+
+
+def get_species_data(folder_path, elem, DATASET_PROPERTY_CONFIGS):
+    r"""Retrieve species data from the specified HDF5 folder path.
+
+    Parameters
+    ----------
+    folder_path : str
+        Path to the HDF5 folder containing the species data.
+    elem : str
+        Element symbol.
+    DATASET_PROPERTY_CONFIGS : list
+        list of configuration dictionaries.
+
+    Returns
+    -------
+    dict
+        the extracted species data fields.
+    """
+    fields = {}
+    dataset_folder = DATASETS_H5FILE.get_node(folder_path)
+
+    species_info_table = dataset_folder.Properties._f_get_child("species_info")
+    species_info_row = species_info_table[0]
+
+    # Iterate through property configurations to extract data from datasets_data.h5
+    for config in DATASET_PROPERTY_CONFIGS:
+        if "SpeciesInfo" in config:
+            # Extract species info data
+            prop_name = config["SpeciesInfo"]
+            value = species_info_row[prop_name]
+            if config["type"] == "string":
+                value = value.decode("utf-8")
+            fields[config["SpeciesInfo"]] = value
+
+        elif "property" in config:
+            # Extract single value properties
+            table = dataset_folder.Properties._f_get_child(config["table_name"])
+            value = table[0]["value"]
+            if config["type"] == "string":
+                value = value.decode("utf-8")
+            fields[config["property"]] = value
+
+        elif "array_property" in config:
+            # Extract array properties
+            table = dataset_folder.Properties._f_get_child(config["table_name"])
+            fields[config["array_property"]] = table[0]["value"]
+
+        elif "Carray_property" in config:
+            # Extract Carray properties
+            table = dataset_folder._f_get_child(config["folder"])._f_get_child(config["table_name"])
+            fields[config["Carray_property"]] = table[:]
+
+    fields["atnum"] = element_symbol_map[elem][ElementAttr.atnum]
+
+    # Add scalar properties
+    for prop in ("atmass", "cov_radius", "vdw_radius", "at_radius", "polarizability", "dispersion"):
+        fields[prop] = get_scalar_data(prop, fields["atnum"], fields["nelec"])
+
+    return fields
 
 
 def raw_datafile(
@@ -1006,7 +984,8 @@ def raw_datafile(
     str
         Path to the raw data file.
     """
-    elem = "*" if elem is Ellipsis else element_symbol(elem)
+    # elem = "*" if elem is Ellipsis else element_symbol(elem) --> why using element_symbol here
+    elem = "*" if elem is Ellipsis else elem
     charge = "*" if charge is Ellipsis else f"{charge:03d}"
     mult = "*" if mult is Ellipsis else f"{mult:03d}"
     nexc = "*" if nexc is Ellipsis else f"{nexc:03d}"
