@@ -25,8 +25,9 @@ import csv
 
 import atomdb
 from atomdb.utils import MODULE_DATAPATH, MULTIPLICITIES, CMINV, EV
-from atomdb.periodic import Element
-
+from dataclasses import dataclass
+from typing import Optional, Dict
+from atomdb.periodic_test import element_symbol_map, get_scalar_data
 
 __all__ = [
     "run",
@@ -45,6 +46,34 @@ The values were obtained from the paper, `Phys. Chem. Chem. Phys., 2016,18, 2572
 For each element/charge pair the values correspond to the most stable electronic configuration.
 
 """
+
+@dataclass
+class DefinitionClass:
+    """Data structure for the Slater dataset."""
+
+    # species info
+    elem: str
+    atnum: int
+    nelec: int
+    nspin: int
+    nexc: int
+    charge: int
+    mult: int
+    obasis_name: str
+
+    # properties (all from multiple sources Dict[str, float])
+    atmass: Optional[Dict[str, float]]
+    cov_radius: Optional[Dict[str, float]]
+    vdw_radius: Optional[Dict[str, float]]
+    at_radius: Optional[Dict[str, float]]
+    polarizability: Optional[Dict[str, float]]
+    dispersion: Optional[Dict[str, float]]
+
+    # [float]
+    energy: Optional[float]
+    ip: Optional[float]
+    mu: Optional[float]
+    eta: Optional[float]
 
 
 def load_nist_spectra_data(atnum, nelec, datafile):
@@ -102,16 +131,16 @@ def get_energy(atnum, nelec, ip, datafile):
         Ionization potential of the anion (in Ha).
     datafile : str
         HDF5 file containing the NIST atomic spectra data (file database_beta_1.3.0.h5).
-    
+
     Returns
     -------
     float or None
         Ground state energy of the species (in Ha). Returns None if data is unavailable.
-    
+
     Notes
-    ----- 
+    -----
     - Dianion species (charge = -2) return None.
-    - Anion energy (charge = -1) is computed as:  
+    - Anion energy (charge = -1) is computed as:
         :math:`E_{anion} = E_{neutral} - IP_{anion}`
     where :math:`IP_{anion}` is obtained from the conceptual-DFT data in the file data/c6cp04533b1.csv.
     """
@@ -132,11 +161,11 @@ def get_energy(atnum, nelec, ip, datafile):
     # Return energy (in Hartree) for neutral and cationic species (charge ≥ 0)
     if charge >= 0:
         return energies[0] / CMINV if len(energies) != 0 else default_energy
-    
+
     # Compute anion energy (charge = -1), ensuring ip is not zero or None
     if charge == -1 and ip not in [None, 0]:
         return (energies[0] / CMINV - ip) if len(energies) != 0 else default_energy
-    
+
     return default_energy
 
 
@@ -148,7 +177,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    atnum = atomdb.element_number(elem)
+    atnum = element_symbol_map[elem][0]
     nelec = atnum - charge
     nspin = mult - 1
     obasis_name = None
@@ -161,19 +190,19 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     if not mult == MULTIPLICITIES[(atnum, charge)]:
         raise ValueError(f"{elem} with charge {charge} and multiplicity {mult} not available.")
 
-    #
-    # Element properties
-    #
-    atom = Element(elem)
-    atmass = atom.mass
+    atmass = get_scalar_data("atmass", atnum, nelec)
+
+    # get scalar data
     cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
         None,
     ] * 5
+
     if charge == 0:
-        # overwrite values for neutral atomic species
-        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
-        polarizability = atom.pold
-        dispersion = {"C6": atom.c6}
+        cov_radius = get_scalar_data("cov_radius", atnum, nelec)
+        vdw_radius = get_scalar_data("vdw_radius", atnum, nelec)
+        at_radius = get_scalar_data("at_radius", atnum, nelec)
+        polarizability = get_scalar_data("polarizability", atnum, nelec)
+        dispersion = get_scalar_data("dispersion", atnum, nelec)
 
     # Get conceptual-DFT related properties from c6cp04533b1.csv
     # Locate where each table starts: search for "Element" columns
@@ -182,7 +211,9 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     tabid = [i for i, row in enumerate(data) if "Element" in row]
     # Check that the CSV file has not been modified and it has the expected number of tables (3)
     if len(tabid) != 3:
-        raise ValueError(f"Unexpected conceptual-DFT CSV file format; expected 3 tables, got {len(tabid)}.")
+        raise ValueError(
+            f"Unexpected conceptual-DFT CSV file format; expected 3 tables, got {len(tabid)}."
+        )
 
     # Assign each conceptual-DFT data table to a variable.
     # Remove empty and header rows
@@ -192,6 +223,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     table_mus = [row for row in table_mus if len(row[1]) > 0]
     table_etas = data[tabid[2] :]
     table_etas = [row for row in table_etas if len(row[1]) > 0]
+
     # Get property at table(atnum, charge); convert to Hartree
     colid = table_ips[0].index(str(charge))
     ip = float(table_ips[atnum][colid]) * EV if len(table_ips[atnum][colid]) > 1 else None
@@ -204,9 +236,11 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     energy = get_energy(atnum, nelec, ip, "database_beta_1.3.0.h5")
 
     # Return Species instance
-    fields = dict(
+    fields = DefinitionClass(
         elem=elem,
         atnum=atnum,
+        charge=charge,
+        mult=mult,
         obasis_name=obasis_name,
         nelec=nelec,
         nspin=nspin,
@@ -222,4 +256,4 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         mu=mu,
         eta=eta,
     )
-    return atomdb.Species(dataset, fields)
+    return fields

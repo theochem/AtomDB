@@ -26,6 +26,9 @@ from grid.atomgrid import AtomGrid
 from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
 from iodata import load_one
+from dataclasses import dataclass
+from typing import Optional, Dict
+from atomdb.periodic_test import element_symbol_map, get_scalar_data
 
 import atomdb
 from atomdb.datasets.tools import (
@@ -36,7 +39,6 @@ from atomdb.datasets.tools import (
     eval_radial_d_density,
     eval_radial_dd_density,
 )
-from atomdb.periodic import Element
 
 __all__ = [
     "run",
@@ -60,6 +62,65 @@ DOCSTRING = """Gaussian basis densities (UHF) Dataset
 Electronic structure and density properties evaluated with def2-svpd basis set
 
 """
+
+
+@dataclass
+class DefinitionClass:
+    """Data structure for the Slater dataset."""
+
+    # species info
+    elem: str
+    atnum: int
+    nelec: int
+    nspin: int
+    nexc: int
+    nbasis: int
+    charge: int
+    mult: int
+    obasis_name: str
+
+    # properties (all from multiple sources Dict[str, float] )
+    atmass: Optional[Dict[str, float]]
+    cov_radius: Optional[Dict[str, float]]
+    vdw_radius: Optional[Dict[str, float]]
+    at_radius: Optional[Dict[str, float]]
+    polarizability: Optional[Dict[str, float]]
+    dispersion: Optional[Dict[str, float]]
+
+    # [float]
+    energy: Optional[float]
+    ip: Optional[float]
+    mu: Optional[float]
+    eta: Optional[float]
+
+    # [np.ndarray]
+    mo_energy_a: Optional[np.ndarray]
+    mo_energy_b: Optional[np.ndarray]
+    mo_occs_a: Optional[np.ndarray]
+    mo_occs_b: Optional[np.ndarray]
+
+    # Radial grid
+    rs: np.ndarray = Optional[np.ndarray]
+
+    # Density
+    mo_dens_a: np.ndarray = Optional[np.ndarray]
+    mo_dens_b: np.ndarray = Optional[np.ndarray]
+    dens_tot: np.ndarray = Optional[np.ndarray]
+
+    # Density gradient
+    mo_d_dens_a: np.ndarray = Optional[np.ndarray]
+    mo_d_dens_b: np.ndarray = Optional[np.ndarray]
+    d_dens_tot: np.ndarray = Optional[np.ndarray]
+
+    # Density laplacian
+    mo_dd_dens_a: np.ndarray = Optional[np.ndarray]
+    mo_dd_dens_b: np.ndarray = Optional[np.ndarray]
+    dd_dens_tot: np.ndarray = Optional[np.ndarray]
+
+    # KED
+    mo_ked_a: np.ndarray = Optional[np.ndarray]
+    mo_ked_b: np.ndarray = Optional[np.ndarray]
+    ked_tot: np.ndarray = Optional[np.ndarray]
 
 
 def _load_fchk(n_atom, element, n_elec, multi, basis_name, data_path):
@@ -105,7 +166,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    atnum = atomdb.element_number(elem)
+    atnum = element_symbol_map[elem][0]
     nelec = atnum - charge
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
@@ -214,31 +275,27 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     orb_ked_avg_up = np.array([spline(rs) for spline in ked_splines_up])
     orb_ked_avg_dn = np.array([spline(rs) for spline in ked_splines_dn])
 
-    # Get information about the element
-    atom = Element(elem)
-    atmass = atom.mass
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
-        None,
-    ] * 5
-    # overwrite values for neutral atomic species
-    if charge == 0:
-        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
-        polarizability = atom.pold
-        dispersion = {"C6": atom.c6}
+    # Get periodic data
+    cov_radius = get_scalar_data("cov_radius", atnum, nelec)
+    vdw_radius = get_scalar_data("vdw_radius", atnum, nelec)
+    at_radius = get_scalar_data("at_radius", atnum, nelec)
+    polarizability = get_scalar_data("polarizability", atnum, nelec)
+    dispersion = get_scalar_data("dispersion", atnum, nelec)
+    atmass = get_scalar_data("atmass", atnum, nelec)
 
     # Conceptual-DFT properties (WIP)
     # NOTE: Only the alpha component of the MOs is used bellow
     # NOTE: Handle zero-electron case here
     mo_energy_occ_up = mo_e_up[:n_up]
     mo_energy_virt_up = mo_e_up[n_up:]
-    ip = -mo_energy_occ_up[-1] if nelec != 0 else 0 # - energy_HOMO_alpha
-    ea = -mo_energy_virt_up[0] if nelec != 0 else 0 # - energy_LUMO_alpha
+    ip = -mo_energy_occ_up[-1] if nelec != 0 else 0  # - energy_HOMO_alpha
+    ea = -mo_energy_virt_up[0] if nelec != 0 else 0  # - energy_LUMO_alpha
     mu = None
     eta = None
 
     # Set appropriate values to zero for zero-electron case
     if nelec == 0:
-        energy=0.0,
+        energy = (0.0,)
         mo_e_up[...] = 0
         mo_e_dn[...] = 0
         occs_up[...] = 0
@@ -261,9 +318,12 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         ked_avg_tot[...] = 0
 
     # Return Species instance
-    fields = dict(
+    fields = DefinitionClass(
         elem=elem,
+        charge=charge,
+        mult=mult,
         atnum=atnum,
+        nbasis=norba,
         obasis_name=obasis_name,
         nelec=nelec,
         nspin=nspin,
@@ -301,4 +361,4 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         mo_ked_b=orb_ked_avg_dn.flatten(),
         ked_tot=ked_avg_tot,
     )
-    return atomdb.Species(dataset, fields)
+    return fields

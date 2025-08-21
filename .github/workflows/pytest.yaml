@@ -18,10 +18,13 @@ jobs:
         # windows-latest is not supported because pyscf is not supported on windows
         # https://pyscf.org/user/install.html
         os: ["ubuntu-latest", "macos-latest"]
-        py: ["3.9", "3.10", "3.11", "3.12"]
+        py: ["3.10", "3.11", "3.12"]
 
     steps:
       - uses: "actions/checkout@v4"
+        # Whether to download Git-LFS files
+        with:
+          lfs: true
 
       - name: Setup python for test ${{ matrix.py }}
         uses: actions/setup-python@v5
@@ -30,12 +33,13 @@ jobs:
 
       - name: Install development version
         run: |
-          pip install -v .
+          pip install -e .
 
       - name: Install extra test dependencies
         run: |
           pip install --upgrade pip
           pip install .[test_extra]
+
 
       - name: Run pytest default tests
         uses: pavelzw/pytest-action@v2
@@ -59,3 +63,4 @@ jobs:
           click-to-expand: true
           report-title: 'Dev Test Report'
           pytest-args: '-m dev'
+

@@ -33,9 +33,11 @@ from gbasis.evals.eval_deriv import evaluate_deriv_basis
 from grid.onedgrid import UniformInteger
 from grid.rtransform import ExpRTransform
 from grid.atomgrid import AtomGrid
+from dataclasses import dataclass
+from typing import Optional, Dict
+from atomdb.periodic_test import element_symbol_map, get_scalar_data
 
 import atomdb
-from atomdb.periodic import Element
 
 
 __all__ = [
@@ -63,6 +65,54 @@ DOCSTRING = """UHF Dataset
 Electronic structure and density properties evaluated with aug-cc-pVDZ basis set
 
 """
+
+@dataclass
+class DefinitionClass:
+    """Data structure for the Slater dataset."""
+
+    # species info
+    elem: str
+    atnum: int
+    nelec: int
+    nspin: int
+    nexc: int
+    nbasis: int
+    charge: int
+    mult: int
+    obasis_name: str
+
+    # properties (all from multiple sources Dict[str, float] )
+    atmass: Optional[Dict[str, float]]
+    cov_radius: Optional[Dict[str, float]]
+    vdw_radius: Optional[Dict[str, float]]
+    at_radius: Optional[Dict[str, float]]
+    polarizability: Optional[Dict[str, float]]
+    dispersion: Optional[Dict[str, float]]
+
+    # [float]
+    energy: Optional[float]
+    ip: Optional[float]
+    mu: Optional[float]
+    eta: Optional[float]
+
+    # [np.ndarray]
+    mo_energy_a: Optional[np.ndarray]
+    mo_energy_b: Optional[np.ndarray]
+    mo_occs_a: Optional[np.ndarray]
+    mo_occs_b: Optional[np.ndarray]
+
+    # Radial grid
+    rs: np.ndarray = Optional[np.ndarray]
+
+    # Density
+    mo_dens_a: np.ndarray = Optional[np.ndarray]
+    mo_dens_b: np.ndarray = Optional[np.ndarray]
+    dens_tot: np.ndarray = Optional[np.ndarray]
+
+    # KED
+    mo_ked_a: np.ndarray = Optional[np.ndarray]
+    mo_ked_b: np.ndarray = Optional[np.ndarray]
+    ked_tot: np.ndarray = Optional[np.ndarray]
 
 
 def eval_orbs_density(one_density_matrix, orb_eval):
@@ -111,7 +161,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    atnum = atomdb.element_number(elem)
+    atnum = element_symbol_map[elem][0]
     nelec = atnum - charge
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
@@ -186,16 +236,17 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     #
     # Element properties
     #
-    atom = Element(elem)
-    atmass = atom.mass
-    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
-        None,
-    ] * 5
-    # overwrite values for neutral atomic species
+    atmass = get_scalar_data("atmass", atnum, nelec)
+
+    # get scalar data
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [None,] * 5
     if charge == 0:
-        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
-        polarizability = atom.pold
-        dispersion = {"C6": atom.c6}
+        cov_radius = get_scalar_data("cov_radius", atnum, nelec)
+        vdw_radius = get_scalar_data("vdw_radius", atnum, nelec)
+        at_radius = get_scalar_data("at_radius", atnum, nelec)
+        polarizability = get_scalar_data("polarizability", atnum, nelec)
+        dispersion = get_scalar_data("dispersion", atnum, nelec)
+
 
     #
     # Conceptual-DFT properties (TODO)
@@ -205,9 +256,12 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     eta = None
 
     # Return Species instance
-    fields = dict(
+    fields = DefinitionClass(
         elem=elem,
+        charge=charge,
+        mult=mult,
         atnum=atnum,
+        nbasis=norba,
         obasis_name=obasis_name,
         nelec=nelec,
         nspin=nspin,
@@ -236,4 +290,4 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         mo_ked_b=orb_ked_avg_dn.flatten(),
         ked_tot=ked_avg_tot,
     )
-    return atomdb.Species(dataset, fields)
+    return fields
