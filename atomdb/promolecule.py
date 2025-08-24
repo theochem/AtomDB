@@ -24,7 +24,8 @@ from warnings import warn
 import numpy as np
 from scipy.optimize import linprog
 
-from atomdb.periodic import element_number, element_symbol
+# from atomdb.periodic import element_number, element_symbol
+from atomdb.periodic_test import element_symbol_map, atnum_to_symbol, ElementAttr
 from atomdb.species import load
 from atomdb.utils import DEFAULT_DATAPATH, DEFAULT_DATASET, DEFAULT_REMOTE, MULTIPLICITIES
 
@@ -582,8 +583,8 @@ def make_promolecule(
     if isinstance(atnums, (Integral, str)):
         atnums = [atnums]
     # Get atomic symbols/numbers from inputs
-    atnums = [element_number(atom) for atom in atnums]
-    atoms = [element_symbol(atom) for atom in atnums]
+    atnums = [element_symbol_map[atom][ElementAttr.atnum] if isinstance(atom, str) else atom for atom in atnums]
+    atoms = [atnum_to_symbol[atom] if isinstance(atom, Integral) else atom for atom in atnums]
 
     # Handle default charge parameters
     if charges is None:

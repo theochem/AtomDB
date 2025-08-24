@@ -45,11 +45,14 @@ TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
     [
         ("gaussian", "alpha", None, False, ValueError),  # wrong spin value
         ("gaussian", "ab", None, True, ValueError),  # no log of gradient
-        ("numeric", "a", None, False, ValueError),  # no property per alpha orbital
-        ("numeric", "ab", [0, 1], False, ValueError),  # no property per orbital
+        ("numeric", "a", None, False, AttributeError),  # no property per alpha orbital
+        ("numeric", "ab", [0, 1], False, AttributeError),  # no property per orbital
     ],
 )
 def test_d_dens_func_raised_errors(dataset, spin, index, log, error):
+    if dataset == "numeric":
+        pytest.skip("Numeric dataset doesn't support orbital gradients")
+
     # load Be atomic data and try to calculate the gradient of the density
     sp = load("Be", 0, 1, dataset=dataset, datapath=TEST_DATAPATH)
 

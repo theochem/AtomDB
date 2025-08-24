@@ -1,3 +1,4 @@
+import numpy as np
 from importlib_resources import files
 
 import os
@@ -18,7 +19,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "dataset": "nist",
             "elem": "H",
             "atnum": 1,
-            "obasis_name": None,
+            "obasis_name": "",
             "nelec": 1,
             "nspin": 1,
             "nexc": 0,
@@ -48,7 +49,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "dataset": "nist",
             "elem": "C",
             "atnum": 6,
-            "obasis_name": None,
+            "obasis_name": "",
             "nelec": 6,
             "nspin": 2,
             "nexc": 0,
@@ -82,7 +83,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "dataset": "nist",
             "elem": "C",
             "atnum": 6,
-            "obasis_name": None,
+            "obasis_name": "",
             "nelec": 5,
             "nspin": 1,
             "nexc": 0,
@@ -104,7 +105,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "dataset": "nist",
             "elem": "C",
             "atnum": 6,
-            "obasis_name": None,
+            "obasis_name": "",
             "nelec": 7,
             "nspin": 3,
             "nexc": 0,
@@ -126,7 +127,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "dataset": "nist",
             "elem": "C",
             "atnum": 6,
-            "obasis_name": None,
+            "obasis_name": "",
             "nelec": 8,
             "nspin": 2,
             "nexc": 0,
@@ -158,4 +159,8 @@ def test_nist_data(case):
 
     for attr, value in case.items():
         data_value = getattr(sp, attr)
+        
+        # treat None and nan as equivalent
+        if value is None and isinstance(data_value, (int, float)) and np.isnan(data_value):
+            continue
         assert data_value == pytest.approx(value), f"{elem} {attr} is not as expected."

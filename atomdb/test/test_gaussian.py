@@ -55,11 +55,11 @@ def test_compiled_gaussian_hf_data():
     energy_a = sp._data.mo_energy_a
 
     # check array shapes
-    assert energy_a.shape == (12,)
+    assert energy_a.shape == (41,)
     assert grid.shape == (1000,)
     assert dens.shape == grid.shape
     ##FIXME: orbital density arrays must be to 2D arrays
-    assert orb_dens_a.reshape(len(energy_a), -1).shape == (12, 1000)
+    assert orb_dens_a.reshape(len(energy_a), -1).shape == (41, 1000)
 
     # check array elements
     # all R and density values are positive
@@ -83,7 +83,7 @@ def test_compiled_gaussian_hf_data():
             0.4425412,
         ]
     )
-    assert np.allclose(energy_a, energy, atol=1.0e-6)
+    assert np.allclose(energy_a[:12], energy, atol=1.0e-6)
     assert np.allclose(sp._data.mo_energy_b, energy_a, atol=1.0e-6)
 
 

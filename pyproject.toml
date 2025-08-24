@@ -25,7 +25,7 @@ authors = [
 description = "AtomDB is a database of atomic and ionic properties."
 readme = "README.md"
 license = {text = "GPL-3.0-or-later"}
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 classifiers = [
     'Development Status :: 5 - Production/Stable',
     'Environment :: Console',
@@ -36,19 +36,19 @@ classifiers = [
     'Intended Audience :: Science/Research',
     "Intended Audience :: Education",
     "Natural Language :: English",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "numpy>=1.16",
+    "numpy>=1.26.4",
     "scipy>=1.4",
     "msgpack>=1.0.0",
     "msgpack-numpy>=0.4.8",
     "h5py>=3.6.0",
     "importlib_resources>=3.0.0",
     "pooch>=1.8.1",
+    "tables>=3.9.2",
 ]
 dynamic = ["version"]
 [tool.setuptools_scm]
@@ -67,7 +67,7 @@ dev = [
     "qc-gbasis",
     # "qc-grid@git+https://github.com/theochem/grid.git@master",
     # TODO: uncomment when grid is available on PyPI
-    # "qc-grid",
+     "qc-grid",
     # "qc-iodata@git+https://github.com/theochem/iodata.git@main",
     "qc-iodata",
 ]
@@ -92,6 +92,9 @@ doc = [
 
 [tool.setuptools]
 packages = ["atomdb"]
+# Adding the package data
+package-data = { "atomdb" = ["data/*.h5", "data/*.msg"] }
+include-package-data = true
 
 [tool.black]
 line-length = 100
