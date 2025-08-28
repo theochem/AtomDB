@@ -11,6 +11,7 @@ from atomdb.utils import ANGSTROM, AMU, CMINV, EV
 TEST_DATAPATH = files("atomdb.test.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
+ELEMENTS_HDF5_FILE = files("atomdb.data").joinpath("elements_data.h5")
 
 TEST_CASES_MAKE_PROMOLECULE = [
     pytest.param(
@@ -151,6 +152,9 @@ def test_nist_data(case):
     """
     Test getting the attributes of the atom for Hydrogen and Carbon.
     """
+    if not ELEMENTS_HDF5_FILE.exists():
+        pytest.skip(f"Required data file not found: {ELEMENTS_HDF5_FILE}")
+        
     elem = case.get("elem")
     charge = case.get("atnum") - case.get("nelec")
     mult = case.get("nspin") + 1

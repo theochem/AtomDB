@@ -5,6 +5,7 @@ from importlib_resources import files
 import warnings
 from atomdb.utils import CONVERTOR_TYPES
 
+
 # Suppresses NaturalNameWarning warnings from PyTables.
 warnings.filterwarnings('ignore', category=pt.NaturalNameWarning)
 
@@ -25,7 +26,7 @@ PROPERTY_CONFIGS = [
 
     {
         'basic_property': 'symbol',
-        'table_name': 'symbol',
+        'table_name': 'elem',
         'description': 'Atom Symbol',
         'type': 'string',
     },
