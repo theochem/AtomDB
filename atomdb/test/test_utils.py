@@ -27,7 +27,6 @@ import pytest
 
 from atomdb.utils import MULTIPLICITIES
 
-
 # Mark all tests in this file with the 'dev' flag
 pytestmark = pytest.mark.dev
 

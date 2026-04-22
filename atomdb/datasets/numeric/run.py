@@ -24,32 +24,70 @@
 #
 """Numerical Hartree-Fock Data on a Grid."""
 
-
 import os
-
 import numpy as np
-
 import atomdb
-
 from atomdb.utils import MULTIPLICITIES, DEFAULT_DATAPATH
+from dataclasses import dataclass
+from typing import Optional, Dict
+from atomdb.periodic_test import element_symbol_map, get_scalar_data
 
-from atomdb.periodic import Element
+
+@dataclass
+class DefinitionClass:
+    """Data structure for the Slater dataset."""
+
+    # species info
+    elem: str
+    atnum: int
+    nelec: int
+    nspin: int
+    nexc: int
+    charge: int
+    mult: int
+    obasis_name: str
+
+    # properties (all from multiple sources Dict[str, float] )
+    atmass: Optional[Dict[str, float]]
+    cov_radius: Optional[Dict[str, float]]
+    vdw_radius: Optional[Dict[str, float]]
+    at_radius: Optional[Dict[str, float]]
+    polarizability: Optional[Dict[str, float]]
+    dispersion: Optional[Dict[str, float]]
+
+    # [float]
+    energy: Optional[float]
+
+    # Radial grid
+    rs: np.ndarray = Optional[np.ndarray]
+
+    # Density
+    dens_tot: np.ndarray = Optional[np.ndarray]
+
+    # Density gradient
+    d_dens_tot: np.ndarray = Optional[np.ndarray]
+
+    # Density laplacian
+    dd_dens_tot: np.ndarray = Optional[np.ndarray]
+
+    # KED
+    ked_tot: np.ndarray = Optional[np.ndarray]
 
 
 def load_numerical_hf_data(data_path):
     """Load data from desnity.out file into a `SpeciesTable`.
-    
+
     Parameters
     ----------
     data_path : str
         Path to the directory containing a folder named `raw` where the desnity.out file is stored.
-    
+
     Returns
     -------
     species : dict
         Dictionary of atomic species containing the information from the numeric Hartree-Fock calculation.
         This is energy components, grid, density, gradient, and laplacian values.
-    
+
     """
     # set the path to the raw data
     data_path = os.path.join(data_path, "numeric", "raw")
@@ -114,16 +152,16 @@ def load_numerical_hf_data(data_path):
     return species
 
 
-def eval_radial_dd_density(gradient, laplacian, points, err='ignore', tol=1e-10):
+def eval_radial_dd_density(gradient, laplacian, points, err="ignore", tol=1e-10):
     """Helper function to compute the radial second derivative of the density.
 
     From a set of radial points :math:`r`, the gradient of the density, :math:`df/dr`, and the
     Laplacian of the density, :math:`\nabla^2 f`, the radial second derivative of the density is
     computed as:
-    
+
     .. math::
         d/dr (df/dr) = \nabla^2 f - 2/r * df/dr
-    
+
     Parameters
     ----------
     gradient : np.ndarray
@@ -136,12 +174,12 @@ def eval_radial_dd_density(gradient, laplacian, points, err='ignore', tol=1e-10)
         Error handling for division by zero.
     tol : float, optional
         Tolerance for the points close to zero.
-    
+
     Returns
     -------
     d2dens : np.ndarray
         Radial second derivative of the density.
-    
+
     Notes
     -----
     When the points are close to zero, the radial second derivative of the density tends to infinity.
@@ -151,7 +189,7 @@ def eval_radial_dd_density(gradient, laplacian, points, err='ignore', tol=1e-10)
     # Handle the case when the points are close to zero
     with np.errstate(divide=err):
         # Compute the radial second derivative of the density
-        d2dens =  laplacian - 2 * gradient / points
+        d2dens = laplacian - 2 * gradient / points
         d2dens = np.where(points < tol, 0.0, d2dens)
     return d2dens
 
@@ -175,7 +213,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set up internal variables
     elem = atomdb.element_symbol(elem)
-    atnum = atomdb.element_number(elem)
+    atnum = element_symbol_map[elem][0]
     nelec = atnum - charge
     nspin = mult - 1
     n_up = (nelec + nspin) // 2
@@ -194,19 +232,18 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     species_table = load_numerical_hf_data(datapath)
     data = species_table[(atnum, nelec)]
 
-    #
-    # Element periodic properties
-    #
-    atom = Element(elem)
-    atmass = atom.mass
+    atmass = get_scalar_data("atmass", atnum, nelec)
+
+    # get scalar data
     cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
         None,
     ] * 5
     if charge == 0:
-        # overwrite values for neutral atomic species
-        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
-        polarizability = atom.pold
-        dispersion = {"C6": atom.c6}
+        cov_radius = get_scalar_data("cov_radius", atnum, nelec)
+        vdw_radius = get_scalar_data("vdw_radius", atnum, nelec)
+        at_radius = get_scalar_data("at_radius", atnum, nelec)
+        polarizability = get_scalar_data("polarizability", atnum, nelec)
+        dispersion = get_scalar_data("dispersion", atnum, nelec)
 
     # Get electronic structure data
     energy = data["energy_components"]["E"]
@@ -226,8 +263,10 @@ def run(elem, charge, mult, nexc, dataset, datapath):
     dd_dens_tot = eval_radial_dd_density(d_dens_tot, lapl_tot, points)
 
     # Return Species instance
-    fields = dict(
+    fields = DefinitionClass(
         elem=elem,
+        charge=charge,
+        mult=mult,
         atnum=atnum,
         obasis_name=obasis_name,
         nelec=nelec,
@@ -246,4 +285,4 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         dd_dens_tot=dd_dens_tot,
         ked_tot=ked_tot,
     )
-    return atomdb.Species(dataset, fields)
+    return fields

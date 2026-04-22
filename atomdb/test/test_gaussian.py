@@ -34,7 +34,6 @@ from numpy.testing import assert_almost_equal
 
 from atomdb import load
 
-
 # get test data path
 TEST_DATAPATH = files("atomdb.test.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
@@ -83,7 +82,7 @@ def test_compiled_gaussian_hf_data():
             0.4425412,
         ]
     )
-    assert np.allclose(energy_a, energy, atol=1.0e-6)
+    assert np.allclose(energy_a[:12], energy, atol=1.0e-6)
     assert np.allclose(sp._data.mo_energy_b, energy_a, atol=1.0e-6)
 
 

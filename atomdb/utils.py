@@ -25,7 +25,6 @@ import h5py as h5
 
 from scipy import constants
 
-
 __all__ = [
     "DEFAULT_DATASET",
     "DEFAULT_DATAPATH",

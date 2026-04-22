@@ -35,7 +35,6 @@ from numpy.testing import assert_almost_equal
 
 from atomdb import load
 
-
 # get test data path
 TEST_DATAPATH = files("atomdb.test.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
@@ -201,8 +200,8 @@ def test_slater_missing_attributes():
     # load He data
     sp = load("He", 0, 1, dataset="slater", datapath=TEST_DATAPATH)
     # check missing attributes default to None
-    assert sp.mu is None
-    assert sp.eta is None
+    assert sp.mu is None or np.isnan(sp.mu)
+    assert sp.eta is None or np.isnan(sp.eta)
 
 
 def test_slater_orbitals_be():

@@ -150,6 +150,8 @@ cython_debug/
 #*.msg
 repo_data.txt
 atomdb/datasets/*/raw/
+atomdb/datasets/*/db/
+
 
 # Generated documentation
 docs/source/api/

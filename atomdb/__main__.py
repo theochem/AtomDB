@@ -30,7 +30,10 @@ command = parser.add_argument_group("commands")
 command_group = command.add_mutually_exclusive_group(required=True)
 
 command_group.add_argument(
-    "-c", "--compile_species", action="store_true", help="compile_species a species into the database"
+    "-c",
+    "--compile_species",
+    action="store_true",
+    help="compile_species a species into the database",
 )
 
 command_group.add_argument(

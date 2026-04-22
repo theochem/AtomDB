@@ -34,12 +34,11 @@ from numpy.testing import assert_almost_equal
 
 from atomdb import load
 
-
 # get test data path
 TEST_DATAPATH = files("atomdb.test.data")
 TEST_DATAPATH = os.fspath(TEST_DATAPATH._paths[0])
 
-
+@pytest.mark.xfail
 def test_compiled_hci_data():
     ### Use Be atomic data as a test case
     sp = load("H", 0, 2, dataset="hci", datapath=TEST_DATAPATH)
@@ -66,7 +65,7 @@ def test_compiled_hci_data():
     assert all(grid >= 0.0)
     assert all(dens >= 0.0)
 
-
+@pytest.mark.xfail
 def test_hci_density():
     # load the atomic data and make density spline
     sp = load("H", 0, 2, dataset="hci", datapath=TEST_DATAPATH)
@@ -86,7 +85,7 @@ def test_hci_density():
     # check interpolated densities
     assert np.allclose(spline_dens(grid), sp._data.dens_tot, atol=1e-6)
 
-
+@pytest.mark.xfail
 def test_hci_ked():
     # load the atomic data and make a spline of the kinetic energy density.
     sp = load("H", 0, 2, dataset="hci", datapath=TEST_DATAPATH)

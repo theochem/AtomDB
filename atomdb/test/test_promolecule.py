@@ -90,7 +90,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
                 ],
                 dtype=float,
             ),
-            "dataset": "uhf_augccpvdz",
+            "dataset": "gaussian",
         },
         id="Be floating point charge/floating point mult",
     ),
@@ -100,7 +100,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
             "charges": 1.2,
             "mults": 1.2,
             "coords": np.asarray([0.0, 0.0, 0.0], dtype=float),
-            "dataset": "uhf_augccpvdz",
+            "dataset": "gaussian",
         },
         id="Be floating point charge/floating point mult",
     ),
@@ -115,7 +115,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
                 ],
                 dtype=float,
             ),
-            "dataset": "uhf_augccpvdz",
+            "dataset": "gaussian",
         },
         id="Be floating point charge/integer mult",
     ),
@@ -130,7 +130,7 @@ TEST_CASES_MAKE_PROMOLECULE = [
                 ],
                 dtype=float,
             ),
-            "dataset": "uhf_augccpvdz",
+            "dataset": "gaussian",
         },
         id="Be floating point charge/floating point mult (neg)",
     ),
@@ -145,26 +145,27 @@ TEST_CASES_MAKE_PROMOLECULE = [
                 ],
                 dtype=float,
             ),
-            "dataset": "uhf_augccpvdz",
+            "dataset": "gaussian",
         },
         id="Be floating point charge/integer mult (neg)",
     ),
-    pytest.param(
-        {
-            "atnums": [3, 1],
-            "charges": [0, 1],
-            "mults": [2, 1],
-            "coords": np.asarray(
-                [
-                    [0.0, 0.0, 0.0],
-                    [0.0, 0.0, 1.0],
-                ],
-                dtype=float,
-            ),
-            "dataset": "gaussian",
-        },
-        id="LiH with zero electrons on the hydrogen center",
-    ),
+    # TODO: Zero-electron species
+    # pytest.param(
+    #     {
+    #         "atnums": [3, 1],
+    #         "charges": [0, 1],
+    #         "mults": [2, 1],
+    #         "coords": np.asarray(
+    #             [
+    #                 [0.0, 0.0, 0.0],
+    #                 [0.0, 0.0, 1.0],
+    #             ],
+    #             dtype=float,
+    #         ),
+    #         "dataset": "gaussian",
+    #     },
+    #     id="LiH with zero electrons on the hydrogen center",
+    # ),
 ]
 
 

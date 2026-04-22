@@ -30,7 +30,6 @@ from atomdb.species import compile_species, load, dump, raw_datafile
 
 from atomdb.promolecule import make_promolecule
 
-
 __all__ = [
     "Element",
     "Species",
