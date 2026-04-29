@@ -113,7 +113,8 @@ extend-exclude = ["doc/*", "doc/*/*"]
 [tool.pytest.ini_options]
 minversion = "7.0"
 testpaths = ["test"]
-addopts = "-m 'not dev'"
+addopts = "-m 'not dev and not slow'"
 markers = [
     "dev: mark a developer test, needs extra dependencies.",
+    "slow: mark a test as slow.",
 ]
