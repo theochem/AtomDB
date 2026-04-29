@@ -1,0 +1,302 @@
+# This file is part of AtomDB.
+#
+# AtomDB is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your
+# option) any later version.
+#
+# AtomDB is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
+# for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with AtomDB. If not, see <http://www.gnu.org/licenses/>.
+
+r"""ORCA density compile function."""
+
+import os
+
+import numpy as np
+from gbasis.evals.density import evaluate_density as eval_dens
+from gbasis.evals.density import evaluate_posdef_kinetic_energy_density as eval_pd_ked
+from gbasis.evals.eval import evaluate_basis
+from gbasis.wrappers import from_iodata
+from grid.atomgrid import AtomGrid
+from grid.onedgrid import UniformInteger
+from grid.rtransform import ExpRTransform
+from iodata import load_one, IOData
+
+import atomdb
+from atomdb.datasets.tools import (
+    eval_orb_ked,
+    eval_orbs_density,
+    eval_orbs_radial_d_density,
+    eval_orbs_radial_dd_density,
+    eval_radial_d_density,
+    eval_radial_dd_density,
+)
+from atomdb.periodic import Element
+
+__all__ = [
+    "run",
+]
+
+
+# Parameters to generate an atomic grid from uniform radial grid
+# Use 170 points, lmax = 21 for the Lebedev grid since our basis
+# don't go beyond l=10 in the spherical harmonics.
+BOUND = (1e-30, 2e1)  # (r_min, r_max)
+
+NPOINTS = 1000
+
+SIZE = 175  # Lebedev grid sizes
+
+DEGREE = 21  #  Lebedev grid degrees
+
+
+DOCSTRING = """ORCA basis densities (wb97m-d3bj) Dataset
+
+Electronic structure and density properties evaluated with def2-tzvppd basis set
+
+"""
+def _load_molden(n_atom: int, element: str, n_elec: int, multi: int, basis_name: str, data_path: str) -> IOData:
+    r"""Load ORCA molden.input file and return the iodata object
+
+    This function finds the molden file in the data directory corresponding to the given parameters,
+    loads it and returns the iodata object.
+
+    Parameters
+    ----------
+    n_atom : int
+        Atomic number
+    element : str
+        Chemical symbol of the species
+    n_elec : int
+        Number of electrons
+    multi : int
+        Multiplicity
+    basis_name : str
+        Basis set name
+    data_path : str
+        Path to the data directory
+
+    Returns
+    -------
+    iodata : iodata.IOData
+        Iodata object containing the data from the molden file
+    """
+
+    bname = basis_name.lower().replace("-", "").replace("*", "p").replace("+", "d")
+    prefix = f"{str(n_atom).zfill(4)}"
+    tag = f"q{str(n_atom-n_elec).zfill(3)}_m0{multi}"
+    method = f"k00_force_{bname}"
+    moldenpath = os.path.join(data_path, f"orca/raw/{prefix}_{tag}_{method}.molden.input")
+    return load_one(moldenpath)
+
+
+def run(elem, charge, mult, nexc, dataset, datapath):
+    r"""Compile the AtomDB database entry for densities from Gaussian wfn."""
+    # Check arguments
+    if nexc != 0:
+        raise ValueError("Nonzero value of `nexc` is not currently supported")
+
+    # Set up internal variables
+    elem = atomdb.element_symbol(elem)
+    atnum = atomdb.element_number(elem)
+    nelec = atnum - charge
+    nspin = mult - 1
+    n_up = (nelec + nspin) // 2
+    n_dn = (nelec - nspin) // 2
+
+    # Load data from molden
+    obasis_name = "def2-tzvppd"
+    if nelec == 0:
+        # For zero-electron case. use 1-electron case as a base
+        data = _load_molden(atnum, elem, 1, 2, obasis_name, datapath)
+    else:
+        data = _load_molden(atnum, elem, nelec, mult, obasis_name, datapath)
+
+    # Unrestricted Hartree-Fock SCF results
+    energy = data.energy
+    norba = data.mo.norba
+    mo_e_up = data.mo.energies[:norba]
+    mo_e_dn = data.mo.energies[norba:]
+    occs_up = data.mo.occs[:norba]
+    occs_dn = data.mo.occs[norba:]
+    mo_coeffs = data.mo.coeffs  # ndarray(nbasis, norba + norbb)
+    coeffs_a = mo_coeffs[:, :norba]
+    coeffs_b = mo_coeffs[:, norba:]
+
+    # check for inconsistencies in filenames
+    if nelec != 0 and not np.allclose([n_up, n_dn], [sum(occs_up), sum(occs_dn)]):
+        raise ValueError(f"Inconsistent data in fchk file for N: {atnum}, M: {mult} CH: {charge}")
+
+    # Prepare data for computing Species properties
+    # density matrix in AO basis
+    dm1_up = np.dot(coeffs_a * occs_up, coeffs_a.T)
+    dm1_dn = np.dot(coeffs_b * occs_dn, coeffs_b.T)
+    dm1_tot = dm1_up + dm1_dn 
+
+    # Make grid
+    onedg = UniformInteger(NPOINTS)  # number of uniform grid points.
+    rgrid = ExpRTransform(*BOUND).transform_1d_grid(onedg)  # radial grid
+    atgrid = AtomGrid(rgrid, degrees=[DEGREE], sizes=[SIZE], center=np.array([0.0, 0.0, 0.0]))
+
+    # Evaluate properties on the grid:
+    # --------------------------------
+    # total and spin-up orbital, and spin-down orbital densities
+    obasis = from_iodata(data)
+    orb_eval = evaluate_basis(obasis, atgrid.points, transform=None)
+    orb_dens_up = eval_orbs_density(dm1_up, orb_eval)
+    orb_dens_dn = eval_orbs_density(dm1_dn, orb_eval)
+    dens_tot = eval_dens(dm1_tot, obasis, atgrid.points, transform=None)
+
+    # total, spin-up orbital, and spin-down orbital first (radial) derivatives of the density
+    d_dens_tot = eval_radial_d_density(dm1_tot, obasis, atgrid.points)
+    orb_d_dens_up = eval_orbs_radial_d_density(dm1_up, obasis, atgrid.points, transform=None)
+    orb_d_dens_dn = eval_orbs_radial_d_density(dm1_dn, obasis, atgrid.points, transform=None)
+
+    # total, spin-up orbital, and spin-down orbital second (radial) derivatives of the density
+    dd_dens_tot = eval_radial_dd_density(dm1_tot, obasis, atgrid.points)
+    orb_dd_dens_up = eval_orbs_radial_dd_density(dm1_up, obasis, atgrid.points, transform=None)
+    orb_dd_dens_dn = eval_orbs_radial_dd_density(dm1_dn, obasis, atgrid.points, transform=None)
+
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
+    ked_tot = eval_pd_ked(dm1_tot, obasis, atgrid.points, transform=None)
+    orb_ked_up = eval_orb_ked(dm1_up, obasis, atgrid.points, transform=None)
+    orb_ked_dn = eval_orb_ked(dm1_dn, obasis, atgrid.points, transform=None)
+
+    # Spherically average properties:
+    # --------------------------------
+    # total, spin-up orbital, and spin-down orbital densities
+    dens_spherical_avg = atgrid.spherical_average(dens_tot)
+    dens_splines_up = [atgrid.spherical_average(dens) for dens in orb_dens_up]
+    dens_splines_dn = [atgrid.spherical_average(dens) for dens in orb_dens_dn]
+
+    # total, spin-up orbital, and spin-down orbital radial derivatives of the density
+    d_dens_spherical_avg = atgrid.spherical_average(d_dens_tot)
+    d_dens_splines_up = [atgrid.spherical_average(d_dens) for d_dens in orb_d_dens_up]
+    d_dens_splines_dn = [atgrid.spherical_average(d_dens) for d_dens in orb_d_dens_dn]
+
+    # total, spin-up orbital, and spin-down orbital radial second derivatives of the density
+    dd_dens_spherical_avg = atgrid.spherical_average(dd_dens_tot)
+    dd_dens_splines_up = [atgrid.spherical_average(dd_dens) for dd_dens in orb_dd_dens_up]
+    dd_dens_splines_dn = [atgrid.spherical_average(dd_dens) for dd_dens in orb_dd_dens_dn]
+
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
+    ked_spherical_avg = atgrid.spherical_average(ked_tot)
+    ked_splines_up = [atgrid.spherical_average(dens) for dens in orb_ked_up]
+    ked_splines_dn = [atgrid.spherical_average(dens) for dens in orb_ked_dn]
+
+    # Evaluate interpolated densities in uniform radial grid:
+    # -------------------------------------------------------
+    rs = rgrid.points
+    # total, spin-up orbital, and spin-down orbital densities
+    dens_avg_tot = dens_spherical_avg(rs)
+    orb_dens_avg_up = np.array([spline(rs) for spline in dens_splines_up])
+    orb_dens_avg_dn = np.array([spline(rs) for spline in dens_splines_dn])
+
+    # total, spin-up orbital, and spin-down orbital radial derivatives of the density
+    d_dens_avg_tot = d_dens_spherical_avg(rs)
+    orb_d_dens_avg_up = np.array([spline(rs) for spline in d_dens_splines_up])
+    orb_d_dens_avg_dn = np.array([spline(rs) for spline in d_dens_splines_dn])
+
+    # total, spin-up orbital, and spin-down orbital radial second derivatives of the density
+    dd_dens_avg_tot = dd_dens_spherical_avg(rs)
+    orb_dd_dens_avg_up = np.array([spline(rs) for spline in dd_dens_splines_up])
+    orb_dd_dens_avg_dn = np.array([spline(rs) for spline in dd_dens_splines_dn])
+
+    # total, spin-up orbital, and spin-down orbital kinetic energy densities
+    ked_avg_tot = ked_spherical_avg(rs)
+    orb_ked_avg_up = np.array([spline(rs) for spline in ked_splines_up])
+    orb_ked_avg_dn = np.array([spline(rs) for spline in ked_splines_dn])
+
+    # Get information about the element
+    atom = Element(elem)
+    atmass = atom.mass
+    cov_radius, vdw_radius, at_radius, polarizability, dispersion = [
+        None,
+    ] * 5
+    # overwrite values for neutral atomic species
+    if charge == 0:
+        cov_radius, vdw_radius, at_radius = (atom.cov_radius, atom.vdw_radius, atom.at_radius)
+        polarizability = atom.pold
+        dispersion = {"C6": atom.c6}
+
+    # Conceptual-DFT properties (WIP)
+    # NOTE: Only the alpha component of the MOs is used bellow
+    # NOTE: Handle zero-electron case here
+    mo_energy_occ_up = mo_e_up[:n_up]
+    mo_energy_virt_up = mo_e_up[n_up:]
+    ip = -mo_energy_occ_up[-1] if nelec != 0 else 0 # - energy_HOMO_alpha
+    ea = -mo_energy_virt_up[0] if nelec != 0 else 0 # - energy_LUMO_alpha
+    mu = None
+    eta = None
+
+    # Set appropriate values to zero for zero-electron case
+    if nelec == 0:
+        energy=0.0,
+        mo_e_up[...] = 0
+        mo_e_dn[...] = 0
+        occs_up[...] = 0
+        occs_dn[...] = 0
+        # Density
+        orb_dens_avg_up[...] = 0
+        orb_dens_avg_dn[...] = 0
+        dens_avg_tot[...] = 0
+        # Density gradient
+        orb_d_dens_avg_up[...] = 0
+        orb_d_dens_avg_dn[...] = 0
+        d_dens_avg_tot[...] = 0
+        # Density laplacian
+        orb_dd_dens_avg_up[...] = 0
+        orb_dd_dens_avg_dn[...] = 0
+        dd_dens_avg_tot[...] = 0
+        # KED
+        orb_ked_avg_up[...] = 0
+        orb_ked_avg_dn[...] = 0
+        ked_avg_tot[...] = 0
+    
+    # Return Species instance
+    fields = dict(
+        elem=elem,
+        atnum=atnum,
+        obasis_name=obasis_name,
+        nelec=nelec,
+        nspin=nspin,
+        nexc=nexc,
+        atmass=atmass,
+        cov_radius=cov_radius,
+        vdw_radius=vdw_radius,
+        at_radius=at_radius,
+        polarizability=polarizability,
+        dispersion=dispersion,
+        energy=energy,
+        mo_energy_a=mo_e_up,
+        mo_energy_b=mo_e_dn,
+        mo_occs_a=occs_up,
+        mo_occs_b=occs_dn,
+        ip=ip,
+        # ea=ea,
+        mu=mu,
+        eta=eta,
+        rs=rs,
+        # Density
+        mo_dens_a=orb_dens_avg_up.flatten(),
+        mo_dens_b=orb_dens_avg_dn.flatten(),
+        dens_tot=dens_avg_tot,
+        # Density gradient
+        mo_d_dens_a=orb_d_dens_avg_up.flatten(),
+        mo_d_dens_b=orb_d_dens_avg_dn.flatten(),
+        d_dens_tot=d_dens_avg_tot,
+        # Density laplacian
+        mo_dd_dens_a=orb_dd_dens_avg_up.flatten(),
+        mo_dd_dens_b=orb_dd_dens_avg_dn.flatten(),
+        dd_dens_tot=dd_dens_avg_tot,
+        # KED
+        mo_ked_a=orb_ked_avg_up.flatten(),
+        mo_ked_b=orb_ked_avg_dn.flatten(),
+        ked_tot=ked_avg_tot,
+    )
+    return atomdb.Species(dataset, fields)
