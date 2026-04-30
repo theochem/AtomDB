@@ -130,7 +130,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # check for inconsistencies in filenames
     if nelec != 0 and not np.allclose([n_up, n_dn], [sum(occs_up), sum(occs_dn)]):
-        raise ValueError(f"Inconsistent data in fchk file for N: {atnum}, M: {mult} CH: {charge}")
+        raise ValueError(f"Inconsistent data in molden file for N: {atnum}, M: {mult} CH: {charge}")
 
     # Prepare data for computing Species properties
     # density matrix in AO basis
