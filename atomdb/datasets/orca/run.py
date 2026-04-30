@@ -225,7 +225,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
         dispersion = {"C6": atom.c6}
 
     # Conceptual-DFT properties (WIP)
-    # NOTE: Only the alpha component of the MOs is used bellow
+    # NOTE: Only the alpha component of the MOs is used below
     # NOTE: Handle zero-electron case here
     mo_energy_occ_up = mo_e_up[:n_up]
     mo_energy_virt_up = mo_e_up[n_up:]
