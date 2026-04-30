@@ -236,7 +236,7 @@ def run(elem, charge, mult, nexc, dataset, datapath):
 
     # Set appropriate values to zero for zero-electron case
     if nelec == 0:
-        energy=0.0,
+        energy = 0.0
         mo_e_up[...] = 0
         mo_e_dn[...] = 0
         occs_up[...] = 0
