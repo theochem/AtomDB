@@ -96,7 +96,7 @@ def _load_molden(n_atom: int, element: str, n_elec: int, multi: int, basis_name:
 
 
 def run(elem, charge, mult, nexc, dataset, datapath):
-    r"""Compile the AtomDB database entry for densities from a ORCA calculation."""
+    r"""Compile the AtomDB database entry for densities from an ORCA calculation."""
     # Check arguments
     if nexc != 0:
         raise ValueError("Nonzero value of `nexc` is not currently supported")
